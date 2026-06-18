@@ -5,6 +5,7 @@ description = "A custom Vector Database and RAG pipeline built from scratch impl
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
+    "fastapi[standard]>=0.137.2",
     "numpy>=1.26.0",
 ]
 
@@ -14,3 +15,6 @@ build-backend = "hatchling.build"
 
 [tool.uv]
 managed = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/vectordb"]
