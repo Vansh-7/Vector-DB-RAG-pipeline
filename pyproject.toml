@@ -1,0 +1,16 @@
+[project]
+name = "vector-db-project"
+version = "0.1.0"
+description = "A custom Vector Database and RAG pipeline built from scratch implementing HNSW, KD-Tree, and Brute Force search algorithms."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy>=1.26.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv]
+managed = true
