@@ -18,3 +18,11 @@ class SearchResultItem(BaseModel):
     distance: float
     metadata: str
     category: str
+    
+class IngestRequest(BaseModel):
+    text: str = Field(..., description="The raw document text to be ingested into the RAG pipeline.")
+    category: str = Field(default="general", description="Optional category for the document.")
+
+class AskRequest(BaseModel):
+    question: str = Field(..., description="The user's plain-text question.")
+    k: int = Field(default=5, ge=1, le=20, description="Number of context chunks to retrieve.")
