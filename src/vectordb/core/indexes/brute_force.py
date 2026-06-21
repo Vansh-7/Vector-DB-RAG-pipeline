@@ -1,20 +1,23 @@
-import numpy as np
 from typing import Callable
+import os
+import pickle
+import numpy as np
 
+from vectordb.core.types import SearchResult, VectorItem
+from vectordb.core.logger import logger
 # Import our base contract and data types
 from vectordb.core.indexes.base import BaseIndex
-from src.vectordb.core.types import VectorItem, SearchResult
 
 class BruteForceIndex(BaseIndex):
     """
     Exact Nearest Neighbor search.
     Compares the query vector against every single item in the database.
     """
-    
-    def __init__(self, distance_metric: Callable[[np.ndarray, np.ndarray], float]):
+
+    def __init__(self, distance_metric: Callable[[np.ndarray, np.ndarray], float]) -> None:
         """
         Args:
-            distance_metric: The function to use for calculating distance 
+            distance_metric: The function to use for calculating distance
                              (e.g., cosine_distance from metrics.py)
         """
         # We use a dictionary mapping ID -> VectorItem for O(1) lookups and easy deletions
@@ -33,7 +36,7 @@ class BruteForceIndex(BaseIndex):
             return []
 
         results = []
-        
+
         # Calculate the distance from the query to every item
         for item in self.items.values():
             # Convert the stored list[float] back to a numpy array for the math
@@ -43,7 +46,7 @@ class BruteForceIndex(BaseIndex):
 
         # Sort the results by distance (lowest distance = closest match)
         results.sort(key=lambda x: x.distance)
-        
+
         # Return only the top K items
         return results[:k]
 
@@ -53,3 +56,19 @@ class BruteForceIndex(BaseIndex):
             del self.items[item_id]
             return True
         return False
+    
+    def save(self, filepath: str) -> None:
+        """Serializes and saves the items dictionary to disk."""
+        with open(filepath, "wb") as f:
+            pickle.dump(self.items, f)
+        logger.info(f"BruteForce Index successfully saved to {filepath} ({len(self.items)} items).")
+
+    def load(self, filepath: str) -> None:
+        """Loads the items dictionary from disk."""
+        if not os.path.exists(filepath):
+            logger.warning(f"Index file {filepath} not found. Starting with a fresh database.")
+            return
+            
+        with open(filepath, "rb") as f:
+            self.items = pickle.load(f)
+        logger.info(f"BruteForce Index successfully loaded from {filepath} ({len(self.items)} items).")

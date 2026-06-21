@@ -7,6 +7,7 @@ requires-python = ">=3.10"
 dependencies = [
     "fastapi[standard]>=0.137.2",
     "langchain-text-splitters>=1.1.2",
+    "loguru>=0.7.3",
     "nltk>=3.9.4",
     "numpy>=1.26.0",
     "ollama>=0.6.2",
@@ -24,3 +25,27 @@ managed = true
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/vectordb"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+
+[tool.mypy]
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true 
+mypy_path = "src"
+explicit_package_bases = true
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28.1",
+    "scipy>=1.15.3",
+]
