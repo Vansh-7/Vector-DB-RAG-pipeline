@@ -13,7 +13,7 @@ def test_status_endpoint() -> None:
     assert response.status_code == 200
     data = response.json()
     assert "engine" in data
-    assert "total_nodes" in data
+    assert "total_docs" in data
 
 def test_insert_and_search_endpoints() -> None:
     """Tests the full lifecycle of inserting a vector via HTTP and searching for it."""
@@ -30,6 +30,7 @@ def test_insert_and_search_endpoints() -> None:
 
     # 2. Search for that exact vector via the API
     search_payload = {
+        "text": "API Test Document",
         "embedding": [0.5] * 128,
         "k": 1
     }
