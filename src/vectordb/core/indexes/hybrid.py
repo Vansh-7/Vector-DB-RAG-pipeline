@@ -14,7 +14,7 @@ class HybridIndex(BaseIndex):
     using Reciprocal Rank Fusion (RRF).
     """
 
-    def __init__(self, dense_index: HNSWIndex, sparse_index: BM25Index, rrf_k: int = 60):
+    def __init__(self, dense_index: HNSWIndex, sparse_index: BM25Index, rrf_k: int = 60) -> None:
         self.dense = dense_index
         self.sparse = sparse_index
         self.rrf_k = rrf_k  # Smoothing constant for Reciprocal Rank Fusion (Standard is 60)
@@ -24,7 +24,7 @@ class HybridIndex(BaseIndex):
         self.dense.insert(item)
         self.sparse.insert(item)
 
-    def search(self, query_vector: np.ndarray, query_text: str, k: int = 5) -> list[SearchResult]:
+    def search(self, query_vector: np.ndarray, query_text: str, k: int = 5) -> list[SearchResult]: # type: ignore[override]
         """
         Executes parallel dense and sparse searches, then fuses results.
         Note: This API diverges slightly from BaseIndex as it requires both vector and text.

@@ -14,15 +14,15 @@ class BM25Index(BaseIndex):
     Perfect for exact keyword matching (TF-IDF evolved).
     """
 
-    def __init__(self, k1: float = 1.5, b: float = 0.75):
+    def __init__(self, k1: float = 1.5, b: float = 0.75) -> None:
         self.k1 = k1  # Term frequency saturation parameter
         self.b = b    # Length normalization parameter
         
         self.documents: dict[int, VectorItem] = {}
         self.doc_lengths: dict[int, int] = {}
-        self.doc_term_freqs: dict[int, Counter] = {}
+        self.doc_term_freqs: dict[int, Counter[str]] = {}
         
-        self.df: Counter = Counter()  # Document Frequency: how many docs contain term X
+        self.df: Counter[str] = Counter() # Document Frequency: how many docs contain term X
         self.avgdl: float = 0.0       # Average document length
         self.total_docs: int = 0
         
@@ -58,7 +58,7 @@ class BM25Index(BaseIndex):
         self.total_docs += 1
         self.avgdl = total_length / self.total_docs
 
-    def search(self, query: str, k: int = 5) -> list[SearchResult]:
+    def search(self, query: str, k: int = 5) -> list[SearchResult]: # type: ignore[override]
         """Scores documents against the query using Okapi BM25."""
         if self.total_docs == 0:
             return []
