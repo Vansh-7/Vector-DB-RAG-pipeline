@@ -39,9 +39,7 @@ class RagGenerator:
         formatted_chunks = [f"[{i + 1}] {chunk}" for i, chunk in enumerate(chunks)]
         return "\n\n".join(formatted_chunks)
 
-    async def generate_stream(
-        self, question: str, retrieved_chunks: List[str]
-    ) -> AsyncGenerator[str, None]:
+    async def generate_stream(self, question: str, retrieved_chunks: List[str]) -> AsyncGenerator[str, None]:
         """
         Asynchronously generates and yields a response chunk-by-chunk using the local LLM.
         """
