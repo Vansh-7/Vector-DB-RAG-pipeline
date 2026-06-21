@@ -16,9 +16,7 @@ class SearchResult(BaseModel):
     Represents a single matched item returned from a search query.
     """
 
-    distance: float = Field(
-        ..., description="The calculated distance from the query vector (lower is usually better)"
-    )
+    distance: float = Field(..., description="The calculated distance from the query vector (lower is usually better)")
     item: VectorItem = Field(..., description="The underlying vector item that matched")
 
     # Add this config to bypass hot-reloading memory mismatches
