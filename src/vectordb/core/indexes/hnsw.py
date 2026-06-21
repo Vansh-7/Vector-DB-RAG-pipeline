@@ -41,6 +41,8 @@ class HNSWIndex(BaseIndex):
         self.nodes: dict[int, HNSWNode] = {}
         self.entry_point_id: int | None = None
         self.top_layer: int = -1
+        
+        self.tombstones: set[int] = set()
 
     def _random_level(self) -> int:
         """Assigns a random max layer for a new node. Higher layers are exponentially rarer."""
@@ -165,7 +167,7 @@ class HNSWIndex(BaseIndex):
             self.entry_point_id = item_id
 
     def search(self, query: np.ndarray, k: int = 5, ef_search: int = 50) -> list[SearchResult]:
-        """Searches the graph for the closest items."""
+        """Searches the graph for the closest items, ignoring tombstones."""
         if self.entry_point_id is None:
             return []
 
@@ -178,65 +180,53 @@ class HNSWIndex(BaseIndex):
                 if W:
                     ep = W[0][1]
 
-        # Wide beam search at the bottom layer to guarantee accuracy
-        W = self._search_layer(query, ep, ef=max(ef_search, k), layer=0)
+        # Wide beam search. We increase `ef` by the number of tombstones 
+        # to ensure we don't fall short of `k` results if we hit deleted nodes.
+        adjusted_ef = max(ef_search, k + len(self.tombstones))
+        W = self._search_layer(query, ep, ef=adjusted_ef, layer=0)
 
         results = []
-        for d, idx in W[:k]:
-            if idx in self.nodes:
+        for d, idx in W:
+            # Filter out deleted nodes!
+            if idx in self.nodes and idx not in self.tombstones:
                 results.append(SearchResult(distance=d, item=self.nodes[idx].item))
+                if len(results) == k:
+                    break
 
         return results
 
     def remove(self, item_id: int) -> bool:
-        """Removes an item and cleans up its graph edges."""
-        if item_id not in self.nodes:
+        """Soft-deletes an item (Tombstoning) to preserve graph integrity."""
+        if item_id not in self.nodes or item_id in self.tombstones:
             return False
-
-        # Remove from all neighbors' connection lists
-        for node in self.nodes.values():
-            for layer_conns in node.neighbors:
-                if item_id in layer_conns:
-                    layer_conns.remove(item_id)
-
-        # If we deleted the entry point, assign a new one
-        if self.entry_point_id == item_id:
-            self.entry_point_id = None
-            for n_id in self.nodes.keys():
-                if n_id != item_id:
-                    self.entry_point_id = n_id
-                    break
-
-        del self.nodes[item_id]
+            
+        # O(1) Soft Delete. The node remains in the graph for routing,
+        # but is excluded from final search results.
+        self.tombstones.add(item_id)
         return True
     
     def save(self, filepath: str) -> None:
-        """Serializes the entire HNSW graph state to a binary file."""
-        # We package the critical state of the graph into a dictionary
         state = {
             "nodes": self.nodes,
             "entry_point_id": self.entry_point_id,
-            "top_layer": self.top_layer
+            "top_layer": self.top_layer,
+            "tombstones": self.tombstones  # Persist deleted items
         }
-        
-        # Write the binary data to disk
         with open(filepath, "wb") as f:
             pickle.dump(state, f)
-            
-        logger.info(f"HNSW Index successfully saved to {filepath} ({len(self.nodes)} nodes).")
+        logger.info(f"HNSW Index saved to {filepath} ({len(self.nodes)} nodes).")
 
     def load(self, filepath: str) -> None:
-        """Loads a previously saved HNSW graph from a binary file."""
         if not os.path.exists(filepath):
-            logger.warning(f"Index file {filepath} not found. Starting with a fresh database.")
+            logger.warning(f"Index file {filepath} not found. Starting fresh.")
             return
             
-        # Read the binary data back into memory
         with open(filepath, "rb") as f:
             state = pickle.load(f)
             
         self.nodes = state["nodes"]
         self.entry_point_id = state["entry_point_id"]
         self.top_layer = state["top_layer"]
+        self.tombstones = state.get("tombstones", set()) # Safe fallback
         
-        logger.info(f"HNSW Index successfully loaded from {filepath} ({len(self.nodes)} nodes).")
+        logger.info(f"HNSW Index loaded from {filepath} ({len(self.nodes)} nodes).")
