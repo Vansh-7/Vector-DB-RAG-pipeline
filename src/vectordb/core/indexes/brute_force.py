@@ -3,7 +3,7 @@ from typing import Callable
 
 # Import our base contract and data types
 from vectordb.core.indexes.base import BaseIndex
-from vectordb.core.types import VectorItem, SearchResult
+from src.vectordb.core.types import VectorItem, SearchResult
 
 class BruteForceIndex(BaseIndex):
     """

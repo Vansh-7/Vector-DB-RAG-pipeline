@@ -1,4 +1,5 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
+from typing import List
 
 class VectorItem(BaseModel):
     """
@@ -15,3 +16,6 @@ class SearchResult(BaseModel):
     """
     distance: float = Field(..., description="The calculated distance from the query vector (lower is usually better)")
     item: VectorItem = Field(..., description="The underlying vector item that matched")
+    
+    # Add this config to bypass hot-reloading memory mismatches
+    model_config = ConfigDict(arbitrary_types_allowed=True)
