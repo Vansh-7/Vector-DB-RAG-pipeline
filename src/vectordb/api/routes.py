@@ -13,7 +13,7 @@ from vectordb.ai.reranker import cross_encoder
 
 # Import State and Schemas
 from vectordb.api import schemas
-from vectordb.api.state import db_lock, vector_db
+from vectordb.api.state import db_lock, vector_db, wal
 from vectordb.core.types import VectorItem
 from vectordb.core.logger import logger
 
@@ -34,6 +34,9 @@ async def insert_vector(request: schemas.InsertRequest) -> dict[str, Any]:
     # Acquire the lock to prevent graph corruption during concurrent writes
     async with db_lock:
         try:
+            # WAL LOGGING FIRST FOR ACID DURABILITY
+            wal.log_insert(item)
+            # INSERT INTO DATABASE SECOND
             vector_db.insert(item)
             logger.debug(f"Successfully inserted VectorItem {request.id} into HNSW graph.")
         except Exception as e:
@@ -53,7 +56,7 @@ async def search_vectors(request: schemas.SearchRequest) -> Any:
 
     # Reads generally do not mutate the graph, so we skip the lock for faster concurrent reads
     try:
-        results = vector_db.search(query_arr, k=request.k)
+        results = vector_db.search(query_vector=query_arr, query_text=request.text, k=request.k)
         logger.debug(f"Search completed successfully. Found {len(results)} results.")
     except Exception as e:
         logger.error(f"Database search failed: {str(e)}")
@@ -78,16 +81,13 @@ async def search_vectors(request: schemas.SearchRequest) -> Any:
 async def get_db_status() -> dict[str, Any]:
     """Returns the current health and metrics of the Vector DB."""
     logger.info("Status endpoint pinged.")
-    return {"engine": "HNSW", "top_layer": vector_db.top_layer, "total_nodes": len(vector_db.nodes)}
+    return {"engine": "Hybrid (HNSW + BM25)", "total_docs": vector_db.sparse.total_docs}
 
 
 # RAG Application API (High-Level)
 @router.post("/ingest", status_code=201)
 async def ingest_document(request: schemas.IngestRequest) -> dict[str, Any]:
-    """
-    Instead of manually inserting vectors, users insert raw text.
-    We chunk it, embed it concurrently, and insert it into the HNSW graph.
-    """
+    """Chunks text, embeds it, and inserts it into the Hybrid DB."""
     logger.info(f"Ingestion request received for category: {request.category}")
     try:
         # 1. Chunk the massive raw document into token-safe pieces
@@ -107,6 +107,10 @@ async def ingest_document(request: schemas.IngestRequest) -> dict[str, Any]:
                 item = VectorItem(
                     id=item_id, metadata=chunk, category=request.category, embedding=vector
                 )
+
+                # WAL LOGGING FIRST
+                wal.log_insert(item)
+                # DB INSERT SECOND
                 vector_db.insert(item)
                 
         logger.info(f"Successfully ingested {len(chunks)} chunks into the database.")
@@ -130,9 +134,13 @@ async def ask_question(request: schemas.AskRequest) -> Any:
         raise HTTPException(status_code=500, detail=f"Failed to embed question: {e}")
 
     try:
-        # 1. BROAD SEARCH: Ask HNSW for 10 results instead of just 'k'
+        # 1. BROAD HYBRID SEARCH: Pass vector AND raw question text
         broad_k = max(10, request.k * 2)
-        raw_results = vector_db.search(np.array(question_vector, dtype=float), k=broad_k)
+        raw_results = vector_db.search(
+            query_vector=np.array(question_vector, dtype=float), 
+            query_text=request.question, 
+            k=broad_k
+        )
         broad_chunks = [result.item.metadata for result in raw_results]
         logger.debug(f"Broad search retrieved {len(broad_chunks)} chunks. Beginning Re-ranking.")
 
