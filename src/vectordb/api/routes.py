@@ -10,8 +10,9 @@ from src.vectordb.core.types import VectorItem
 
 # Import our AI Engines
 from src.vectordb.ai.embedder import embedder
-from src.vectordb.ai.chunker import document_splitter
+from src.vectordb.ai.chunker import chunker
 from src.vectordb.ai.generator import llm_generator
+from src.vectordb.ai.reranker import cross_encoder
 
 router = APIRouter()
 
@@ -77,7 +78,7 @@ async def ingest_document(request: schemas.IngestRequest):
     """
     try:
         # 1. Chunk the massive raw document into token-safe pieces
-        chunks = document_splitter.split_text(request.text)
+        chunks = chunker.split_text(request.text)
         
         # 2. Vectorize all chunks concurrently (Extremely fast)
         vectors = await embedder.embed_batch(chunks)
@@ -104,28 +105,27 @@ async def ingest_document(request: schemas.IngestRequest):
 @router.post("/ask")
 async def ask_question(request: schemas.AskRequest):
     """
-    The RAG Crown Jewel: Embeds the question, searches the HNSW graph,
-    and streams the LLM response back in real-time.
+    Advanced RAG: Embeds -> Broad HNSW Search -> Cross-Encoder Re-Ranking -> CoT LLM Stream
     """
-    # 1. Convert the human question into a mathematical vector
     try:
         question_vector = await embedder.embed_text(request.question)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to embed question: {e}")
 
-    # 2. Search the vector database for the closest semantic chunks
     try:
-        # No db_lock needed for searching!
-        raw_results = vector_db.search(np.array(question_vector, dtype=float), k=request.k)
+        # 1. BROAD SEARCH: Ask HNSW for 10 results instead of just 'k'
+        broad_k = max(10, request.k * 2) 
+        raw_results = vector_db.search(np.array(question_vector, dtype=float), k=broad_k)
+        broad_chunks = [result.item.metadata for result in raw_results]
         
-        # Extract just the raw text strings from the search results
-        # Depending on how your SearchResult is structured, this might be result.item.metadata
-        retrieved_chunks = [result.item.metadata for result in raw_results]
+        # 2. RE-RANKING: Let the Cross-Encoder score and filter down to exactly 'k' results
+        best_chunks = cross_encoder.rerank(request.question, broad_chunks, top_n=request.k)
+        
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Database search failed: {e}")
 
-    # 3. Stream the LLM response back to the client using Server-Sent Events (SSE)
+    # 3. Stream the LLM response (now featuring Chain-of-Thought!)
     return StreamingResponse(
-        llm_generator.generate_stream(request.question, retrieved_chunks),
+        llm_generator.generate_stream(request.question, best_chunks),
         media_type="text/event-stream"
     )

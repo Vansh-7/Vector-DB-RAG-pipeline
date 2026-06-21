@@ -8,19 +8,21 @@ class RagGenerator:
     Handles strict prompt construction, hallucination prevention, 
     and asynchronous streaming generation for a real-time user experience.
     """
-    def __init__(self, model_name: str = "llama3.2"):
+    def __init__(self, model_name: str = "qwen2.5:7b"):
         self.model_name = model_name
         self._client = AsyncClient()
         
         # The System Prompt acts as a strict guardrail against hallucinations 
-        # with forced citations and tone alignment
+        # with forced citations and tone alignment + Chain of thought
         self._system_prompt = (
             "You are an expert, truthful AI assistant. "
             "Use the following retrieved context to answer the user's question. "
-            "When answering, you must cite the specific chunk you used by including its number in brackets (e.g., 'The revenue increased by 5% [2]'). "
-            "Maintain a professional, objective, and concise tone. "
+            "When answering, you must cite the specific chunk you used by including its number in brackets (e.g., '[2]'). "
+            "Maintain a professional and objective tone. "
             "If you cannot find the exact answer in the context, strictly say: "
             "'I do not have enough information to answer that.' Do not guess or invent facts.\n\n"
+            "CRITICAL INSTRUCTION: Before providing your final answer, you MUST write out your step-by-step logical deduction inside <thinking>...</thinking> XML tags. "
+            "Analyze dates, timelines, and relationships explicitly before concluding.\n\n"
             "Context:\n"
             "{context}"
         )

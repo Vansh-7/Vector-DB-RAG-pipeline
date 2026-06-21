@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 import numpy as np
 
-from vectordb.core.types import VectorItem, SearchResult
+from src.vectordb.core.types import VectorItem, SearchResult
 
 class BaseIndex(ABC):
     """

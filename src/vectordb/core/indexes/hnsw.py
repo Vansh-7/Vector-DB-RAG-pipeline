@@ -5,7 +5,7 @@ import numpy as np
 from typing import Callable
 
 from vectordb.core.indexes.base import BaseIndex
-from vectordb.core.types import VectorItem, SearchResult
+from src.vectordb.core.types import VectorItem, SearchResult
 
 class HNSWNode:
     """Represents a single document inside the HNSW graph layers."""
