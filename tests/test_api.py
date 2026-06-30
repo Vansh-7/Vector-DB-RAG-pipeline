@@ -2,7 +2,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 # Import your FastAPI app from main
-from main import app
+from vectordb.main import app
 
 # Create a test client that mimics a user's browser or Postman
 client = TestClient(app)

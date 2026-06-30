@@ -57,6 +57,12 @@ class BruteForceIndex(BaseIndex):
             return True
         return False
     
+    def size(self) -> int:
+        return len(self.items)
+
+    def get_all_items(self) -> list[VectorItem]:
+        return list(self.items.values())
+
     def save(self, filepath: str) -> None:
         """Serializes and saves the items dictionary to disk."""
         with open(filepath, "wb") as f:

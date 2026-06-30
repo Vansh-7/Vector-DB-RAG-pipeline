@@ -41,7 +41,7 @@ class HNSWIndex(BaseIndex):
         self.nodes: dict[int, HNSWNode] = {}
         self.entry_point_id: int | None = None
         self.top_layer: int = -1
-        
+
         self.tombstones: set[int] = set()
 
     def _random_level(self) -> int:
@@ -53,7 +53,7 @@ class HNSWIndex(BaseIndex):
         visited = {entry_point}
 
         # Min-heap to explore the closest candidates first
-        candidates: list[tuple[float, int]] = [] 
+        candidates: list[tuple[float, int]] = []
         # Max-heap to keep track of the 'ef' closest items found so far
         found: list[tuple[float, int]] = []
 
@@ -180,7 +180,7 @@ class HNSWIndex(BaseIndex):
                 if W:
                     ep = W[0][1]
 
-        # Wide beam search. We increase `ef` by the number of tombstones 
+        # Wide beam search. We increase `ef` by the number of tombstones
         # to ensure we don't fall short of `k` results if we hit deleted nodes.
         adjusted_ef = max(ef_search, k + len(self.tombstones))
         W = self._search_layer(query, ep, ef=adjusted_ef, layer=0)
@@ -199,12 +199,18 @@ class HNSWIndex(BaseIndex):
         """Soft-deletes an item (Tombstoning) to preserve graph integrity."""
         if item_id not in self.nodes or item_id in self.tombstones:
             return False
-            
+
         # O(1) Soft Delete. The node remains in the graph for routing,
         # but is excluded from final search results.
         self.tombstones.add(item_id)
         return True
-    
+
+    def size(self) -> int:
+        return len(self.nodes) - len(self.tombstones)
+
+    def get_all_items(self) -> list[VectorItem]:
+        return [node.item for nid, node in self.nodes.items() if nid not in self.tombstones]
+
     def save(self, filepath: str) -> None:
         state = {
             "nodes": self.nodes,
@@ -220,13 +226,20 @@ class HNSWIndex(BaseIndex):
         if not os.path.exists(filepath):
             logger.warning(f"Index file {filepath} not found. Starting fresh.")
             return
-            
-        with open(filepath, "rb") as f:
-            state = pickle.load(f)
-            
-        self.nodes = state["nodes"]
-        self.entry_point_id = state["entry_point_id"]
-        self.top_layer = state["top_layer"]
-        self.tombstones = state.get("tombstones", set()) # Safe fallback
-        
-        logger.info(f"HNSW Index loaded from {filepath} ({len(self.nodes)} nodes).")
+
+        try:
+            with open(filepath, "rb") as f:
+                state = pickle.load(f)
+
+            if not isinstance(state, dict) or "nodes" not in state:
+                logger.warning(f"Index file {filepath} format invalid or legacy. Starting fresh.")
+                return
+
+            self.nodes = state["nodes"]
+            self.entry_point_id = state["entry_point_id"]
+            self.top_layer = state["top_layer"]
+            self.tombstones = state.get("tombstones", set()) # Safe fallback
+
+            logger.info(f"HNSW Index loaded from {filepath} ({len(self.nodes)} nodes).")
+        except Exception as e:
+            logger.warning(f"Failed to load index file {filepath}: {e}. Starting fresh.")
