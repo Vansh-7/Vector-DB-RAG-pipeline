@@ -136,6 +136,7 @@ export function AskAIPanel() {
                   {msg.sources && msg.sources.length > 0 && (
                     <div className="border-t border-[rgba(255,255,255,0.06)] mt-4 pt-3">
                       <button
+                        type="button"
                         onClick={() => toggleSources(msg.id)}
                         className="flex items-center gap-1.5 text-xs font-medium text-[#888] hover:text-[#f4f4f4] transition-colors outline-none"
                       >
@@ -159,10 +160,7 @@ export function AskAIPanel() {
                                   {src.vectorId}
                                 </span>
                                 <span
-                                  className="font-mono text-xs font-semibold"
-                                  style={{
-                                    color: src.score >= 0.9 ? '#22c55e' : src.score >= 0.7 ? '#f59e0b' : '#ef4444',
-                                  }}
+                                  className={`font-mono text-xs font-semibold ${src.score >= 0.9 ? 'text-[#22c55e]' : src.score >= 0.7 ? 'text-[#f59e0b]' : 'text-[#ef4444]'}`}
                                 >
                                   {src.score.toFixed(3)}
                                 </span>
@@ -198,6 +196,7 @@ export function AskAIPanel() {
               Press Enter ↵
             </span>
             <button
+              type="button"
               onClick={handleSubmit}
               disabled={status === 'PROCESSING' || !input.trim()}
               className="flex items-center gap-1.5 px-4 py-1.5 bg-[#f4f4f4] text-[#0a0a0a] text-xs font-semibold rounded-md hover:bg-[#e5e5e5] active:scale-95 transition-all disabled:opacity-50 disabled:pointer-events-none shadow-sm"
