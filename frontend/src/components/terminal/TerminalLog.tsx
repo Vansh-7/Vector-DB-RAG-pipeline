@@ -28,7 +28,7 @@ export function TerminalLog() {
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <div className="flex items-center gap-3">
-          <button className="text-[#444] hover:text-[#f4f4f4] transition-colors focus:outline-none">
+          <button type="button" className="text-[#444] hover:text-[#f4f4f4] transition-colors focus:outline-none">
             {isExpanded ? (
               <ChevronDown className="w-3.5 h-3.5" />
             ) : (
@@ -56,6 +56,7 @@ export function TerminalLog() {
           )}
         </div>
         <button
+          type="button"
           onClick={(e) => {
             e.stopPropagation();
             clear();
