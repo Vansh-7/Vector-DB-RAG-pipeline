@@ -12,8 +12,7 @@ class InsertRequest(BaseModel):
 
 class SearchRequest(BaseModel):
     """Payload for querying the database."""
-    
-    text: str = Field(..., description="The raw text query for sparse BM25 retrieval") # ADD THIS LINE
+
     embedding: list[float] = Field(..., description="The query vector to search for")
     k: int = Field(default=5, ge=1, le=100, description="Number of results to return")
 
@@ -37,3 +36,7 @@ class IngestRequest(BaseModel):
 class AskRequest(BaseModel):
     question: str = Field(..., description="The user's plain-text question.")
     k: int = Field(default=5, ge=1, le=20, description="Number of context chunks to retrieve.")
+
+class TextSearchRequest(BaseModel):
+    text: str = Field(..., description="The query string to embed and search for")
+    k: int = Field(default=5, ge=1, le=100, description="Number of results to return")
