@@ -10,5 +10,10 @@ wheels/
 data/
 *.wal
 
+claude-files
+.claude
+.agents
+skills-lock.json
+
 # Virtual environments
 .venv
