@@ -1,4 +1,4 @@
-import { apiFetch, apiUpload } from './client';
+import { apiFetch } from './client';
 import { useTerminalStore } from '../store/terminalStore';
 import { getCurrentTimestamp } from '../lib/utils';
 import type { Category, IngestRequest, IngestResponse } from '../types';
@@ -27,11 +27,12 @@ export async function ingestFile(
 ): Promise<IngestResponse> {
   const addLog = useTerminalStore.getState().addLog;
   try {
-    addLog({ timestamp: getCurrentTimestamp(), level: 'INFO', message: `Uploading file: ${file.name}` });
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('category', category);
-    const res = await apiUpload<IngestResponse>('/ingest/file', formData);
+    addLog({ timestamp: getCurrentTimestamp(), level: 'INFO', message: `Reading file: ${file.name}` });
+    const text = await file.text();
+    const res = await apiFetch<IngestResponse>('/ingest', {
+      method: 'POST',
+      body: JSON.stringify({ text, category }),
+    });
     addLog({ timestamp: getCurrentTimestamp(), level: 'SUCCESS', message: `File ingested successfully.` });
     return res;
   } catch (e) {

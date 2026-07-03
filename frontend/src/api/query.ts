@@ -1,23 +1,7 @@
-import { apiFetch, getStreamUrl } from './client';
+import { getStreamUrl } from './client';
 import { useTerminalStore } from '../store/terminalStore';
 import { getCurrentTimestamp } from '../lib/utils';
-import type { RAGQueryRequest, RAGResponse } from '../types';
 
-export async function queryRAG(data: RAGQueryRequest): Promise<RAGResponse> {
-  const addLog = useTerminalStore.getState().addLog;
-  try {
-    addLog({ timestamp: getCurrentTimestamp(), level: 'INFO', message: `RAG Query: "${data.query}"` });
-    const res = await apiFetch<RAGResponse>('/ask', {
-      method: 'POST',
-      body: JSON.stringify({ question: data.query, k: data.topK }),
-    });
-    addLog({ timestamp: getCurrentTimestamp(), level: 'SUCCESS', message: 'RAG Query complete.' });
-    return res;
-  } catch (e) {
-    addLog({ timestamp: getCurrentTimestamp(), level: 'ERROR', message: `RAG Query failed: ${e instanceof Error ? e.message : 'Unknown'}` });
-    throw e;
-  }
-}
 
 export async function askQuestion(
   question: string,
