@@ -57,5 +57,3 @@ export function generateMockVectors(count = 200): VectorPoint2D[] {
 
   return vectors;
 }
-
-export const MOCK_VECTORS = generateMockVectors(200);

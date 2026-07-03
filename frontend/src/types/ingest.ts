@@ -1,8 +1,7 @@
 import type { Category } from './vector';
 
 export interface IngestRequest {
-  title: string;
-  content: string;
+  text: string;
   category: Category;
 }
 

@@ -1,6 +1,6 @@
 import { apiFetch } from './client';
 
-export interface DbStatusResponse {
+interface DbStatusResponse {
   engine: string;
   metric: string;
   total_docs: number;

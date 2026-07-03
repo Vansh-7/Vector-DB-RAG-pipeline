@@ -19,6 +19,25 @@ export const CATEGORY_COLORS: Record<Category, string> = {
   MATHEMATICS: '#facc15',
 };
 
+export const CATEGORY_LABELS: Record<Category, string> = {
+  TECH: 'Tech',
+  MATHEMATICS: 'Maths',
+  FINANCE: 'Finance',
+  FOOD: 'Food',
+  'SPORTS & GAMES': 'Sports & Games',
+  DOCUMENTS: 'Document',
+};
+
+export const CATEGORY_ORDER: Category[] = [
+  'TECH',
+  'MATHEMATICS',
+  'FINANCE',
+  'FOOD',
+  'SPORTS & GAMES',
+  'DOCUMENTS',
+];
+
+
 export const ALGORITHM_DISPLAY: Record<Algorithm, string> = {
   hnsw: 'HNSW Graph',
   kdtree: 'KD-Tree',

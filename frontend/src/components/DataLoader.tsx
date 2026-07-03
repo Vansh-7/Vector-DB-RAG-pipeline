@@ -44,7 +44,7 @@ export function DataLoader() {
     return (
       <div className="absolute top-0 left-0 right-0 z-[100] bg-[#ef4444] text-white px-4 py-2 flex items-center justify-center gap-2 text-sm font-medium shadow-lg animate-in slide-in-from-top-2">
         <AlertCircle className="w-4 h-4" />
-        Backend API is offline. Cannot connect to Vector DB at {import.meta.env.VITE_API_BASE_URL}.
+        Backend API is offline. Cannot connect to Vector DB at {import.meta.env.VITE_API_BASE_URL || "http://localhost:8000"}.
       </div>
     );
   }

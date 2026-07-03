@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import type { LogEntry } from "../types";
 
-export type ConnectionStatus = "connected" | "offline" | "connecting";
+type ConnectionStatus = "connected" | "offline" | "connecting";
 
 interface TerminalState {
   logs: LogEntry[];

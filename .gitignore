@@ -11,6 +11,8 @@ wheels/
 
 claude-files
 .claude
+.agents
+skills-lock.json
 
 # Virtual environments
 .venv
