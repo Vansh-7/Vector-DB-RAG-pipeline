@@ -26,6 +26,7 @@ export default {
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
         mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
+        brand: ['Space Grotesk', 'sans-serif'],
       },
       fontSize: {
         '2xs': ['10px', '14px'],
