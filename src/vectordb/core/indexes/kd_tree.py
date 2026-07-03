@@ -118,6 +118,12 @@ class KDTreeIndex(BaseIndex):
         for item in self._active_items.values():
             self.root = self._insert_node(self.root, item, depth=0)
             
+    def size(self) -> int:
+        return len(self._active_items)
+
+    def get_all_items(self) -> list[VectorItem]:
+        return list(self._active_items.values())
+
     def save(self, filepath: str) -> None:
         """Serializes the active items to disk."""
         with open(filepath, "wb") as f:
