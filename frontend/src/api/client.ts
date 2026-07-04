@@ -37,21 +37,6 @@ export async function apiFetch<T>(
   return res.json() as Promise<T>;
 }
 
-export async function apiUpload<T>(
-  path: string,
-  formData: FormData
-): Promise<T> {
-  const res = await fetch(`${API}${path}`, {
-    method: "POST",
-    body: formData,
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ detail: res.statusText }));
-    throw new ApiError(res.status, parseErrorDetail(err, "Upload error"));
-  }
-  return res.json() as Promise<T>;
-}
-
 export function getStreamUrl(path: string): string {
   return `${API}${path}`;
 }
