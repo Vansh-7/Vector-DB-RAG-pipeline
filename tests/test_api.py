@@ -36,7 +36,7 @@ def test_insert_and_search_endpoints() -> None:
     # 1. Insert a document via the API
     insert_payload = {
         "id": 777,
-        "metadata": "API Test Document",
+        "payload": "API Test Document",
         "category": "testing",
         "embedding": [0.5] * 768  # A dummy 768-dimensional vector
     }
@@ -47,10 +47,9 @@ def test_insert_and_search_endpoints() -> None:
     # 2. Search for that exact vector via the API
     search_payload = {
         "text": "API Test Document",
-        "embedding": [0.5] * 768,
         "k": 10  # Increase k to ensure we find our inserted doc even if other data exists
     }
-    search_response = client.post("/api/v1/search", json=search_payload)
+    search_response = client.post("/api/v1/search/text", json=search_payload)
     assert search_response.status_code == 200
 
     # 3. Verify the results
