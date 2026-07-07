@@ -4,10 +4,10 @@ from pydantic import BaseModel, Field
 class InsertRequest(BaseModel):
     """Payload for inserting a new chunk into the database."""
 
-    id: int = Field(..., description="Unique ID for the document chunk")
-    metadata: str = Field(..., description="The actual text content of the chunk")
     category: str = Field(..., description="Category tag (e.g., 'documentation')")
-    embedding: list[float] = Field(..., description="The high-dimensional vector array")
+    payload: str = Field(..., description="The actual text content of the chunk")
+    id: int | None = Field(default=None, description="Optional ID")
+    embedding: list[float] | None = Field(default=None, description="Optional embedding array")
 
 
 class SearchRequest(BaseModel):
@@ -40,3 +40,25 @@ class AskRequest(BaseModel):
 class TextSearchRequest(BaseModel):
     text: str = Field(..., description="The query string to embed and search for")
     k: int = Field(default=5, ge=1, le=100, description="Number of results to return")
+
+class VectorPoint2D(BaseModel):
+    id: str
+    x: float
+    y: float
+    category: str
+    payload: str | None = None
+
+class VectorSampleResponse(BaseModel):
+    vectors: list[VectorPoint2D]
+    count: int
+
+class AlgorithmBenchmark(BaseModel):
+    name: str
+    displayName: str
+    latencyMs: float
+    throughputQps: float
+    isActive: bool
+
+class BenchmarkResponse(BaseModel):
+    algorithms: list[AlgorithmBenchmark]
+    timestamp: str

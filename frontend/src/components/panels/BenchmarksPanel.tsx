@@ -1,35 +1,21 @@
 import { useQuery } from "@tanstack/react-query";
-import type { AlgorithmBenchmark } from "../../types";
 import { getLatencyColor, formatNumber } from "../../lib/utils";
 import { getBenchmarks } from "../../api/benchmark";
-import { useEngineStore } from "../../store/engineStore";
 import { Layers } from "lucide-react";
 
-const MOCK_BENCHMARKS: AlgorithmBenchmark[] = [
-  { name: "hnsw", displayName: "HNSW Graph", latencyMs: 1.2, throughputQps: 850, isActive: true },
-  { name: "kdtree", displayName: "KD-Tree", latencyMs: 4.8, throughputQps: 450, isActive: false },
-  { name: "exact", displayName: "Brute Force (Exact Match)", latencyMs: 45.0, throughputQps: 22, isActive: false },
-];
-
 export function BenchmarksPanel() {
-  const currentAlgorithm = useEngineStore((s) => s.algorithm);
-
   const { data, isLoading } = useQuery({
     queryKey: ["benchmarks"],
     queryFn: getBenchmarks,
     refetchInterval: 5000,
   });
 
-  const benchmarks = (data?.algorithms ?? MOCK_BENCHMARKS).map((b) => ({
-    ...b,
-    isActive: b.name === currentAlgorithm,
-  }));
-
+  const benchmarks = data?.algorithms || [];
   const maxQps = Math.max(...benchmarks.map((b) => b.throughputQps), 1);
 
   return (
     <div className="p-4 space-y-6">
-      {isLoading ? (
+      {isLoading && !data ? (
         <div className="space-y-4">
           <div className="flex flex-col gap-1">
             <div className="text-2xs font-medium tracking-widest text-[#555] uppercase">

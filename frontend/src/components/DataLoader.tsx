@@ -1,22 +1,27 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getStatus } from "../api/status";
+import { getVectorSample } from "../api/vectors";
 import { useCanvasStore } from "../store/canvasStore";
 import { useTerminalStore } from "../store/terminalStore";
 import { AlertCircle } from "lucide-react";
-import { generateMockVectors } from "../mocks/vectors";
 
 export function DataLoader() {
   const setVectors = useCanvasStore((s) => s.setVectors);
   const setMeta = useCanvasStore((s) => s.setMeta);
   const setStatus = useTerminalStore((s) => s.setStatus);
-  const prevCountRef = useRef<number | null>(null);
 
   const { isError, isSuccess, data: statusData } = useQuery({
     queryKey: ["dbStatus"],
     queryFn: getStatus,
     refetchInterval: 10000, // Poll every 10s
     retry: false,
+  });
+
+  const { data: sampleData } = useQuery({
+    queryKey: ["vectorSample", statusData?.total_docs],
+    queryFn: () => getVectorSample(2000),
+    enabled: isSuccess && !!statusData,
   });
 
   useEffect(() => {
@@ -28,17 +33,16 @@ export function DataLoader() {
         indexAlgorithm: statusData.engine as any,
         lastUpdated: new Date().toISOString(),
       });
-
-      // Update vector canvas using seeded mock generator based on actual DB count
-      // This physically mounts points in the 3D grid as the backend docs grow
-      if (statusData.total_docs !== prevCountRef.current) {
-         setVectors(generateMockVectors(statusData.total_docs));
-         prevCountRef.current = statusData.total_docs;
-      }
     } else if (isError) {
       setStatus("offline");
     }
-  }, [isSuccess, isError, statusData, setStatus, setMeta, setVectors]);
+  }, [isSuccess, isError, statusData, setStatus, setMeta]);
+
+  useEffect(() => {
+    if (sampleData) {
+      setVectors(sampleData.vectors);
+    }
+  }, [sampleData, setVectors]);
 
   if (isError) {
     return (

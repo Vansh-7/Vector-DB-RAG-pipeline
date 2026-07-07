@@ -1,4 +1,10 @@
+import os
 import pytest
+
+# Set env vars to isolate the test database BEFORE importing the app
+os.environ["VECTOR_DB_FILE"] = "test_vector_database.pkl"
+os.environ["VECTOR_WAL_FILE"] = "test_vector_database.wal"
+
 from fastapi.testclient import TestClient
 
 # Import your FastAPI app from main
@@ -6,6 +12,16 @@ from vectordb.main import app
 
 # Create a test client that mimics a user's browser or Postman
 client = TestClient(app)
+
+@pytest.fixture(autouse=True)
+def cleanup_test_db():
+    # Setup
+    yield
+    # Teardown: remove the test files
+    if os.path.exists("test_vector_database.pkl"):
+        os.remove("test_vector_database.pkl")
+    if os.path.exists("test_vector_database.wal"):
+        os.remove("test_vector_database.wal")
 
 def test_status_endpoint() -> None:
     """Tests if the server boots up and the status endpoint returns 200 OK."""

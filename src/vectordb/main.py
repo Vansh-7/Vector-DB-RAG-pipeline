@@ -9,15 +9,13 @@ from vectordb.api.routes import router
 import vectordb.api.state as state
 from vectordb.core.logger import logger
 
-DB_FILEPATH = "vector_database.pkl"
-
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     logger.info("Server booting up... Database already loaded at import time.")
     yield
     logger.info("Shutdown signal received! Saving database to disk securely...")
     try:
-        state.vector_db.save(DB_FILEPATH)
+        state.vector_db.save(state.DB_FILE)
         logger.info("Database saved safely. Goodbye!")
     except Exception as e:
         logger.error(f"CRITICAL ERROR: Failed to save database: {e}")

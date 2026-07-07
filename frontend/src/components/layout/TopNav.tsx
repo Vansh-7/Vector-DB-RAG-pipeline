@@ -1,28 +1,39 @@
 import { useState } from "react";
-import { Trash2, Save } from "lucide-react";
+import { Trash2, Save, Loader2 } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ConfirmDialog } from "../ui/ConfirmDialog";
 import { Button } from "../ui/Button";
 import { useCanvasStore } from "../../store/canvasStore";
-import { useTerminalStore } from "../../store/terminalStore";
 import { useEngineStore } from "../../store/engineStore";
+import { clearDatabase, saveDatabase } from "../../api/vectors";
 import { ALGORITHM_DISPLAY } from "../../types/vector";
-import { getCurrentTimestamp } from "../../lib/utils";
 
 export function TopNav() {
   const [showClearDialog, setShowClearDialog] = useState(false);
 
   const clearAll = useCanvasStore((s) => s.clearAll);
-  const addLog = useTerminalStore((s) => s.addLog);
   const { algorithm, modelName } = useEngineStore();
+  const queryClient = useQueryClient();
+
+  const clearMutation = useMutation({
+    mutationFn: clearDatabase,
+    onSuccess: () => {
+      clearAll();
+      queryClient.invalidateQueries({ queryKey: ["dbStatus"] });
+      setShowClearDialog(false);
+    }
+  });
+
+  const saveMutation = useMutation({
+    mutationFn: saveDatabase
+  });
 
   const handleClear = () => {
-    addLog({
-      timestamp: getCurrentTimestamp(),
-      level: "INFO",
-      message: "Canvas cleared locally (no backend delete endpoint).",
-    });
-    clearAll();
-    setShowClearDialog(false);
+    clearMutation.mutate();
+  };
+
+  const handleSave = () => {
+    saveMutation.mutate();
   };
 
   return (
@@ -37,7 +48,7 @@ export function TopNav() {
                 <polygon points="12 22 2 4 22 4 12 22" />
               </svg>
             </div>
-            
+
             {/* Brand text */}
             <div className="flex items-center gap-2.5">
               <span className="font-brand font-bold text-sm tracking-[0.2em] text-[#f4f4f4] uppercase">
@@ -60,16 +71,16 @@ export function TopNav() {
               </div>
               <span className="text-[#f4f4f4]">API Online</span>
             </div>
-            
+
             <div className="w-px h-3 bg-[rgba(255,255,255,0.06)] mx-1" />
-            
+
             <div className="flex items-center px-2">
               <span className="mr-1.5">Index:</span>
               <span className="text-[#f4f4f4]">{ALGORITHM_DISPLAY[algorithm].toUpperCase()}</span>
             </div>
 
             <div className="w-px h-3 bg-[rgba(255,255,255,0.06)] mx-1" />
-            
+
             <div className="flex items-center px-2">
               <span className="mr-1.5">LLM:</span>
               <span className="text-[#f4f4f4]">{modelName.toUpperCase()}</span>
@@ -78,12 +89,12 @@ export function TopNav() {
         </div>
 
         <div className="flex items-center gap-3 z-10">
-          <Button variant="danger" onClick={() => setShowClearDialog(true)}>
-            <Trash2 className="w-3 h-3" />
+          <Button variant="danger" onClick={() => setShowClearDialog(true)} disabled={clearMutation.isPending}>
+            {clearMutation.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
             Clear DB
           </Button>
-          <Button variant="outline">
-            <Save className="w-3 h-3" />
+          <Button variant="outline" onClick={handleSave} disabled={saveMutation.isPending}>
+            {saveMutation.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
             Save to Disk
           </Button>
         </div>
@@ -94,7 +105,7 @@ export function TopNav() {
         onOpenChange={setShowClearDialog}
         title="Clear Database"
         description="This will permanently delete all vectors in the database. This action cannot be undone."
-        confirmLabel="Yes, Clear Canvas"
+        confirmLabel="Yes, Clear Database"
         onConfirm={handleClear}
         destructive
       />

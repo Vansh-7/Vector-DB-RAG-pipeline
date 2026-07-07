@@ -21,24 +21,53 @@ router = APIRouter()
 @router.post("/insert", status_code=201)
 async def insert_vector(request: schemas.InsertRequest) -> dict[str, Any]:
     """Inserts a new vector into the active index."""
-    logger.info(f"Incoming insert request for Document ID: {request.id}")
-    item = VectorItem(
-        id=request.id,
-        metadata=request.metadata,
-        category=request.category,
-        embedding=request.embedding,
-    )
+    item_id = request.id if request.id is not None else int(uuid.uuid4().int >> 64)
+    logger.info(f"Incoming insert request for Document ID: {item_id}")
 
-    async with state.db_lock:
-        try:
+    try:
+        embedding = request.embedding
+        if not embedding:
+            embedding = await embedder.embed_text(request.payload)
+
+        item = VectorItem(
+            id=item_id,
+            metadata=request.payload,
+            category=request.category,
+            embedding=embedding,
+        )
+
+        async with state.db_lock:
             state.wal.log_insert(item)
             state.vector_db.insert(item)
-            logger.debug(f"Successfully inserted VectorItem {request.id}.")
-        except Exception as e:
-            logger.error(f"Insertion failed for ID {request.id}: {str(e)}")
-            raise HTTPException(status_code=500, detail=f"Insertion failed: {str(e)}")
+            logger.debug(f"Successfully inserted VectorItem {item_id}.")
 
-    return {"status": "success", "message": f"Successfully inserted item {request.id}"}
+        return {"status": "success", "message": f"Successfully inserted item {item_id}"}
+    except Exception as e:
+        logger.error(f"Insertion failed for ID {item_id}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Insertion failed: {str(e)}")
+
+@router.delete("/vectors/all", status_code=200)
+async def clear_database() -> dict[str, Any]:
+    """Clears the entire database."""
+    async with state.db_lock:
+        total = state.vector_db.size()
+        state.vector_db = state.build_engine(state.ACTIVE_ALGORITHM, state.ACTIVE_METRIC)
+        state.wal.clear()
+        logger.info(f"Database cleared. {total} items removed.")
+        return {"deleted": total, "message": "Database cleared successfully"}
+
+@router.post("/save", status_code=200)
+async def save_database() -> dict[str, Any]:
+    """Saves the database to disk manually."""
+    async with state.db_lock:
+        try:
+            state.vector_db.save(state.DB_FILE)
+            state.wal.clear()
+            logger.info("Database saved to disk manually.")
+            return {"message": "Database saved to disk successfully."}
+        except Exception as e:
+            logger.error(f"Save failed: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"Save failed: {str(e)}")
 
 
 @router.post("/search", response_model=list[schemas.SearchResultItem])
@@ -98,6 +127,113 @@ async def search_vectors_by_text(request: schemas.TextSearchRequest) -> Any:
             )
         )
     return response
+
+
+@router.get("/vectors/sample", response_model=schemas.VectorSampleResponse)
+async def get_vectors_sample(n: int = 2000) -> Any:
+    """Returns a sample of vectors with PCA-projected 2D coordinates for canvas rendering."""
+    logger.info(f"Sample vectors requested. Limit: {n}")
+    from sklearn.decomposition import PCA
+    import random
+
+    async with state.db_lock:
+        items = state.vector_db.get_all_items()
+
+    # Take a random sample if we exceed n
+    if len(items) > n:
+        items = random.sample(items, n)
+
+    if not items:
+        return {"vectors": [], "count": state.vector_db.size()}
+
+    embeddings = np.array([item.embedding for item in items])
+
+    # Handle the case where we have fewer vectors than dimensions for PCA
+    n_components = min(2, len(items), embeddings.shape[1] if embeddings.ndim > 1 else 2)
+
+    if n_components < 2:
+         # Fallback to random coordinates if we literally only have 1 point
+         coords = np.array([[0.0, 0.0] for _ in items])
+    else:
+         pca = PCA(n_components=2)
+         # standardize scaling between -1 and 1 approximately
+         coords = pca.fit_transform(embeddings)
+         max_val = np.max(np.abs(coords)) if np.max(np.abs(coords)) > 0 else 1
+         coords = coords / max_val
+
+    vectors_2d = []
+    for i, item in enumerate(items):
+        vectors_2d.append(schemas.VectorPoint2D(
+            id=str(item.id),
+            x=float(coords[i, 0]),
+            y=float(coords[i, 1]),
+            category=item.category,
+            payload=item.metadata[:100] + "..." if len(item.metadata) > 100 else item.metadata
+        ))
+
+    return {"vectors": vectors_2d, "count": state.vector_db.size()}
+
+@router.get("/benchmark", response_model=schemas.BenchmarkResponse)
+async def get_benchmarks() -> Any:
+    """Returns live performance metrics for all index algorithms via dynamic benchmark generation."""
+    logger.info("Live benchmark requested.")
+    import time
+
+    async with state.db_lock:
+        items = state.vector_db.get_all_items()
+
+    if not items:
+        # Fallback if DB is completely empty to avoid errors
+        from vectordb.api.schemas import AlgorithmBenchmark
+        algorithms = [
+            AlgorithmBenchmark(name="hnsw", displayName="HNSW Graph", latencyMs=0.0, throughputQps=0.0, isActive=(state.ACTIVE_ALGORITHM == "hnsw")),
+            AlgorithmBenchmark(name="kdtree", displayName="KD-Tree", latencyMs=0.0, throughputQps=0.0, isActive=(state.ACTIVE_ALGORITHM == "kdtree")),
+            AlgorithmBenchmark(name="exact", displayName="Brute Force (Exact Match)", latencyMs=0.0, throughputQps=0.0, isActive=(state.ACTIVE_ALGORITHM == "exact")),
+        ]
+        from datetime import datetime, timezone
+        return {"algorithms": algorithms, "timestamp": datetime.now(timezone.utc).isoformat()}
+
+    # Use first available vector to run a quick test
+    test_vec = np.array(items[0].embedding, dtype=float)
+
+    def test_algo(name: str, display: str, EngineClass) -> dict[str, Any]:
+        engine = EngineClass(distance_metric=state.vector_db.distance_metric, **({"dims": state.DEFAULT_DIMS} if name == "kdtree" else {"m": 16, "ef_construction": 200} if name == "hnsw" else {}))
+        # Insert a subset to test latency safely
+        subset = items[:min(500, len(items))]
+        for item in subset:
+            engine.insert(item)
+
+        # Run 5 iterations to average
+        start_time = time.perf_counter()
+        for _ in range(5):
+            engine.search(test_vec, k=5)
+        end_time = time.perf_counter()
+
+        avg_latency_s = (end_time - start_time) / 5
+        latency_ms = avg_latency_s * 1000
+        qps = 1 / avg_latency_s if avg_latency_s > 0 else 0
+
+        from vectordb.api.schemas import AlgorithmBenchmark
+        return AlgorithmBenchmark(
+            name=name,
+            displayName=display,
+            latencyMs=round(latency_ms, 2),
+            throughputQps=round(qps, 0),
+            isActive=(state.ACTIVE_ALGORITHM == name)
+        )
+
+    from vectordb.core.indexes.hnsw import HNSWIndex
+    from vectordb.core.indexes.kd_tree import KDTreeIndex
+    from vectordb.core.indexes.brute_force import BruteForceIndex
+
+    benchmarks = [
+        test_algo("hnsw", "HNSW Graph", HNSWIndex),
+        test_algo("kdtree", "KD-Tree", KDTreeIndex),
+        test_algo("exact", "Brute Force (Exact Match)", BruteForceIndex)
+    ]
+
+    from datetime import datetime, timezone
+    return {"algorithms": benchmarks, "timestamp": datetime.now(timezone.utc).isoformat()}
 
 
 @router.get("/status")
