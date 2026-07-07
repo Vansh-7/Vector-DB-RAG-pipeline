@@ -1,10 +1,12 @@
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
-export const API = `${BASE_URL}/api/v1`;
+// Ensure BASE_URL doesn't end with a slash to prevent double-slashes
+const cleanBaseUrl = BASE_URL.endsWith('/') ? BASE_URL.slice(0, -1) : BASE_URL;
+export const API = `${cleanBaseUrl}/api/v1`;
 
 class ApiError extends Error {
   status: number;
   detail: string;
-  
+
   constructor(status: number, detail: string) {
     super(detail);
     this.name = "ApiError";
@@ -26,7 +28,10 @@ export async function apiFetch<T>(
   path: string,
   options?: RequestInit
 ): Promise<T> {
-  const res = await fetch(`${API}${path}`, {
+  // Prevent double slashes by cleaning the path
+  const cleanPath = path.startsWith('/') ? path : `/${path}`;
+
+  const res = await fetch(`${API}${cleanPath}`, {
     headers: { "Content-Type": "application/json", ...options?.headers },
     ...options,
   });
@@ -38,5 +43,6 @@ export async function apiFetch<T>(
 }
 
 export function getStreamUrl(path: string): string {
-  return `${API}${path}`;
+  const cleanPath = path.startsWith('/') ? path : `/${path}`;
+  return `${API}${cleanPath}`;
 }
