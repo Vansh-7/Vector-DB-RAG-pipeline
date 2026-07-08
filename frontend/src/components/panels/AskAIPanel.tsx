@@ -111,7 +111,6 @@ export function AskAIPanel() {
               onSubmit={handleSubmit}
               status={status}
               isCentered={true}
-              tokensUsed={0}
             />
             <AskAIPromptChips onSelect={handleChipSelect} />
           </div>
@@ -143,8 +142,6 @@ export function AskAIPanel() {
                 status={status}
                 isCentered={false}
                 onClear={clearChat}
-                // Placeholder for tokens - backend needs to supply this
-                tokensUsed={42}
               />
             </div>
           </div>

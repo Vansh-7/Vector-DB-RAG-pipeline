@@ -11,7 +11,6 @@ interface AskAIComposerProps {
   onClear?: () => void;
   status: QueryStatus;
   isCentered: boolean;
-  tokensUsed?: number;
 }
 
 export function AskAIComposer({
@@ -21,11 +20,10 @@ export function AskAIComposer({
   onClear,
   status,
   isCentered,
-  tokensUsed = 0,
 }: AskAIComposerProps) {
   const [flash, setFlash] = useState(false);
   const prevStatusRef = useRef<QueryStatus>(status);
-  
+
   const { isRecording, isSupported, start, stop } = useVoiceInput((text) => {
     // Append transcribed text
     setInput(input ? `${input} ${text}` : text);
@@ -130,7 +128,7 @@ export function AskAIComposer({
           >
             <Settings className="w-3.5 h-3.5" />
           </button>
-          
+
           {onClear && !isCentered && (
             <button
               type="button"
@@ -144,12 +142,8 @@ export function AskAIComposer({
           )}
         </div>
 
-        {/* UX: Proximity — Token count and status sit directly under composer right-aligned */}
+        {/* UX: Proximity — Status sits directly under composer right-aligned */}
         <div className="flex items-center gap-4 font-mono text-[10px]">
-          <div className="flex items-center gap-1.5 text-[--text-secondary]">
-            <span>TOKENS:</span>
-            <span>~{tokensUsed}</span>
-          </div>
           <div className="uppercase font-bold tracking-widest flex items-center min-w-[70px] justify-end">
             {status === 'READY' && <span className="text-[#22c55e]">[READY]</span>}
             {status === 'PROCESSING' && <span className="text-[#f59e0b] animate-pulse">[PROCESSING]</span>}

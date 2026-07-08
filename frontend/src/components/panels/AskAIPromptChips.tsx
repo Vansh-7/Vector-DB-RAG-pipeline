@@ -5,9 +5,9 @@ interface AskAIPromptChipsProps {
 }
 
 const CHIPS = [
-  "Summarize the Finance cluster",
-  "Retrieve document ref_782",
-  "Analyze tech compliance regulations"
+  "How does HNSW approximate nearest neighbor search work?",
+  "Explain the difference between Euclidean and Cosine distance.",
+  "What are the tradeoffs of using a KD-Tree in high dimensions?"
 ];
 
 export function AskAIPromptChips({ onSelect }: AskAIPromptChipsProps) {
