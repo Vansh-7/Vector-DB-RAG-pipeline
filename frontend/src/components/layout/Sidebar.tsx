@@ -86,16 +86,10 @@ export function Sidebar() {
       addLog({
         timestamp: getCurrentTimestamp(),
         level: "INFO",
-        message: `Inserted vector ${data.id} at [${data.x.toFixed(2)}, ${data.y.toFixed(2)}]`,
-      });
-      addPendingInsert({
-        id: data.id,
-        x: data.x,
-        y: data.y,
-        category: data.category,
-        payload,
+        message: data.message || "Vector inserted successfully.",
       });
       queryClient.invalidateQueries({ queryKey: ["vectorMeta"] });
+      queryClient.invalidateQueries({ queryKey: ["vectorSample"] });
       setPayload("");
     },
     onError: (err) => {

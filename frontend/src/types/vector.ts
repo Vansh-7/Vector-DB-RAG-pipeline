@@ -77,10 +77,7 @@ export interface InsertVectorRequest {
 }
 
 export interface InsertVectorResponse {
-  id: string;
-  x: number;
-  y: number;
-  category: Category;
+  status: string;
   message: string;
 }
 
