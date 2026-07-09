@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Upload, FileText, Loader2, RotateCcw } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ingestDocument, ingestFile } from "../../api/ingest";
@@ -16,6 +16,8 @@ export function IngestPanel() {
   const setDescription = useSessionStore((s) => s.setIngestDescription);
   const [droppedFile, setDroppedFile] = useState<File | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Independent local state for the ingest category
   const addLog = useTerminalStore((s) => s.addLog);
@@ -36,7 +38,7 @@ export function IngestPanel() {
       addLog({
         timestamp: getCurrentTimestamp(),
         level: "INFO",
-        message: `Successfully ingested ${resData.chunksAdded} chunks.`,
+        message: resData.message || "Successfully ingested document.",
       });
       queryClient.invalidateQueries({ queryKey: ["vectorSample"] });
       queryClient.invalidateQueries({ queryKey: ["vectorMeta"] });
@@ -60,6 +62,11 @@ export function IngestPanel() {
     if (file) setDroppedFile(file);
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) setDroppedFile(file);
+  };
+
   const formatFileSize = (bytes: number) => {
     if (bytes < 1024) return `${bytes}B`;
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)}KB`;
@@ -70,6 +77,9 @@ export function IngestPanel() {
     setTitle("");
     setDescription("");
     setDroppedFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
   const isSubmitDisabled =
@@ -80,7 +90,7 @@ export function IngestPanel() {
   return (
     <div className="p-4 space-y-4 flex flex-col h-full">
       <div className="text-xs text-[#888] mb-1">Upload a document to automatically chunk and embed its contents.</div>
-      
+
       {/* Mode toggle */}
       <div className="flex bg-[#0a0a0a] rounded-[4px] p-0.5 border border-[rgba(255,255,255,0.06)] shrink-0">
         <button
@@ -108,10 +118,20 @@ export function IngestPanel() {
       <div className="flex-1 overflow-y-auto min-h-0">
         {mode === "file" ? (
           <div className="space-y-3 h-full flex flex-col">
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              className="hidden"
+              accept=".txt,.pdf,.md"
+              title="Upload file"
+              aria-label="Upload document file"
+            />
             <div
               onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
               onDragLeave={() => setIsDragOver(false)}
               onDrop={handleDrop}
+              onClick={() => fileInputRef.current?.click()}
               className={`border-2 border-dashed rounded-md flex-1 flex flex-col items-center justify-center gap-3 transition-colors cursor-pointer ${
                 isDragOver
                   ? "border-[#22c55e] bg-[#22c55e]/5"
@@ -173,7 +193,7 @@ export function IngestPanel() {
         >
           <RotateCcw className="w-4 h-4" />
         </button>
-        
+
         <Button
           onClick={() => mutation.mutate()}
           disabled={isSubmitDisabled}

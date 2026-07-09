@@ -6,8 +6,5 @@ export interface IngestRequest {
 }
 
 export interface IngestResponse {
-  chunksAdded: number;
-  vectorIds: string[];
-  embeddingModel: string;
   message: string;
 }
