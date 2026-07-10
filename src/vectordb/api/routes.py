@@ -23,7 +23,7 @@ router = APIRouter()
 @router.post("/insert", status_code=201)
 async def insert_vector(request: schemas.InsertRequest) -> dict[str, Any]:
     """Inserts a new vector into the active index."""
-    item_id = request.id if request.id is not None else int(uuid.uuid4().int >> 64)
+    item_id = int(request.id) if request.id is not None else int(uuid.uuid4().int >> 64)
     logger.info(f"Incoming insert request for Document ID: {item_id}")
 
     try:
@@ -43,7 +43,7 @@ async def insert_vector(request: schemas.InsertRequest) -> dict[str, Any]:
             state.vector_db.insert(item)
             logger.debug(f"Successfully inserted VectorItem {item_id}.")
 
-        return {"status": "success", "message": f"Successfully inserted item {item_id}"}
+        return {"status": "success", "message": f"Successfully inserted item {str(item_id)}"}
     except Exception as e:
         logger.error(f"Insertion failed for ID {item_id}: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Insertion failed: {str(e)}")

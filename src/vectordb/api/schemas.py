@@ -6,7 +6,7 @@ class InsertRequest(BaseModel):
 
     category: str = Field(..., description="Category tag (e.g., 'documentation')")
     payload: str = Field(..., description="The actual text content of the chunk")
-    id: int | None = Field(default=None, description="Optional ID")
+    id: str | None = Field(default=None, description="Optional ID")
     embedding: list[float] | None = Field(default=None, description="Optional embedding array")
 
 
@@ -20,7 +20,7 @@ class SearchRequest(BaseModel):
 class SearchResultItem(BaseModel):
     """The formatted response returned to the user/LLM."""
 
-    id: int
+    id: str
     distance: float
     metadata: str
     category: str
