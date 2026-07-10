@@ -1,7 +1,8 @@
-import { apiFetch } from './client';
+import { apiFetch, API } from './client';
 import { useTerminalStore } from '../store/terminalStore';
 import { getCurrentTimestamp } from '../lib/utils';
-import type { Category, IngestRequest, IngestResponse } from '../types';
+import type { Category } from '../types';
+import type { IngestRequest, IngestResponse } from '../types/ingest';
 
 export async function ingestDocument(
   data: IngestRequest
@@ -34,7 +35,7 @@ export async function ingestFile(
     formData.append('category', category);
 
     // Cannot use standard apiFetch because it forces application/json Content-Type
-    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000"}/api/v1/ingest/file`, {
+    const res = await fetch(`${API}/ingest/file`, {
       method: 'POST',
       body: formData,
     });
