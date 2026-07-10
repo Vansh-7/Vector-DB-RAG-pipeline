@@ -58,6 +58,25 @@ async def clear_database() -> dict[str, Any]:
         logger.info(f"Database cleared. {total} items removed.")
         return {"deleted": total, "message": "Database cleared successfully"}
 
+@router.delete("/vectors/{item_id}", status_code=200)
+async def delete_vector(item_id: int) -> dict[str, Any]:
+    """Deletes a single vector from the database by ID."""
+    logger.info(f"Delete request received for Document ID: {item_id}")
+    async with state.db_lock:
+        try:
+            success = state.vector_db.remove(item_id)
+            if not success:
+                raise HTTPException(status_code=404, detail=f"Vector with ID {item_id} not found.")
+
+            state.wal.log_delete(item_id)
+            logger.info(f"Successfully deleted VectorItem {item_id}.")
+            return {"deleted": 1, "message": f"Successfully deleted item {item_id}"}
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Deletion failed for ID {item_id}: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"Deletion failed: {str(e)}")
+
 @router.post("/save", status_code=200)
 async def save_database() -> dict[str, Any]:
     """Saves the database to disk manually."""

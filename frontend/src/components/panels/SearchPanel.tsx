@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { Search, X, Fingerprint, ChevronRight } from "lucide-react";
+import { Search, X, Fingerprint, ChevronRight, Trash2 } from "lucide-react";
 import { useSessionStore } from "../../store/sessionStore";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { search } from "../../api/search";
+import { deleteVector } from "../../api/vectors";
 import { useEngineStore } from "../../store/engineStore";
 import { useCanvasStore } from "../../store/canvasStore";
 import { CATEGORY_COLORS, CATEGORY_LABELS } from "../../types/vector";
@@ -41,6 +42,17 @@ export function SearchPanel() {
       }),
     enabled: searchQuery.trim().length > 0,
     staleTime: 30000,
+  });
+
+  const queryClient = useQueryClient();
+  const deleteMutation = useMutation({
+    mutationFn: deleteVector,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["search"] });
+      queryClient.invalidateQueries({ queryKey: ["vectorMeta"] });
+      queryClient.invalidateQueries({ queryKey: ["vectorSample"] });
+      setHighlighted([]);
+    }
   });
 
   const handleSearch = () => {
@@ -171,17 +183,32 @@ export function SearchPanel() {
                   #{idx + 1} Nearest
                 </span>
 
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setDismissedIds(prev => new Set([...prev, result.id]));
-                    setHighlighted([]);
-                  }}
-                  className="p-1.5 text-[#555] hover:text-[#ef4444] transition-all hover:bg-[#ef4444]/10 rounded-[6px] border border-transparent hover:border-[#ef4444]/20"
-                  title="Dismiss result"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (window.confirm("Delete this vector from the database?")) {
+                        deleteMutation.mutate(result.id);
+                      }
+                    }}
+                    disabled={deleteMutation.isPending}
+                    className="p-1.5 text-[#555] hover:text-[#ef4444] transition-all hover:bg-[#ef4444]/10 rounded-[6px] border border-transparent hover:border-[#ef4444]/20 disabled:opacity-50"
+                    title="Delete from DB"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setDismissedIds(prev => new Set([...prev, result.id]));
+                      setHighlighted([]);
+                    }}
+                    className="p-1.5 text-[#555] hover:text-[#ef4444] transition-all hover:bg-[#ef4444]/10 rounded-[6px] border border-transparent hover:border-[#ef4444]/20"
+                    title="Dismiss result"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </div>
 
               {/* Title / Snippet */}

@@ -51,6 +51,21 @@ export async function clearDatabase(): Promise<{ deleted: number; message: strin
   }
 }
 
+export async function deleteVector(id: string): Promise<{ deleted: number; message: string }> {
+  const addLog = useTerminalStore.getState().addLog;
+  try {
+    addLog({ timestamp: getCurrentTimestamp(), level: 'INFO', message: `Deleting vector ${id}...` });
+    const res = await apiFetch<{ deleted: number; message: string }>(`/vectors/${id}`, {
+      method: 'DELETE',
+    });
+    addLog({ timestamp: getCurrentTimestamp(), level: 'WARNING', message: `Successfully deleted vector ${id}.` });
+    return res;
+  } catch (e) {
+    addLog({ timestamp: getCurrentTimestamp(), level: 'ERROR', message: `Delete failed for ${id}: ${e instanceof Error ? e.message : 'Unknown'}` });
+    throw e;
+  }
+}
+
 export async function saveDatabase(): Promise<{ message: string }> {
   const addLog = useTerminalStore.getState().addLog;
   try {
