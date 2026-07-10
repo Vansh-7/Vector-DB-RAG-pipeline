@@ -1,9 +1,11 @@
 import uuid
 from typing import Any
+import io
 
 import numpy as np
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, UploadFile, File, Form
 from fastapi.responses import StreamingResponse
+import pypdf
 
 from vectordb.ai.chunker import chunker
 from vectordb.ai.embedder import embedder
@@ -295,6 +297,53 @@ async def ingest_document(request: schemas.IngestRequest) -> dict[str, Any]:
 
         logger.info(f"Successfully ingested {len(chunks)} chunks into the database.")
         return {"message": f"Successfully ingested document into {len(chunks)} searchable chunks."}
+
+    except Exception as e:
+        logger.error(f"Ingestion pipeline failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Ingestion failed: {e}")
+
+@router.post("/ingest/file", status_code=201)
+async def ingest_file(category: str = Form(...), file: UploadFile = File(...)) -> dict[str, Any]:
+    """Extracts text from a file (.txt, .md, .pdf), chunks it, embeds it, and inserts into DB."""
+    logger.info(f"File ingestion request received for: {file.filename} (Category: {category})")
+
+    text_content = ""
+    try:
+        content = await file.read()
+
+        if file.filename and file.filename.lower().endswith(".pdf"):
+            logger.debug("Parsing PDF file using pypdf...")
+            pdf_reader = pypdf.PdfReader(io.BytesBytesIO(content) if hasattr(io, 'BytesBytesIO') else io.BytesIO(content))
+            text_content = "\n".join(page.extract_text() for page in pdf_reader.pages if page.extract_text())
+        else:
+            logger.debug("Parsing text/markdown file...")
+            text_content = content.decode("utf-8")
+
+        if not text_content.strip():
+            raise ValueError("Could not extract any text from the file.")
+
+    except Exception as e:
+        logger.error(f"File reading/parsing failed: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"Failed to read file. Please ensure it is a valid PDF or Text file. Error: {e}")
+
+    try:
+        chunks = chunker.split_text(text_content)
+        logger.debug(f"Document successfully split into {len(chunks)} chunks.")
+
+        vectors = await embedder.embed_batch(chunks)
+        logger.debug("Successfully embedded all chunks.")
+
+        async with state.db_lock:
+            for chunk, vector in zip(chunks, vectors):
+                item_id = int(uuid.uuid4().int >> 64)
+                item = VectorItem(
+                    id=item_id, metadata=chunk, category=category, embedding=vector
+                )
+                state.wal.log_insert(item)
+                state.vector_db.insert(item)
+
+        logger.info(f"Successfully ingested {len(chunks)} chunks into the database.")
+        return {"message": f"Successfully ingested {file.filename} into {len(chunks)} searchable chunks."}
 
     except Exception as e:
         logger.error(f"Ingestion pipeline failed: {str(e)}")
