@@ -1,5 +1,4 @@
 <div align="center">
-  <img src="frontend/public/favicon.svg" alt="Nabla Logo" width="80" height="80">
   <h1 align="center">∇ NABLA</h1>
   <h3>High-Performance Custom Vector Database & RAG Console</h3>
   
