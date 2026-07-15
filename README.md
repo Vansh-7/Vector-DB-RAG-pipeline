@@ -1,149 +1,61 @@
-<div align="center">
-  <h1 align="center">∇ NABLA</h1>
-  <h3>High-Performance Custom Vector Database & RAG Console</h3>
-  
-  <p align="center">
-    A from-scratch Vector Search Engine and Advanced RAG pipeline, complete with an interactive D3.js semantic space visualizer and streaming AI chat.
-  </p>
+# Nabla VectorDB & RAG Console
 
-  <p align="center">
-    <a href="https://github.com/Vansh-7/Vector-DB-RAG-pipeline/commits/main">
-      <img src="https://img.shields.io/github/last-commit/Vansh-7/Vector-DB-RAG-pipeline?style=flat-square&color=3b82f6" alt="Last Commit" />
-    </a>
-    <a href="https://react.dev/">
-      <img src="https://img.shields.io/badge/React-19-61dafb?style=flat-square&logo=react&logoColor=black" alt="React 19" />
-    </a>
-    <a href="https://fastapi.tiangolo.com/">
-      <img src="https://img.shields.io/badge/FastAPI-0.110+-009688?style=flat-square&logo=fastapi&logoColor=white" alt="FastAPI" />
-    </a>
-    <a href="https://python.org">
-      <img src="https://img.shields.io/badge/Python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python" />
-    </a>
-  </p>
-</div>
+A custom vector database and RAG pipeline built from scratch, paired with a React frontend to visualize the high-dimensional embedding space.
 
----
+I built this project to look under the hood of modern AI infrastructure. Instead of wrapping an existing vector database like Milvus or Pinecone, I implemented the indexing algorithms (HNSW, KD-Tree) and similarity metrics (Cosine, Euclidean, Manhattan) directly in Python. 
 
-## 📖 Overview
+The goal was to create a system where you can actually *see* semantic search working—which is why the frontend includes a D3.js canvas that uses PCA to project 768-dimensional embeddings into a live 2D scatter plot.
 
-**Nabla** is a production-grade, locally hosted Vector Database built entirely from scratch in Python, paired with a React/TypeScript frontend console. It demonstrates the internal mechanics of modern AI infrastructure by implementing core vector indexing algorithms (HNSW, KD-Tree) and integrating them into a robust Retrieval-Augmented Generation (RAG) pipeline.
+## System Architecture
 
-Unlike off-the-shelf wrappers, this project implements the mathematical foundation of semantic search while providing a beautiful, hardware-accelerated UI to explore the high-dimensional vector space in real-time.
+### 1. Vector Engine (Python / FastAPI)
+*   **Indexing:** Supports HNSW for fast approximate nearest-neighbor search, KD-Trees for strict spatial partitioning, and Exact Match (brute force) for baseline accuracy.
+*   **Durability:** In-memory graphs are volatile, so mutations are written to a Write-Ahead Log (`.wal`) before being applied. The system periodically snapshots to disk (`.pkl`) and replays the WAL on startup for crash recovery.
+*   **RAG Pipeline:** Handles file ingestion (PDF, TXT, MD), semantic chunking via Langchain, and embeds chunks using `nomic-embed-text`. Queries are expanded, searched, passed through a Cross-Encoder for reranking, and streamed back using `qwen2.5:7b` via Ollama.
 
----
+### 2. Frontend Console (React / TypeScript)
+*   **Visualization:** Uses D3.js to render the vector space. When documents are ingested, you can watch them cluster. When a search runs, similarity edges are drawn between the query and the nearest neighbors.
+*   **Streaming UI:** The chat interface handles Server-Sent Events (SSE) to stream LLM responses in real-time, matching standard ChatGPT-like UX.
+*   **State:** Uses Zustand for client-side state and TanStack Query for server polling (e.g., algorithm benchmarks) and cache invalidation.
 
-## ✨ Key Features
+## Tech Stack
+*   **Backend:** Python 3.10+, FastAPI, NumPy, scikit-learn, PyPDF, Ollama. Managed with `uv`.
+*   **Frontend:** React 19, Vite 8, TypeScript, Tailwind CSS, shadcn/ui, D3.js.
 
-### 🧠 Core Vector Engine (Backend)
-- **Custom Indexing Algorithms:** 
-  - **HNSW** (Hierarchical Navigable Small World) for sub-millisecond approximate nearest neighbor search.
-  - **KD-Tree** for deterministic, mathematically rigorous spatial partitioning.
-  - **Exact Match** (Brute Force) for baseline testing and accuracy verification.
-- **Pluggable Distance Metrics:** Seamlessly swap between Cosine Similarity, Euclidean Distance, and Manhattan Distance on the fly.
-- **ACID Durability:** Built-in Write-Ahead Log (WAL) ensures vector insertions and deletions survive catastrophic crashes.
-- **Advanced RAG Pipeline:** Combines Langchain semantic chunking, `nomic-embed-text` embeddings, and Cross-Encoder reranking to feed highly relevant context to a streaming local LLM (`qwen2.5:7b`).
+## Running Locally
 
-### 🖥️ Interactive Console (Frontend)
-- **Vector Space Canvas:** A live 2D PCA (Principal Component Analysis) projection of your high-dimensional data using D3.js. Watch your documents form semantic clusters in real-time.
-- **Ask AI Interface:** A streaming, Markdown-supported chat interface. Every LLM response cites the exact vector chunks used to generate the answer, colored by distance thresholds.
-- **Frictionless Ingestion:** Drag-and-drop `.pdf`, `.md`, or `.txt` files directly into the UI. The backend automatically parses the binary, chunks the text, calculates embeddings, and indexes them.
-- **Live Telemetry:** Algorithm benchmarking panel tracking Queries Per Second (QPS) and indexing latency.
+You'll need Node.js 20+, Python 3.10+ (I recommend `uv`), and [Ollama](https://ollama.com/) installed locally.
 
----
-
-## 🏗️ Architecture & Tech Stack
-
-### Frontend
-- **Framework:** React 19 + TypeScript + Vite 8
-- **Styling:** Tailwind CSS v3 + shadcn/ui (Dark-mode, Linear-inspired aesthetic)
-- **State Management:** Zustand (Global State) + TanStack React Query v5 (Server State)
-- **Visualization:** D3.js v7
-
-### Backend
-- **Framework:** Python 3.10+ + FastAPI + Uvicorn
-- **Package Management:** `uv`
-- **Data Science / Math:** NumPy, scikit-learn (PCA), PyPDF
-- **AI / Embeddings:** Ollama (`qwen2.5:7b` & `nomic-embed-text`), Langchain Text Splitters, Sentence-Transformers (Cross-Encoder)
-
----
-
-## 🚀 Getting Started
-
-### 1. Prerequisites
-- **Python 3.10+** (managed via [`uv`](https://github.com/astral-sh/uv) recommended)
-- **Node.js 20+**
-- **Ollama** installed and running on your machine.
-
-### 2. Pull Required AI Models
-Ensure Ollama has the required embedding and generation models downloaded:
+### 1. Pull the local models
+The backend expects these two models to be available in your local Ollama instance:
 ```bash
 ollama pull nomic-embed-text
 ollama pull qwen2.5:7b
 ```
 
-### 3. Backend Setup
-Clone the repository and start the FastAPI server:
+### 2. Start the Backend
 ```bash
-git clone https://github.com/Vansh-7/Vector-DB-RAG-pipeline.git
-cd Vector-DB-RAG-pipeline
-
-# Install dependencies using uv
+# Install dependencies
 uv sync
 
-# Start the server (runs on port 8000 by default)
+# Start the FastAPI server on port 8000
 PYTHONIOENCODING=utf-8 uv run uvicorn vectordb.main:app --app-dir src --port 8000 --reload
 ```
 
-### 4. Frontend Setup
-In a new terminal window, start the Vite development server:
+### 3. Start the Frontend
+In a separate terminal:
 ```bash
 cd frontend
-
-# Install dependencies
-npm install
-
-# Create environment file
 cp .env.example .env
-
-# Start the frontend
+npm install
 npm run dev
 ```
-Navigate to `http://localhost:5173` in your browser.
+The console will be available at `http://localhost:5173`.
 
----
+## Usage Notes
+*   **Ingestion:** Drop a PDF or paste text into the Ingest tab. The backend will parse it, chunk it, and you'll see the new points render on the canvas.
+*   **Engine Hot-Swapping:** Use the sidebar to change the indexing algorithm from HNSW to KD-Tree. The backend will halt, re-index the entire dataset into the new data structure, and resume serving queries.
+*   **Chat:** Ask a question in the Ask AI tab. The UI will expand a "Sources Used" accordion showing exactly which chunks the engine retrieved, alongside their mathematical distance scores.
 
-## 🛠️ Usage Guide
-
-1. **Upload Documents:** Navigate to the **Ingest** tab. Drag and drop a PDF or paste raw text. Select a category (e.g., TECH, FINANCE). The UI will confirm when the chunks are successfully embedded and added to the index.
-2. **Visualize Data:** Look at the **Vector Space Canvas**. Your new document chunks will appear as plotted points. Notice how documents of similar topics cluster together spatially.
-3. **Configure Engine:** Open the left Sidebar. Swap the indexing algorithm to **KD-Tree** or change the metric to **Euclidean**. The backend will instantly re-index the database.
-4. **Chat with Data:** Open the **Ask AI** tab. Ask a question regarding the documents you uploaded. The system will run a semantic search, rerank the top hits, and stream an answer synthesized by the LLM. Expand the "Sources Used" accordion to view the exact text chunks that provided the context.
-5. **Manage State:** Use the **Top Nav** buttons to save a snapshot of the database to disk, or securely clear all vectors to start fresh.
-
----
-
-## 📜 API Reference
-
-The backend exposes a fully typed REST API. Key endpoints include:
-
-- `POST /api/v1/insert` - Insert a single raw vector/payload.
-- `POST /api/v1/ingest/file` - Multipart upload for PDF/TXT document ingestion.
-- `POST /api/v1/search/text` - Semantic text search against the index.
-- `POST /api/v1/ask` - Execute a RAG query (Returns a Server-Sent Events stream).
-- `POST /api/v1/engine/configure` - Swap index algorithms and metrics dynamically.
-- `GET /api/v1/vectors/sample` - Retrieve PCA-reduced 2D coordinates for UI plotting.
-
-*(Swagger UI is available at `http://localhost:8000/docs` while the backend is running).*
-
----
-
-## 👨‍💻 Author
-
-**Vansh**
-- GitHub: [@Vansh-7](https://github.com/Vansh-7)
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
+## License
+MIT
