@@ -13,6 +13,7 @@ claude-files
 .claude
 .agents
 skills-lock.json
+.codex
 
 # Virtual environments
 .venv
