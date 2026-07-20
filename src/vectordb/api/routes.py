@@ -109,7 +109,7 @@ async def search_vectors(request: schemas.SearchRequest) -> Any:
     for res in results:
         response.append(
             schemas.SearchResultItem(
-                id=res.item.id,
+                id=str(res.item.id),
                 distance=res.distance,
                 metadata=res.item.metadata,
                 category=res.item.category,
@@ -141,7 +141,7 @@ async def search_vectors_by_text(request: schemas.TextSearchRequest) -> Any:
     for res in results:
         response.append(
             schemas.SearchResultItem(
-                id=res.item.id,
+                id=str(res.item.id),
                 distance=res.distance,
                 metadata=res.item.metadata,
                 category=res.item.category,
