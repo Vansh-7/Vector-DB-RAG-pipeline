@@ -6,11 +6,12 @@ import { SearchPanel } from '../panels/SearchPanel';
 import { BenchmarksPanel } from '../panels/BenchmarksPanel';
 import { TerminalLog } from '../terminal/TerminalLog';
 
+// We hide the Benchmarks tab from the top nav so it acts as a sub-panel
+// accessed only via the "Compare Algorithms" button in the Search panel.
 const TABS: { id: ActiveTab; label: string; icon: typeof MessageSquare }[] = [
   { id: 'ask-ai', label: 'Ask AI', icon: MessageSquare },
   { id: 'ingest', label: 'Ingest', icon: FileText },
   { id: 'search', label: 'Search', icon: Search },
-  { id: 'benchmarks', label: 'Bench', icon: BarChart2 },
 ];
 
 const PANEL_MAP: Record<ActiveTab, React.ComponentType> = {
