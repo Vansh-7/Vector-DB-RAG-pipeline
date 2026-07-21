@@ -15,6 +15,7 @@ export interface SearchResponse {
   latencyMs: number;
   algorithm: Algorithm;
   count: number;
+  queryVector?: number[];
 }
 
 export interface SearchParams {

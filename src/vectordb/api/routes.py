@@ -120,7 +120,7 @@ async def search_vectors(request: schemas.SearchRequest) -> Any:
 
 
 
-@router.post("/search/text", response_model=list[schemas.SearchResultItem])
+@router.post("/search/text", response_model=schemas.TextSearchResponse)
 async def search_vectors_by_text(request: schemas.TextSearchRequest) -> Any:
     logger.info(f"Text search request received. Fetching top {request.k} neighbors.")
     try:
@@ -137,9 +137,9 @@ async def search_vectors_by_text(request: schemas.TextSearchRequest) -> Any:
         logger.error(f"Database search failed: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Search failed: {str(e)}")
 
-    response = []
+    response_items = []
     for res in results:
-        response.append(
+        response_items.append(
             schemas.SearchResultItem(
                 id=str(res.item.id),
                 distance=res.distance,
@@ -147,7 +147,7 @@ async def search_vectors_by_text(request: schemas.TextSearchRequest) -> Any:
                 category=res.item.category,
             )
         )
-    return response
+    return {"results": response_items, "query_vector": query_vector}
 
 
 @router.get("/vectors/sample", response_model=schemas.VectorSampleResponse)
@@ -195,9 +195,9 @@ async def get_vectors_sample(n: int = 2000) -> Any:
     return {"vectors": vectors_2d, "count": state.vector_db.size()}
 
 @router.get("/benchmark", response_model=schemas.BenchmarkResponse)
-async def get_benchmarks() -> Any:
+async def get_benchmarks(q: str | None = None) -> Any:
     """Returns live performance metrics for all index algorithms via dynamic benchmark generation."""
-    logger.info("Live benchmark requested.")
+    logger.info(f"Live benchmark requested. Query: '{q}'")
     import time
 
     async with state.db_lock:
@@ -214,8 +214,12 @@ async def get_benchmarks() -> Any:
         from datetime import datetime, timezone
         return {"algorithms": algorithms, "timestamp": datetime.now(timezone.utc).isoformat()}
 
-    # Use first available vector to run a quick test
-    test_vec = np.array(items[0].embedding, dtype=float)
+    # Use the requested query to embed, otherwise fallback to first available vector
+    if q:
+        query_vector = await embedder.embed_text(q)
+        test_vec = np.array(query_vector, dtype=float)
+    else:
+        test_vec = np.array(items[0].embedding, dtype=float)
 
     def test_algo(name: str, display: str, EngineClass) -> dict[str, Any]:
         engine = EngineClass(distance_metric=state.vector_db.distance_metric, **({"dims": state.DEFAULT_DIMS} if name == "kdtree" else {"m": 16, "ef_construction": 200} if name == "hnsw" else {}))

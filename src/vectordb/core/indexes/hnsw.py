@@ -101,6 +101,11 @@ class HNSWIndex(BaseIndex):
     def insert(self, item: VectorItem) -> None:
         """Inserts a document into the multilayer graph."""
         item_id = item.id
+
+        # Prevent graph corruption from WAL replays of already snapshotted items
+        if item_id in self.nodes:
+            return
+
         level = self._random_level()
         new_node = HNSWNode(item, level)
         self.nodes[item_id] = new_node

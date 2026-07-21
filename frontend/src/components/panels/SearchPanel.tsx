@@ -42,6 +42,7 @@ export function SearchPanel() {
       }),
     enabled: searchQuery.trim().length > 0,
     staleTime: 30000,
+    refetchOnWindowFocus: false,
   });
 
   const queryClient = useQueryClient();
@@ -250,9 +251,11 @@ export function SearchPanel() {
                 <div className="flex items-end h-20 gap-1 mb-2 relative z-0">
                   {Array.from({ length: 16 }).map((_, i) => {
                     const isFocus = i < 4;
-                    // Deterministic height based on search query length to keep it stable per search
-                    const pseudoRandom = Math.abs(Math.sin((searchQuery.length * i) + i * 2.1));
-                    const height = isFocus ? 60 + pseudoRandom * 40 : 5 + pseudoRandom * 15;
+                    // Use actual query vector values if available, mapping -1.0 to 1.0 into 5% to 100% height
+                    const actualValue = data.queryVector && data.queryVector.length > i
+                      ? Math.abs(data.queryVector[i]) * 100
+                      : 0;
+                    const height = data.queryVector ? Math.max(5, Math.min(100, actualValue * 2)) : 5;
                     const opacity = isFocus ? 1 : 0.4;
                     const color = isFocus ? '#06b6d4' : (i < 8 ? '#a855f7' : (i < 12 ? '#f59e0b' : '#22c55e'));
                     return (

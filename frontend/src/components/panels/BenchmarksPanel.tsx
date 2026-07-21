@@ -1,13 +1,17 @@
 import { useQuery } from "@tanstack/react-query";
 import { getLatencyColor, formatNumber } from "../../lib/utils";
 import { getBenchmarks } from "../../api/benchmark";
+import { useSessionStore } from "../../store/sessionStore";
+import { useEngineStore } from "../../store/engineStore";
 import { Layers } from "lucide-react";
 
 export function BenchmarksPanel() {
+  const currentAlgorithm = useEngineStore((s) => s.algorithm);
+  const searchQuery = useSessionStore((s) => s.searchQuery);
+
   const { data, isLoading } = useQuery({
-    queryKey: ["benchmarks"],
-    queryFn: getBenchmarks,
-    refetchInterval: 5000,
+    queryKey: ["benchmarks", searchQuery],
+    queryFn: () => getBenchmarks(searchQuery),
   });
 
   const benchmarks = data?.algorithms || [];

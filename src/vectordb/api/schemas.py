@@ -41,6 +41,10 @@ class TextSearchRequest(BaseModel):
     text: str = Field(..., description="The query string to embed and search for")
     k: int = Field(default=5, ge=1, le=100, description="Number of results to return")
 
+class TextSearchResponse(BaseModel):
+    results: list[SearchResultItem]
+    query_vector: list[float]
+
 class VectorPoint2D(BaseModel):
     id: str
     x: float
