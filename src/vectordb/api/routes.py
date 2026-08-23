@@ -147,7 +147,16 @@ async def search_vectors_by_text(request: schemas.TextSearchRequest) -> Any:
                 category=res.item.category,
             )
         )
-    return {"results": response_items, "query_vector": query_vector}
+    query_2d = None
+    if state.pca_model is not None:
+        try:
+            raw_2d = state.pca_model.transform(query_arr.reshape(1, -1))
+            projected = raw_2d / state.pca_max_val
+            query_2d = [float(projected[0][0]), float(projected[0][1])]
+        except Exception as e:
+            logger.error(f"Failed to project query vector: {e}")
+
+    return {"results": response_items, "query_vector": query_vector, "query_2d": query_2d}
 
 
 @router.get("/vectors/sample", response_model=schemas.VectorSampleResponse)
@@ -181,6 +190,8 @@ async def get_vectors_sample(n: int = 2000) -> Any:
          coords = pca.fit_transform(embeddings)
          max_val = np.max(np.abs(coords)) if np.max(np.abs(coords)) > 0 else 1
          coords = coords / max_val
+         state.pca_model = pca
+         state.pca_max_val = max_val
 
     vectors_2d = []
     for i, item in enumerate(items):
@@ -422,6 +433,16 @@ async def ask_question(request: schemas.AskRequest) -> Any:
 
     logger.info("Initializing LLM Chain-of-Thought stream...")
 
+    query_2d = None
+    if state.pca_model is not None:
+        try:
+            query_arr = np.array(question_vector, dtype=float)
+            raw_2d = state.pca_model.transform(query_arr.reshape(1, -1))
+            projected = raw_2d / state.pca_max_val
+            query_2d = [float(projected[0][0]), float(projected[0][1])]
+        except Exception as e:
+            logger.error(f"Failed to project query vector for /ask: {e}")
+
     async def response_stream():
         import json
         sources = [
@@ -433,10 +454,11 @@ async def ask_question(request: schemas.AskRequest) -> Any:
             }
             for score, res in best_results
         ]
-        # Yield the sources first
         yield json.dumps({"type": "sources", "data": sources}) + "\n"
 
-        # Then yield the generator stream
+        if query_2d is not None:
+            yield json.dumps({"type": "query_2d", "data": query_2d}) + "\n"
+
         best_chunks = [res.item.metadata for _, res in best_results]
         async for chunk in llm_generator.generate_stream(request.question, best_chunks):
             yield chunk

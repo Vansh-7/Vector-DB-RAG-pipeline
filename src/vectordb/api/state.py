@@ -42,3 +42,6 @@ vector_db.load(DB_FILE)
 wal.replay(vector_db)
 
 db_lock = asyncio.Lock()
+# PCA State for projecting queries
+pca_model = None
+pca_max_val = 1.0

@@ -1,6 +1,7 @@
 import { useRef, useEffect, useState } from 'react';
 import { useSessionStore } from "../../store/sessionStore";
 import { useEngineStore } from '../../store/engineStore';
+import { useCanvasStore } from '../../store/canvasStore';
 import { useTerminalStore } from '../../store/terminalStore';
 import { askQuestion } from '../../api/query';
 import { generateId, getCurrentTimestamp } from '../../lib/utils';
@@ -30,6 +31,8 @@ export function AskAIPanel() {
 
   const addLog = useTerminalStore((s) => s.addLog);
   const topK = useEngineStore((s) => s.topK);
+  const setQueryPoint = useCanvasStore((s) => s.setQueryPoint);
+  const setHighlighted = useCanvasStore((s) => s.setHighlighted);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -78,6 +81,11 @@ export function AskAIPanel() {
       },
       (sources) => {
         updateMessage(assistantMsgId, { sources });
+        const scores = Object.fromEntries(sources.map(s => [s.vectorId, s.score]));
+        setHighlighted(sources.map(s => s.vectorId), scores);
+      },
+      (coords) => {
+        setQueryPoint({ x: coords[0], y: coords[1] });
       },
       () => {
         const finalText = stripThinking(accumulated);
@@ -144,7 +152,7 @@ export function AskAIPanel() {
                 onSubmit={handleSubmit}
                 status={status}
                 isCentered={false}
-                onClear={clearChat}
+                onClear={() => { clearChat(); setQueryPoint(null); setHighlighted([]); }}
               />
             </div>
           </div>

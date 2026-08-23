@@ -8,6 +8,7 @@ export async function askQuestion(
   k: number,
   onToken: (token: string) => void,
   onSources: (sources: RAGSource[]) => void,
+  onQueryPoint: (coords: [number, number]) => void,
   onDone: () => void,
   onError: (err: string) => void
 ): Promise<void> {
@@ -69,6 +70,8 @@ export async function askQuestion(
           const parsed = JSON.parse(line);
           if (parsed.type === 'sources') {
             onSources(parsed.data);
+          } else if (parsed.type === 'query_2d') {
+            onQueryPoint(parsed.data);
           } else if (parsed.type === 'token') {
             onToken(parsed.data);
           } else if (parsed.type === 'error') {

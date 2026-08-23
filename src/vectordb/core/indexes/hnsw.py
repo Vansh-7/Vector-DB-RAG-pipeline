@@ -245,6 +245,12 @@ class HNSWIndex(BaseIndex):
             self.entry_point_id = state["entry_point_id"]
             self.top_layer = state["top_layer"]
             self.tombstones = state.get("tombstones", set()) # Safe fallback
+            
+            # Reconstruct embeddings for loaded nodes (pickle bypasses __init__)
+            import numpy as np
+            for node in self.nodes.values():
+                if not hasattr(node, 'embedding'):
+                    node.embedding = np.array(node.item.embedding, dtype=float)
 
             logger.info(f"HNSW Index loaded from {filepath} ({len(self.nodes)} nodes).")
         except Exception as e:

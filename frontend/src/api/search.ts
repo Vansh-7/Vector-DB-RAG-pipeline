@@ -32,7 +32,8 @@ export async function search(params: SearchParams): Promise<SearchResponse> {
       latencyMs,
       algorithm: params.algorithm ?? 'hnsw',
       count: resultsArray.length,
-      queryVector: response.query_vector
+      queryVector: response.query_vector,
+      query2d: response.query_2d
     };
   } catch (e) {
     addLog({ timestamp: getCurrentTimestamp(), level: 'ERROR', message: `Search failed: ${e instanceof Error ? e.message : 'Unknown'}` });

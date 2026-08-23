@@ -104,6 +104,11 @@ export function useVectorCanvas(
           .attr('r', 4 / event.transform.k)
           .attr('stroke-width', 4 / event.transform.k);
         g.selectAll('.active-ring').attr('r', 8 / event.transform.k).attr('stroke-width', 1.5 / event.transform.k);
+        g.selectAll('.query-edge')
+          .attr('stroke-width', (1.5 * 1.2) / event.transform.k)
+          .attr('stroke-dasharray', `${4 / event.transform.k},${8 / event.transform.k}`);
+        g.selectAll('.query-star')
+          .attr('stroke-width', (1.5 / 2) / event.transform.k);
       });
 
     d3Svg.call(zoom);
@@ -121,11 +126,7 @@ export function useVectorCanvas(
             .transition().duration(100).ease(d3.easeCubicOut)
             .attr('opacity', 0).attr('r', 6 / currentK).remove();
         }
-        g.selectAll('.data-point')
-          .interrupt()
-          .transition().duration(100)
-          .attr('opacity', 0.85)
-          .attr('filter', 'url(#glow-dim)');
+
       }
     });
 
@@ -195,11 +196,7 @@ export function useVectorCanvas(
           .attr('r', 6 / currentK)
           .remove();
 
-        // Ensure all other points are in their normal non-dimmed state
-        pointsLayer.selectAll('.data-point')
-          .interrupt()
-          .attr('opacity', 0.85)
-          .attr('filter', 'url(#glow-dim)');
+
 
         // Smoothly glow the clicked point
         d3.select(this)
@@ -237,16 +234,18 @@ export function useVectorCanvas(
           distance: highlightedScores[d.id],
         });
 
-        setHighlighted([d.id]);
       });
+
+    const hasHighlights = highlightedIds.length > 0;
+    const highlightSet = new Set(highlightedIds);
 
     entered
       .transition()
       .duration(400)
       .ease(d3.easeCubicOut)
       .attr('r', 4 / (baseScaleRef.current || 30))
-      .attr('opacity', 0.85)
-      .attr('filter', 'url(#glow-dim)');
+      .attr('opacity', (d) => hasHighlights ? (highlightSet.has(d.id) ? 1 : 0.12) : 0.85)
+      .attr('filter', (d) => hasHighlights && highlightSet.has(d.id) ? 'url(#glow-bright)' : null);
 
     circles
       .transition()
@@ -254,9 +253,9 @@ export function useVectorCanvas(
       .attr('cx', (d) => d.x)
       .attr('cy', (d) => d.y)
       .attr('fill', (d) => CATEGORY_COLORS[d.category])
-      .attr('opacity', 0.85)
-      .attr('filter', 'url(#glow-dim)');
-  }, [visibleVectors, highlightedScores, setHighlighted]);
+      .attr('opacity', (d) => hasHighlights ? (highlightSet.has(d.id) ? 1 : 0.12) : 0.85)
+      .attr('filter', (d) => hasHighlights && highlightSet.has(d.id) ? 'url(#glow-bright)' : null);
+  }, [visibleVectors, highlightedIds, highlightedScores, setHighlighted]);
 
   useEffect(() => {
     const g = gRef.current;
@@ -273,28 +272,46 @@ export function useVectorCanvas(
     const highlighted = visibleVectors.filter((v) => highlightedIds.includes(v.id));
 
     for (const target of highlighted) {
+      const rank = highlightedIds.indexOf(target.id);
+      const normalized = highlightedIds.length > 1
+        ? 1 - rank / (highlightedIds.length - 1)
+        : 1;
+      const lineOpacity = 0.25 + normalized * 0.6;
+
       edgesLayer
         .append('line')
+        .attr('class', 'query-edge')
         .attr('x1', queryPoint.x)
         .attr('y1', queryPoint.y)
         .attr('x2', target.x)
         .attr('y2', target.y)
-        .attr('stroke', CATEGORY_COLORS[target.category])
-        .attr('stroke-width', strokeW)
-        .attr('stroke-dasharray', `${dashLen},${dashLen}`)
-        .attr('opacity', 0.5);
+        .attr('stroke', CATEGORY_COLORS[target.category as keyof typeof CATEGORY_COLORS] || '#a78bfa')
+        .attr('stroke-width', strokeW * 1.2)
+        .attr('stroke-dasharray', `${dashLen},${dashLen * 2}`)
+        .attr('opacity', lineOpacity);
     }
 
+    const rOuter = 8 / baseScale;
+    const rInner = 3.5 / baseScale;
+    let pathData = "";
+    for (let i = 0; i < 10; i++) {
+      const r = i % 2 === 0 ? rOuter : rInner;
+      const angle = (Math.PI * 2 * i) / 10 - Math.PI / 2;
+      const x = queryPoint.x + r * Math.cos(angle);
+      const y = queryPoint.y + r * Math.sin(angle);
+      pathData += (i === 0 ? "M" : "L") + `${x},${y} `;
+    }
+    pathData += "Z";
+
     edgesLayer
-      .append('circle')
-      .attr('cx', queryPoint.x)
-      .attr('cy', queryPoint.y)
-      .attr('r', 5 / baseScale)
-      .attr('fill', 'none')
-      .attr('stroke', '#fff')
-      .attr('stroke-width', strokeW)
-      .attr('stroke-dasharray', `${dashLen * 0.8},${dashLen * 0.8}`);
-  }, [queryPoint, highlightedIds, visibleVectors]);
+      .append('path')
+      .attr('class', 'query-star')
+      .attr('d', pathData)
+      .attr('fill', '#f59e0b')
+      .attr('stroke', '#fef3c7')
+      .attr('stroke-width', strokeW / 2)
+      .attr('filter', 'url(#glow-bright)');
+  }, [queryPoint, highlightedIds, highlightedScores, visibleVectors]);
 
   const resetZoom = useCallback(() => {
     const svg = svgRef.current;

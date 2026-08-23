@@ -44,6 +44,7 @@ class TextSearchRequest(BaseModel):
 class TextSearchResponse(BaseModel):
     results: list[SearchResultItem]
     query_vector: list[float]
+    query_2d: list[float] | None = None
 
 class VectorPoint2D(BaseModel):
     id: str

@@ -16,6 +16,7 @@ export interface SearchResponse {
   algorithm: Algorithm;
   count: number;
   queryVector?: number[];
+  query2d?: [number, number];
 }
 
 export interface SearchParams {

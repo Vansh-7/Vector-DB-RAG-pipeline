@@ -74,13 +74,6 @@ export function VectorSpaceCanvas() {
         onDoubleClick={resetZoom}
       >
         <defs>
-          <filter id="glow-dim" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="0.8" result="coloredBlur"/>
-            <feMerge>
-              <feMergeNode in="coloredBlur"/>
-              <feMergeNode in="SourceGraphic"/>
-            </feMerge>
-          </filter>
           <filter id="glow-bright" x="-50%" y="-50%" width="200%" height="200%">
             <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
             <feMerge>

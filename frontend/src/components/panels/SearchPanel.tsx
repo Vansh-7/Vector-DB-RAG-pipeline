@@ -28,6 +28,7 @@ export function SearchPanel() {
   const topK = useEngineStore((s) => s.topK);
   const category = useEngineStore((s) => s.category);
   const setHighlighted = useCanvasStore((s) => s.setHighlighted);
+  const setQueryPoint = useCanvasStore((s) => s.setQueryPoint);
   const setActiveTab = useSessionStore((s) => s.setActiveTab);
 
   const { data, isLoading, isError } = useQuery({
@@ -74,6 +75,7 @@ export function SearchPanel() {
     setSearchQuery("");
     setDismissedIds(new Set());
     setHighlighted([]);
+    setQueryPoint(null);
   };
 
   useEffect(() => {
@@ -81,7 +83,10 @@ export function SearchPanel() {
       const scores = Object.fromEntries(data.results.map(r => [r.id, r.score]));
       setHighlighted(data.results.map(r => r.id), scores);
     }
-  }, [data, setHighlighted]);
+    if (data?.query2d) {
+      setQueryPoint({ x: data.query2d[0], y: data.query2d[1] });
+    }
+  }, [data, setHighlighted, setQueryPoint]);
 
   const results = (data?.results ?? []).filter(r => !dismissedIds.has(r.id));
 
