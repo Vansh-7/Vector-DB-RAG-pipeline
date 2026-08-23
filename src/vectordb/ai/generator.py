@@ -1,4 +1,5 @@
 from typing import AsyncGenerator, List
+import json
 from ollama import AsyncClient
 
 class RagGenerator:
@@ -13,12 +14,10 @@ class RagGenerator:
         self._client = AsyncClient()
 
         # The System Prompt acts as a strict guardrail against hallucinations
-        # with forced citations and tone alignment + Chain of thought
+        # with tone alignment + Chain of thought
         self._system_prompt = (
             "You are an expert, truthful AI assistant. "
             "Use the following retrieved context to answer the user's question. "
-            "When answering, you must cite the specific chunk you used by "
-            "including its number in brackets (e.g., '[2]'). "
             "Maintain a professional and objective tone. "
             "If you cannot find the exact answer in the context, strictly say: "
             "'I do not have enough information to answer that.' Do not guess or invent facts.\n\n"
@@ -31,12 +30,12 @@ class RagGenerator:
 
     def _build_context(self, chunks: List[str]) -> str:
         """
-        Safely formats and concatenates retrieved chunks into a numbered context string.
+        Safely formats and concatenates retrieved chunks into a context string.
         """
         if not chunks:
             return "No relevant context found."
 
-        formatted_chunks = [f"[{i + 1}] {chunk}" for i, chunk in enumerate(chunks)]
+        formatted_chunks = [f"Context Chunk {i + 1}:\n{chunk}" for i, chunk in enumerate(chunks)]
         return "\n\n".join(formatted_chunks)
 
     async def generate_stream(self, question: str, retrieved_chunks: List[str]) -> AsyncGenerator[str, None]:
@@ -63,12 +62,12 @@ class RagGenerator:
             # 4. Asynchronously iterate over the stream and yield tokens immediately
             async for chunk in response_stream:
                 if "message" in chunk and "content" in chunk["message"]:
-                    # 'yield' spits out the word instantly without pausing the function
-                    yield chunk["message"]["content"]
+                    # Yield JSON line
+                    yield json.dumps({"type": "token", "data": chunk["message"]["content"]}) + "\n"
 
         except Exception as e:
             # Safely yield the error so the stream doesn't abruptly crash the frontend
-            yield f"\n[Error: LLM generation failed: {e}]"
+            yield json.dumps({"type": "error", "data": f"LLM generation failed: {e}"}) + "\n"
 
 
 # Initialize a global instance for the API router to consume

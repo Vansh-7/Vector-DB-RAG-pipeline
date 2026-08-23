@@ -1,4 +1,4 @@
-import { MessageSquare, FileText, Search, BarChart2 } from 'lucide-react';
+import { MessageSquare, FileText, Search,  } from 'lucide-react';
 import { useSessionStore, type ActiveTab } from '../../store/sessionStore';
 import { AskAIPanel } from '../panels/AskAIPanel';
 import { IngestPanel } from '../panels/IngestPanel';
@@ -29,15 +29,15 @@ export function RightPanel() {
   return (
     <aside className="w-[400px] bg-panel border-l border-[rgba(255,255,255,0.06)] flex flex-col shrink-0">
       {/* Tab bar */}
-      <div className="h-10 border-b border-[rgba(255,255,255,0.06)] flex items-center px-1 shrink-0">
+      <div className="h-10 border-b border-[rgba(255,255,255,0.06)] flex items-center shrink-0">
         {TABS.map(({ id, label, icon: Icon }) => (
           <button
             key={id}
             onClick={() => setActiveTab(id)}
-            className={`flex items-center gap-1.5 px-3 h-full text-xs font-medium transition-colors border-b-2 ${
+            className={`flex-1 flex items-center justify-center gap-2 h-full text-xs font-medium transition-colors border-b-2 ${
               activeTab === id
-                ? 'text-[#f4f4f4] border-white'
-                : 'text-[#555] hover:text-[#888] border-transparent'
+                ? 'text-[#f4f4f4] border-white bg-[rgba(255,255,255,0.02)]'
+                : 'text-[#555] hover:text-[#888] border-transparent hover:bg-[rgba(255,255,255,0.01)]'
             }`}
           >
             <Icon className="w-3.5 h-3.5" />

@@ -13,12 +13,13 @@ class KDNode:
     """A single node in the KD-Tree."""
 
     # __slots__ is an industry trick to save memory when creating thousands of objects
-    __slots__ = ["item", "left", "right"]
+    __slots__ = ["item", "left", "right", "embedding"]
 
     def __init__(self, item: VectorItem) -> None:
         self.item = item
         self.left: "KDNode | None" = None
         self.right: "KDNode | None" = None
+        self.embedding = np.array(item.embedding, dtype=float)
 
 
 class KDTreeIndex(BaseIndex):
@@ -79,8 +80,7 @@ class KDTreeIndex(BaseIndex):
             return
 
         # Calculate distance to current node
-        node_vector = np.array(node.item.embedding)
-        dist = self.distance_metric(query, node_vector)
+        dist = self.distance_metric(query, node.embedding)
 
         # If heap isn't full, or this distance is better (smaller) than the worst one we have
         if len(heap) < k or dist < -heap[0][0]:

@@ -76,6 +76,9 @@ export function AskAIPanel() {
         const visibleText = stripThinking(accumulated);
         updateMessage(assistantMsgId, { content: visibleText });
       },
+      (sources) => {
+        updateMessage(assistantMsgId, { sources });
+      },
       () => {
         const finalText = stripThinking(accumulated);
         updateMessage(assistantMsgId, { content: finalText });

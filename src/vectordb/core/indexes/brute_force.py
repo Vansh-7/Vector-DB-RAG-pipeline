@@ -22,11 +22,13 @@ class BruteForceIndex(BaseIndex):
         """
         # We use a dictionary mapping ID -> VectorItem for O(1) lookups and easy deletions
         self.items: dict[int, VectorItem] = {}
+        self.embeddings: dict[int, np.ndarray] = {}
         self.distance_metric = distance_metric
 
     def insert(self, item: VectorItem) -> None:
         """Adds or updates an item in the dictionary."""
         self.items[item.id] = item
+        self.embeddings[item.id] = np.array(item.embedding, dtype=float)
 
     def search(self, query: np.ndarray, k: int = 5) -> list[SearchResult]:
         """
@@ -39,8 +41,7 @@ class BruteForceIndex(BaseIndex):
 
         # Calculate the distance from the query to every item
         for item in self.items.values():
-            # Convert the stored list[float] back to a numpy array for the math
-            item_vector = np.array(item.embedding)
+            item_vector = self.embeddings[item.id]
             dist = self.distance_metric(query, item_vector)
             results.append(SearchResult(distance=dist, item=item))
 
@@ -54,6 +55,8 @@ class BruteForceIndex(BaseIndex):
         """Deletes an item if it exists."""
         if item_id in self.items:
             del self.items[item_id]
+            if item_id in self.embeddings:
+                del self.embeddings[item_id]
             return True
         return False
     
@@ -77,4 +80,6 @@ class BruteForceIndex(BaseIndex):
             
         with open(filepath, "rb") as f:
             self.items = pickle.load(f)
+        for item in self.items.values():
+            self.embeddings[item.id] = np.array(item.embedding, dtype=float)
         logger.info(f"BruteForce Index successfully loaded from {filepath} ({len(self.items)} items).")

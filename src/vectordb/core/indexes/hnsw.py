@@ -15,11 +15,12 @@ from vectordb.core.logger import logger
 class HNSWNode:
     """Represents a single document inside the HNSW graph layers."""
 
-    __slots__ = ["item", "max_layer", "neighbors"]
+    __slots__ = ["item", "max_layer", "neighbors", "embedding"]
 
     def __init__(self, item: VectorItem, max_layer: int) -> None:
         self.item = item
         self.max_layer = max_layer
+        self.embedding = np.array(item.embedding, dtype=float)
         # A list of lists. neighbors[0] = connections at layer 0, etc.
         self.neighbors: list[list[int]] = [[] for _ in range(max_layer + 1)]
 
@@ -58,7 +59,7 @@ class HNSWIndex(BaseIndex):
         found: list[tuple[float, int]] = []
 
         ep_node = self.nodes[entry_point]
-        dist = self.distance_metric(query, np.array(ep_node.item.embedding))
+        dist = self.distance_metric(query, ep_node.embedding)
 
         heapq.heappush(candidates, (dist, entry_point))
         heapq.heappush(found, (-dist, entry_point))  # Negative for max-heap
@@ -82,7 +83,7 @@ class HNSWIndex(BaseIndex):
                 visited.add(neighbor_id)
 
                 neighbor_node = self.nodes[neighbor_id]
-                n_dist = self.distance_metric(query, np.array(neighbor_node.item.embedding))
+                n_dist = self.distance_metric(query, neighbor_node.embedding)
 
                 # If we haven't hit our beam width 'ef', or this neighbor is closer
                 # than our worst find
@@ -150,13 +151,13 @@ class HNSWIndex(BaseIndex):
 
                 # Enforce max connection limits on the neighbor
                 if len(neighbor_node.neighbors[lc]) > max_m:
-                    n_emb = np.array(neighbor_node.item.embedding)
+                    n_emb = neighbor_node.embedding
                     # Recalculate distances to all its neighbors and keep the closest
                     distances = []
                     for c_id in neighbor_node.neighbors[lc]:
                         if c_id in self.nodes:
                             d = self.distance_metric(
-                                n_emb, np.array(self.nodes[c_id].item.embedding)
+                                n_emb, self.nodes[c_id].embedding
                             )
                             distances.append((d, c_id))
                     distances.sort()

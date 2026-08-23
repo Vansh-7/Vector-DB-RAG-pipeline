@@ -1,12 +1,13 @@
 import { getStreamUrl } from './client';
 import { useTerminalStore } from '../store/terminalStore';
 import { getCurrentTimestamp } from '../lib/utils';
-
+import type { RAGSource } from '../types';
 
 export async function askQuestion(
   question: string,
   k: number,
   onToken: (token: string) => void,
+  onSources: (sources: RAGSource[]) => void,
   onDone: () => void,
   onError: (err: string) => void
 ): Promise<void> {
@@ -34,17 +35,50 @@ export async function askQuestion(
     }
 
     const decoder = new TextDecoder();
+    let buffer = '';
 
     while (true) {
       const { done, value } = await reader.read();
       if (done) {
+        if (buffer.trim()) {
+          // Process any remaining buffer
+          try {
+            const parsed = JSON.parse(buffer);
+            if (parsed.type === 'sources') {
+              onSources(parsed.data);
+            } else if (parsed.type === 'token') {
+              onToken(parsed.data);
+            }
+          } catch (e) {
+            console.warn('[ASK DEBUG] Failed to parse final JSON line:', buffer);
+            onToken(buffer);
+          }
+        }
         addLog({ timestamp: getCurrentTimestamp(), level: 'SUCCESS', message: 'RAG Stream complete.' });
         onDone();
         break;
       }
-      const chunk = decoder.decode(value, { stream: true });
-      console.log('[ASK DEBUG] raw chunk received:', JSON.stringify(chunk));
-      onToken(chunk);
+      
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || ''; // Keep the last incomplete line in the buffer
+      
+      for (const line of lines) {
+        if (!line.trim()) continue;
+        try {
+          const parsed = JSON.parse(line);
+          if (parsed.type === 'sources') {
+            onSources(parsed.data);
+          } else if (parsed.type === 'token') {
+            onToken(parsed.data);
+          } else if (parsed.type === 'error') {
+            onError(parsed.data);
+          }
+        } catch (e) {
+          console.warn('[ASK DEBUG] Failed to parse JSON line:', line);
+          onToken(line + '\n');
+        }
+      }
     }
   } catch (e) {
     console.error('[ASK DEBUG] stream error:', e);

@@ -63,6 +63,12 @@ class AlgorithmBenchmark(BaseModel):
     throughputQps: float
     isActive: bool
 
+class HnswLayerStats(BaseModel):
+    level: int
+    nodes: int
+    edges: int
+
 class BenchmarkResponse(BaseModel):
     algorithms: list[AlgorithmBenchmark]
     timestamp: str
+    topology: list[HnswLayerStats] | None = None

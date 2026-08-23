@@ -7,7 +7,6 @@ import { Slider } from "../ui/Slider";
 import { Tooltip } from "../ui/Tooltip";
 import { useEngineStore } from "../../store/engineStore";
 import { useSessionStore } from "../../store/sessionStore";
-import { useCanvasStore } from "../../store/canvasStore";
 import { useTerminalStore } from "../../store/terminalStore";
 import { insertVector } from "../../api/vectors";
 import { configureEngine } from "../../api/engine";
@@ -48,8 +47,7 @@ export function Sidebar() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [lastSynced, setLastSynced] = useState("just now");
 
-  const addPendingInsert = useCanvasStore((s) => s.addPendingInsert);
-  const addLog = useTerminalStore((s) => s.addLog);
+    const addLog = useTerminalStore((s) => s.addLog);
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -90,6 +88,8 @@ export function Sidebar() {
       });
       queryClient.invalidateQueries({ queryKey: ["vectorMeta"] });
       queryClient.invalidateQueries({ queryKey: ["vectorSample"] });
+      queryClient.invalidateQueries({ queryKey: ["benchmarks"] });
+      queryClient.invalidateQueries({ queryKey: ["search"] });
       setPayload("");
     },
     onError: (err) => {
@@ -117,6 +117,8 @@ export function Sidebar() {
       });
       queryClient.invalidateQueries({ queryKey: ["vectorMeta"] });
       queryClient.invalidateQueries({ queryKey: ["vectorSample"] });
+      queryClient.invalidateQueries({ queryKey: ["benchmarks"] });
+      queryClient.invalidateQueries({ queryKey: ["search"] });
     } catch (e) {
       addLog({
         timestamp: getCurrentTimestamp(),
@@ -142,6 +144,8 @@ export function Sidebar() {
       });
       queryClient.invalidateQueries({ queryKey: ["vectorMeta"] });
       queryClient.invalidateQueries({ queryKey: ["vectorSample"] });
+      queryClient.invalidateQueries({ queryKey: ["benchmarks"] });
+      queryClient.invalidateQueries({ queryKey: ["search"] });
     } catch (e) {
       addLog({
         timestamp: getCurrentTimestamp(),

@@ -224,7 +224,7 @@ async def get_benchmarks(q: str | None = None) -> Any:
     def test_algo(name: str, display: str, EngineClass) -> dict[str, Any]:
         engine = EngineClass(distance_metric=state.vector_db.distance_metric, **({"dims": state.DEFAULT_DIMS} if name == "kdtree" else {"m": 16, "ef_construction": 200} if name == "hnsw" else {}))
         # Insert a subset to test latency safely
-        subset = items[:min(500, len(items))]
+        subset = items[:min(5000, len(items))]
         for item in subset:
             engine.insert(item)
 
@@ -258,7 +258,28 @@ async def get_benchmarks(q: str | None = None) -> Any:
     ]
 
     from datetime import datetime, timezone
-    return {"algorithms": benchmarks, "timestamp": datetime.now(timezone.utc).isoformat()}
+    
+    topology = None
+    if state.ACTIVE_ALGORITHM == "hnsw" and isinstance(state.vector_db, HNSWIndex):
+        layer_stats = {}
+        for nid, node in state.vector_db.nodes.items():
+            if nid in state.vector_db.tombstones:
+                continue
+            for level, edges in enumerate(node.neighbors):
+                if level not in layer_stats:
+                    layer_stats[level] = {"nodes": 0, "edges": 0}
+                layer_stats[level]["nodes"] += 1
+                layer_stats[level]["edges"] += len(edges)
+        
+        topology = []
+        for level in sorted(layer_stats.keys()):
+            topology.append({
+                "level": level,
+                "nodes": layer_stats[level]["nodes"],
+                "edges": layer_stats[level]["edges"]
+            })
+            
+    return {"algorithms": benchmarks, "timestamp": datetime.now(timezone.utc).isoformat(), "topology": topology}
 
 
 @router.get("/status")
@@ -375,9 +396,6 @@ async def ingest_file(category: str = Form(...), file: UploadFile = File(...)) -
 
 @router.post("/ask")
 async def ask_question(request: schemas.AskRequest) -> Any:
-    """
-    Advanced RAG: Embeds -> Broad Search -> Cross-Encoder Re-Ranking -> CoT LLM Stream
-    """
     logger.info(f"RAG Question received: '{request.question}'")
     try:
         question_vector = await embedder.embed_text(request.question)
@@ -391,10 +409,11 @@ async def ask_question(request: schemas.AskRequest) -> Any:
             np.array(question_vector, dtype=float),
             k=broad_k,
         )
-        broad_chunks = [result.item.metadata for result in raw_results]
-        logger.debug(f"Broad search retrieved {len(broad_chunks)} chunks. Beginning Re-ranking.")
+        logger.debug(f"Broad search retrieved {len(raw_results)} chunks. Beginning Re-ranking.")
 
-        best_chunks = cross_encoder.rerank(request.question, broad_chunks, top_n=request.k)
+        best_results = cross_encoder.rerank(request.question, raw_results, top_n=request.k)
+        # Filter out irrelevant chunks (negative cross-encoder scores)
+        best_results = [(score, res) for score, res in best_results if score > 0]
         logger.info(f"Successfully re-ranked and selected top {request.k} context chunks.")
 
     except Exception as e:
@@ -402,7 +421,27 @@ async def ask_question(request: schemas.AskRequest) -> Any:
         raise HTTPException(status_code=500, detail=f"Database search failed: {e}")
 
     logger.info("Initializing LLM Chain-of-Thought stream...")
+
+    async def response_stream():
+        import json
+        sources = [
+            {
+                "vectorId": str(res.item.id),
+                "category": res.item.category,
+                "score": float(score),
+                "snippet": res.item.metadata
+            }
+            for score, res in best_results
+        ]
+        # Yield the sources first
+        yield json.dumps({"type": "sources", "data": sources}) + "\n"
+
+        # Then yield the generator stream
+        best_chunks = [res.item.metadata for _, res in best_results]
+        async for chunk in llm_generator.generate_stream(request.question, best_chunks):
+            yield chunk
+
     return StreamingResponse(
-        llm_generator.generate_stream(request.question, best_chunks),
-        media_type="text/event-stream"
+        response_stream(),
+        media_type="application/x-ndjson"
     )

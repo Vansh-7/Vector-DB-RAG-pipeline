@@ -241,47 +241,6 @@ export function SearchPanel() {
         {data && !isLoading && (
           <div className="pt-6 space-y-10">
 
-            {/* QUERY EMBEDDING (16D) */}
-            <div className="space-y-3">
-              <h4 className="text-[10px] font-mono tracking-widest text-[#555] uppercase">
-                Query Embedding (16D)
-              </h4>
-              <div className="bg-[#111] border border-[rgba(255,255,255,0.06)] rounded-[8px] p-4 relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-t from-[#111] via-transparent to-transparent z-10 pointer-events-none" />
-                <div className="flex items-end h-20 gap-1 mb-2 relative z-0">
-                  {Array.from({ length: 16 }).map((_, i) => {
-                    const isFocus = i < 4;
-                    // Use actual query vector values if available, mapping -1.0 to 1.0 into 5% to 100% height
-                    const actualValue = data.queryVector && data.queryVector.length > i
-                      ? Math.abs(data.queryVector[i]) * 100
-                      : 0;
-                    const height = data.queryVector ? Math.max(5, Math.min(100, actualValue * 2)) : 5;
-                    const opacity = isFocus ? 1 : 0.4;
-                    const color = isFocus ? '#06b6d4' : (i < 8 ? '#a855f7' : (i < 12 ? '#f59e0b' : '#22c55e'));
-                    return (
-                      <div
-                        key={i}
-                        className="flex-1 rounded-t-[2px] transition-all duration-500"
-                        style={{
-                          height: `${height}%`,
-                          backgroundColor: color,
-                          opacity,
-                          boxShadow: isFocus ? `0 -4px 12px ${color}40` : 'none'
-                        }}
-                      />
-                    );
-                  })}
-                </div>
-                {/* Embedding Labels */}
-                <div className="flex justify-between text-[8px] font-mono font-bold tracking-widest text-[#555] mt-3 uppercase px-1 relative z-20">
-                  <span className="w-1/4 text-center text-[#06b6d4]">CS</span>
-                  <span className="w-1/4 text-center">MATH</span>
-                  <span className="w-1/4 text-center">FOOD</span>
-                  <span className="w-1/4 text-center">SPORT</span>
-                </div>
-              </div>
-            </div>
-
             {/* Compare Algorithms Navigation Button */}
             <div className="pt-2">
               <button
