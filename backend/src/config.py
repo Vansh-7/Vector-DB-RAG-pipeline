@@ -37,6 +37,9 @@ class Settings:
     vector_data_dir: str
     vector_db_file: str
     vector_wal_file: str
+    database_url: str
+    jwt_secret_key: str
+    jwt_access_token_expire_minutes: int
 
 
 def load_settings() -> Settings:
@@ -69,6 +72,17 @@ def load_settings() -> Settings:
         vector_wal_file=os.getenv(
             "VECTOR_WAL_FILE",
             str(data_dir / "vector_database.wal"),
+        ),
+        database_url=os.getenv(
+            "DATABASE_URL",
+            "postgresql+psycopg://nabla:nabla_dev@localhost:5432/nabla",
+        ),
+        jwt_secret_key=os.getenv(
+            "JWT_SECRET_KEY",
+            "",
+        ),
+        jwt_access_token_expire_minutes=int(
+            os.getenv("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", "60")
         ),
     )
 
