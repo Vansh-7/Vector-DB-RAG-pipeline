@@ -1,5 +1,6 @@
 import asyncio
 from config import settings
+from pathlib import Path
 
 from core.indexes.hnsw import HNSWIndex
 from core.indexes.kd_tree import KDTreeIndex
@@ -36,6 +37,9 @@ vector_db: BaseIndex = build_engine(ACTIVE_ALGORITHM, ACTIVE_METRIC)
 
 WAL_FILE = settings.vector_wal_file
 DB_FILE = settings.vector_db_file
+
+Path(DB_FILE).parent.mkdir(parents=True, exist_ok=True)
+Path(WAL_FILE).parent.mkdir(parents=True, exist_ok=True)
 
 wal = WriteAheadLog(filepath=WAL_FILE)
 vector_db.load(DB_FILE)

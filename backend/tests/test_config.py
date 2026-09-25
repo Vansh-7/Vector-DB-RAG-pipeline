@@ -8,6 +8,7 @@ def test_default_config(monkeypatch) -> None:
         "EMBEDDING_MODEL",
         "LLM_MODEL",
         "RERANKER_MODEL",
+        "VECTOR_DATA_DIR",
         "VECTOR_DB_FILE",
         "VECTOR_WAL_FILE",
     ]
@@ -22,6 +23,17 @@ def test_default_config(monkeypatch) -> None:
     assert settings.llm_model == "qwen2.5:7b"
     assert settings.vector_db_file == "vector_database.pkl"
     assert settings.vector_wal_file == "vector_database.wal"
+    
+def test_vector_data_directory(monkeypatch) -> None:
+    monkeypatch.setenv("VECTOR_DATA_DIR", "/data")
+    monkeypatch.delenv("VECTOR_DB_FILE", raising=False)
+    monkeypatch.delenv("VECTOR_WAL_FILE", raising=False)
+
+    settings = load_settings()
+
+    assert settings.vector_data_dir == "/data"
+    assert settings.vector_db_file == "/data/vector_database.pkl"
+    assert settings.vector_wal_file == "/data/vector_database.wal"
 
 
 def test_config_can_be_overridden(monkeypatch) -> None:

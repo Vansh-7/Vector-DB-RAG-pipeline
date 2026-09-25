@@ -10,6 +10,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     UV_COMPILE_BYTECODE=1 \
     UV_LINK_MODE=copy \
     UV_PYTHON_DOWNLOADS=0 \
+    VECTOR_DATA_DIR=/data \
     PATH="/app/.venv/bin:$PATH"
 
 # libgomp1 is needed by parts of the numerical/ML stack.
@@ -19,8 +20,8 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/* \
     && groupadd --system --gid 10001 app \
     && useradd --system --uid 10001 --gid 10001 --no-create-home app \
-    && mkdir -p /app \
-    && chown app:app /app
+    && mkdir -p /app /data \
+    && chown app:app /app /data
 
 WORKDIR /app
 
