@@ -1,0 +1,16 @@
+.venv
+tests
+
+__pycache__
+**/__pycache__
+**/*.py[cod]
+.pytest_cache
+.mypy_cache
+.ruff_cache
+
+*.pkl
+*.wal
+
+.env
+.env.*
+!.env.example
