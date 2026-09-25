@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 
-from vectordb.core.types import SearchResult, VectorItem
+from nabla.core.types import SearchResult, VectorItem
 
 
 class BaseIndex(ABC):

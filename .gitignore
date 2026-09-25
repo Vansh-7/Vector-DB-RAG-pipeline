@@ -14,6 +14,9 @@ claude-files
 .agents
 skills-lock.json
 .codex
+benchmarks
+benchmark_results
 
 # Virtual environments
 .venv
+

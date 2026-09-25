@@ -2,9 +2,9 @@ import os
 import numpy as np
 import pytest
 
-from vectordb.core.indexes.hnsw import HNSWIndex
-from vectordb.core.metrics import euclidean_distance
-from vectordb.core.types import VectorItem
+from src.core.indexes.hnsw import HNSWIndex
+from src.core.metrics import euclidean_distance
+from src.core.types import VectorItem
 
 @pytest.fixture
 def hnsw_index() -> HNSWIndex:

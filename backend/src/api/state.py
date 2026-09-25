@@ -1,13 +1,13 @@
 import asyncio
 import os
 
-from vectordb.core.indexes.hnsw import HNSWIndex
-from vectordb.core.indexes.kd_tree import KDTreeIndex
-from vectordb.core.indexes.brute_force import BruteForceIndex
-from vectordb.core.indexes.base import BaseIndex
-from vectordb.core.metrics import cosine_distance, euclidean_distance, manhattan_distance
-from vectordb.core.wal import WriteAheadLog
-from vectordb.core.logger import logger
+from core.indexes.hnsw import HNSWIndex
+from core.indexes.kd_tree import KDTreeIndex
+from core.indexes.brute_force import BruteForceIndex
+from core.indexes.base import BaseIndex
+from core.metrics import cosine_distance, euclidean_distance, manhattan_distance
+from core.wal import WriteAheadLog
+from core.logger import logger
 
 METRICS = {
     "cosine": cosine_distance,

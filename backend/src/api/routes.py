@@ -7,15 +7,15 @@ from fastapi import APIRouter, HTTPException, UploadFile, File, Form
 from fastapi.responses import StreamingResponse
 import pypdf
 
-from vectordb.ai.chunker import chunker
-from vectordb.ai.embedder import embedder
-from vectordb.ai.generator import llm_generator
-from vectordb.ai.reranker import cross_encoder
+from ai.chunker import chunker
+from ai.embedder import embedder
+from ai.generator import llm_generator
+from ai.reranker import cross_encoder
 
-from vectordb.api import schemas
-import vectordb.api.state as state
-from vectordb.core.types import VectorItem
-from vectordb.core.logger import logger
+from api import schemas
+import api.state as state
+from core.types import VectorItem
+from core.logger import logger
 
 router = APIRouter()
 
@@ -216,7 +216,7 @@ async def get_benchmarks(q: str | None = None) -> Any:
 
     if not items:
         # Fallback if DB is completely empty to avoid errors
-        from vectordb.api.schemas import AlgorithmBenchmark
+        from api.schemas import AlgorithmBenchmark
         algorithms = [
             AlgorithmBenchmark(name="hnsw", displayName="HNSW Graph", latencyMs=0.0, throughputQps=0.0, isActive=(state.ACTIVE_ALGORITHM == "hnsw")),
             AlgorithmBenchmark(name="kdtree", displayName="KD-Tree", latencyMs=0.0, throughputQps=0.0, isActive=(state.ACTIVE_ALGORITHM == "kdtree")),
@@ -249,7 +249,7 @@ async def get_benchmarks(q: str | None = None) -> Any:
         latency_ms = avg_latency_s * 1000
         qps = 1 / avg_latency_s if avg_latency_s > 0 else 0
 
-        from vectordb.api.schemas import AlgorithmBenchmark
+        from api.schemas import AlgorithmBenchmark
         return AlgorithmBenchmark(
             name=name,
             displayName=display,
@@ -258,9 +258,9 @@ async def get_benchmarks(q: str | None = None) -> Any:
             isActive=(state.ACTIVE_ALGORITHM == name)
         )
 
-    from vectordb.core.indexes.hnsw import HNSWIndex
-    from vectordb.core.indexes.kd_tree import KDTreeIndex
-    from vectordb.core.indexes.brute_force import BruteForceIndex
+    from core.indexes.hnsw import HNSWIndex
+    from core.indexes.kd_tree import KDTreeIndex
+    from core.indexes.brute_force import BruteForceIndex
 
     benchmarks = [
         test_algo("hnsw", "HNSW Graph", HNSWIndex),

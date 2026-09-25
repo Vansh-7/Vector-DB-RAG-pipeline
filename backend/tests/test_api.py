@@ -8,7 +8,7 @@ os.environ["VECTOR_WAL_FILE"] = "test_vector_database.wal"
 from fastapi.testclient import TestClient
 
 # Import your FastAPI app from main
-from vectordb.main import app
+from src.main import app
 
 # Create a test client that mimics a user's browser or Postman
 client = TestClient(app)

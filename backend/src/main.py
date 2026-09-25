@@ -5,9 +5,9 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from vectordb.api.routes import router
-import vectordb.api.state as state
-from vectordb.core.logger import logger
+from api.routes import router
+import api.state as state
+from core.logger import logger
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
