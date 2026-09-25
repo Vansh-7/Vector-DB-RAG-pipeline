@@ -1,4 +1,4 @@
-from src.config import load_settings
+from config import load_settings
 
 
 def test_default_config(monkeypatch) -> None:

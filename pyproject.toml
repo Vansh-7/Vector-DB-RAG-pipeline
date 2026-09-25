@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "A custom Vector Database and RAG pipeline built from scratch implementing HNSW, KD-Tree, and Brute Force search algorithms."
 readme = "README.md"
 requires-python = ">=3.10"
+
 dependencies = [
     "fastapi[standard]>=0.137.2",
     "langchain-text-splitters>=1.1.2",
@@ -19,18 +20,14 @@ dependencies = [
     "torch>=2.12.1",
 ]
 
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
 
 [tool.uv]
 managed = true
-
-[tool.hatch.build.targets.wheel]
-packages = ["src/vectordb"]
+package = false
 
 [tool.pytest.ini_options]
-pythonpath = ["."]
+pythonpath = ["backend/src"]
+testpaths = ["backend/tests"]
 
 [tool.ruff]
 line-length = 100
@@ -44,11 +41,14 @@ strict = true
 warn_return_any = true
 warn_unused_configs = true
 ignore_missing_imports = true 
-mypy_path = "src"
+mypy_path = "backend/src"
 explicit_package_bases = true
 
 [dependency-groups]
 dev = [
     "httpx>=0.28.1",
+    "mypy>=2.3.1",
+    "pytest>=9.1.1",
+    "ruff>=0.16.9",
     "scipy>=1.15.3",
 ]

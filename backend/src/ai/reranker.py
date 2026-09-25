@@ -1,16 +1,20 @@
-from typing import List
 from sentence_transformers import CrossEncoder
 from config import settings
-
 class AdvancedReRanker:
     """
     A Cross-Encoder that scores the logical relevance
     between a query and retrieved chunks.
     """
 
-    def __init__(self, model_name: str = "cross-encoder/ms-marco-MiniLM-L-6-v2"):
-        # This will download a tiny, highly accurate model on first run
-        self.encoder = CrossEncoder(model_name)
+    def __init__(self, model_name: str):
+        self.model_name = model_name
+        self._encoder: CrossEncoder | None = None
+        
+    def _get_encoder(self) -> CrossEncoder:
+        if self._encoder is None:
+            self._encoder = CrossEncoder(self.model_name)
+
+        return self._encoder
 
     def rerank(self, query: str, results: list, top_n: int = 3) -> list:
         """
@@ -24,7 +28,8 @@ class AdvancedReRanker:
         pairs = [[query, res.item.metadata] for res in results]
 
         # The model scores how well the chunk answers the question
-        scores = self.encoder.predict(pairs)
+        encoder = self._get_encoder()
+        scores = encoder.predict(pairs)
 
         # Combine items with their scores and sort them highest to lowest
         scored_chunks = list(zip(scores, results))

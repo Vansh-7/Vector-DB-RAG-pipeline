@@ -39,7 +39,7 @@ ollama pull qwen2.5:7b
 uv sync
 
 # Start the FastAPI server on port 8000
-PYTHONIOENCODING=utf-8 uv run uvicorn vectordb.main:app --app-dir src --port 8000 --reload
+PYTHONIOENCODING=utf-8 uv run uvicorn main:app --app-dir backend/src --host 127.0.0.1 --port 8000 --reload
 ```
 
 ### 3. Start the Frontend

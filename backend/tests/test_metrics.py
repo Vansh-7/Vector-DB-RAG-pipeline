@@ -3,7 +3,7 @@ import pytest
 from scipy.spatial import distance
 
 # Import your custom math engine
-from src.core.metrics import (
+from core.metrics import (
     euclidean_distance,
     cosine_distance,
     manhattan_distance,

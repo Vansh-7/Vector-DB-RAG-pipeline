@@ -2,9 +2,9 @@ import os
 import numpy as np
 import pytest
 
-from src.core.indexes.brute_force import BruteForceIndex
-from src.core.metrics import euclidean_distance
-from src.core.types import VectorItem
+from core.indexes.brute_force import BruteForceIndex
+from core.metrics import euclidean_distance
+from core.types import VectorItem
 
 @pytest.fixture
 def brute_force_index() -> BruteForceIndex:
