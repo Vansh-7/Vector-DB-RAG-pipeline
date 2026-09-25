@@ -1,7 +1,7 @@
 import asyncio
 from typing import List
-
 from ollama import AsyncClient
+from config import settings
 
 
 class Embedder:
@@ -9,9 +9,9 @@ class Embedder:
     An asynchronous, production-ready service to handle vector embeddings using Ollama.
     """
 
-    def __init__(self, model_name: str = "nomic-embed-text"):
+    def __init__(self, model_name: str, ollama_host: str):
         self.model_name = model_name
-        self.client = AsyncClient()
+        self.client = AsyncClient(host=ollama_host)
 
     async def embed_text(self, text: str) -> List[float]:
         """
@@ -36,4 +36,7 @@ class Embedder:
 
 
 # Initialize a global instance to be used across the app routes
-embedder = Embedder()
+embedder = Embedder(
+    model_name=settings.embedding_model,
+    ollama_host=settings.ollama_host,
+)

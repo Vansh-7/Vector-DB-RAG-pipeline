@@ -7,9 +7,9 @@ from typing import Callable
 
 import numpy as np
 
-from nabla.core.types import SearchResult, VectorItem
-from nabla.core.indexes.base import BaseIndex
-from nabla.core.logger import logger
+from core.types import SearchResult, VectorItem
+from core.indexes.base import BaseIndex
+from core.logger import logger
 
 
 class HNSWNode:

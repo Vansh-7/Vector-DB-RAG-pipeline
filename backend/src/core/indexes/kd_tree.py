@@ -5,9 +5,9 @@ import os
 import pickle
 import numpy as np
 
-from nabla.core.types import SearchResult, VectorItem
-from nabla.core.indexes.base import BaseIndex
-from nabla.core.logger import logger
+from core.types import SearchResult, VectorItem
+from core.indexes.base import BaseIndex
+from core.logger import logger
 
 class KDNode:
     """A single node in the KD-Tree."""

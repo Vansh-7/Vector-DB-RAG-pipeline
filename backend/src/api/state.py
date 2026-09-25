@@ -1,5 +1,5 @@
 import asyncio
-import os
+from config import settings
 
 from core.indexes.hnsw import HNSWIndex
 from core.indexes.kd_tree import KDTreeIndex
@@ -34,8 +34,8 @@ ACTIVE_ALGORITHM = "hnsw"
 ACTIVE_METRIC = "cosine"
 vector_db: BaseIndex = build_engine(ACTIVE_ALGORITHM, ACTIVE_METRIC)
 
-WAL_FILE = os.getenv("VECTOR_WAL_FILE", "vector_database.wal")
-DB_FILE = os.getenv("VECTOR_DB_FILE", "vector_database.pkl")
+WAL_FILE = settings.vector_wal_file
+DB_FILE = settings.vector_db_file
 
 wal = WriteAheadLog(filepath=WAL_FILE)
 vector_db.load(DB_FILE)

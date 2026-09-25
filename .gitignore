@@ -20,3 +20,7 @@ benchmark_results
 # Virtual environments
 .venv
 
+# Environment variables
+.env
+.env.*
+!.env.example

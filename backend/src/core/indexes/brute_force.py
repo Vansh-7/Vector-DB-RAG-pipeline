@@ -3,10 +3,10 @@ import os
 import pickle
 import numpy as np
 
-from nabla.core.types import SearchResult, VectorItem
-from nabla.core.logger import logger
+from core.types import SearchResult, VectorItem
+from core.logger import logger
 # Import our base contract and data types
-from nabla.core.indexes.base import BaseIndex
+from core.indexes.base import BaseIndex
 
 class BruteForceIndex(BaseIndex):
     """

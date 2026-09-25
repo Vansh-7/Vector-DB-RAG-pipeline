@@ -1,8 +1,8 @@
 import json
 import os
-from nabla.core.types import VectorItem
-from nabla.core.indexes.base import BaseIndex
-from nabla.core.logger import logger
+from core.types import VectorItem
+from core.indexes.base import BaseIndex
+from core.logger import logger
 
 class WriteAheadLog:
     """

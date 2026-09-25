@@ -1,6 +1,7 @@
 from typing import AsyncGenerator, List
 import json
 from ollama import AsyncClient
+from config import settings
 
 class RagGenerator:
     """
@@ -9,9 +10,9 @@ class RagGenerator:
     and asynchronous streaming generation for a real-time user experience.
     """
 
-    def __init__(self, model_name: str = "qwen2.5:7b"):
+    def __init__(self, model_name: str, ollama_host: str):
         self.model_name = model_name
-        self._client = AsyncClient()
+        self._client = AsyncClient(host=ollama_host)
 
         # The System Prompt acts as a strict guardrail against hallucinations
         # with tone alignment + Chain of thought
@@ -71,4 +72,7 @@ class RagGenerator:
 
 
 # Initialize a global instance for the API router to consume
-llm_generator = RagGenerator()
+llm_generator = RagGenerator(
+    model_name=settings.llm_model,
+    ollama_host=settings.ollama_host,
+)

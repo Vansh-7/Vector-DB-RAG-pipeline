@@ -1,5 +1,6 @@
 from typing import List
 from sentence_transformers import CrossEncoder
+from config import settings
 
 class AdvancedReRanker:
     """
@@ -34,4 +35,6 @@ class AdvancedReRanker:
 
 
 # Global instance
-cross_encoder = AdvancedReRanker()
+cross_encoder = AdvancedReRanker(
+    model_name=settings.reranker_model
+)
