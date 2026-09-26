@@ -1,28 +1,21 @@
-import type { Algorithm, Category, DistanceMetric } from './vector';
-
 export interface SearchResult {
   id: string;
-  score: number;
-  category: Category;
+  distance: number;
+  category: string;
   snippet: string;
-  x: number;
-  y: number;
+  documentId: number | null;
 }
 
 export interface SearchResponse {
   query: string;
   results: SearchResult[];
   latencyMs: number;
-  algorithm: Algorithm;
   count: number;
   queryVector?: number[];
-  query2d?: [number, number];
+  query2d?: [number, number] | null;
 }
 
 export interface SearchParams {
   q: string;
   k?: number;
-  algorithm?: Algorithm;
-  metric?: DistanceMetric;
-  category?: Category;
 }

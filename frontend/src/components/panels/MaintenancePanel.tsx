@@ -1,14 +1,18 @@
 import { useState } from "react";
 import { Loader2, Save, Trash2 } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { clearDatabase, saveDatabase } from "../../api/vectors";
+import { clearDatabase, deleteVector, saveDatabase } from "../../api/vectors";
 import { useCanvasStore } from "../../store/canvasStore";
 import { Button } from "../ui/Button";
 import { ConfirmDialog } from "../ui/ConfirmDialog";
 
 export function MaintenancePanel() {
   const [showClearDialog, setShowClearDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [vectorId, setVectorId] = useState("");
   const clearAll = useCanvasStore((s) => s.clearAll);
+  const highlightedIds = useCanvasStore((s) => s.highlightedIds);
+  const setHighlighted = useCanvasStore((s) => s.setHighlighted);
   const queryClient = useQueryClient();
   const clearMutation = useMutation({
     mutationFn: clearDatabase,
@@ -21,7 +25,18 @@ export function MaintenancePanel() {
     },
   });
   const saveMutation = useMutation({ mutationFn: saveDatabase });
-  const busy = clearMutation.isPending || saveMutation.isPending;
+  const deleteMutation = useMutation({
+    mutationFn: deleteVector,
+    onSuccess: (_response, id) => {
+      if (highlightedIds.includes(id)) setHighlighted([]);
+      for (const key of ["documents", "dbStatus", "vectorMeta", "vectorSample", "search", "benchmarks"]) {
+        void queryClient.invalidateQueries({ queryKey: [key] });
+      }
+      setVectorId("");
+      setShowDeleteDialog(false);
+    },
+  });
+  const busy = clearMutation.isPending || saveMutation.isPending || deleteMutation.isPending;
 
   return (
     <div className="space-y-6">
@@ -36,6 +51,24 @@ export function MaintenancePanel() {
       </div>
       {saveMutation.isSuccess && <p role="status" className="text-xs text-success">Snapshot saved to disk.</p>}
       {saveMutation.isError && <p role="alert" className="text-xs text-error break-words">{saveMutation.error.message}</p>}
+      <div className="border border-[--border-subtle] rounded-md bg-panel p-4">
+        <div>
+          <h2 className="text-sm font-semibold">Delete a vector</h2>
+          <p className="text-xs text-[#888] mt-1 leading-relaxed">Remove one indexed vector by ID. Use Documents to delete an entire source.</p>
+        </div>
+        <div className="mt-4 flex flex-wrap items-end gap-2">
+          <label className="min-w-[180px] flex-1 text-xs text-[--text-secondary]">
+            Vector ID
+            <input value={vectorId} onChange={(event) => setVectorId(event.target.value)} placeholder="Enter vector ID"
+              className="mt-1.5 h-9 w-full rounded-[4px] border border-[--border-default] bg-elevated px-3 font-mono text-xs text-[--text-primary] outline-none focus:border-[--color-info]" />
+          </label>
+          {highlightedIds.length === 1 && <Button type="button" variant="outline" onClick={() => setVectorId(highlightedIds[0])} disabled={busy}>Use selected</Button>}
+          <Button type="button" variant="danger" onClick={() => { deleteMutation.reset(); setShowDeleteDialog(true); }} disabled={busy || !vectorId.trim()}>
+            <Trash2 className="w-3.5 h-3.5" /> Delete vector
+          </Button>
+        </div>
+        {deleteMutation.isSuccess && <p role="status" className="mt-3 text-xs text-success">Vector deleted.</p>}
+      </div>
       <div className="border border-error/20 rounded-md bg-panel p-4 flex flex-wrap items-center justify-between gap-4">
         <div className="max-w-md">
           <h2 className="text-sm font-semibold">Clear vector data</h2>
@@ -50,6 +83,10 @@ export function MaintenancePanel() {
       <ConfirmDialog open={showClearDialog} onOpenChange={setShowClearDialog} title="Clear your vector data?"
         description="This permanently deletes your vectors and document metadata. Your conversations and other users' knowledge are not deleted. This action cannot be undone."
         confirmLabel="Clear my data" onConfirm={() => { if (!busy) clearMutation.mutate(); }} destructive />
+      <ConfirmDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog} title="Delete this vector?"
+        description={`Permanently delete vector ${vectorId.trim()}? The source document will remain, but this passage will no longer appear in search.`}
+        confirmLabel="Delete vector" onConfirm={() => { if (!busy && vectorId.trim()) deleteMutation.mutate(vectorId.trim()); }}
+        destructive busy={deleteMutation.isPending} error={deleteMutation.isError ? deleteMutation.error.message : null} closeOnConfirm={false} />
     </div>
   );
 }

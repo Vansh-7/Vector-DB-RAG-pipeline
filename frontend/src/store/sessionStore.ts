@@ -29,8 +29,6 @@ interface SessionState {
   setSearchInputValue: (val: string) => void;
   searchQuery: string;
   setSearchQuery: (val: string) => void;
-  searchDismissedIds: string[];
-  setSearchDismissedIds: (ids: string[]) => void;
 
   // Ask AI Panel State
   askAiInput: string;
@@ -72,7 +70,6 @@ export const useSessionStore = create<SessionState>()(
         isTerminalCollapsed: true,
         searchInputValue: "",
         searchQuery: "",
-        searchDismissedIds: [],
         askAiInput: "",
         ingestMode: "manual",
         ingestTitle: "",
@@ -83,8 +80,6 @@ export const useSessionStore = create<SessionState>()(
       setSearchInputValue: (val) => set({ searchInputValue: val }),
       searchQuery: "",
       setSearchQuery: (val) => set({ searchQuery: val }),
-      searchDismissedIds: [],
-      setSearchDismissedIds: (ids) => set({ searchDismissedIds: ids }),
 
       askAiInput: "",
       setAskAiInput: (val) => set({ askAiInput: val }),

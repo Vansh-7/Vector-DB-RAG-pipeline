@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import { DataLoader } from "../DataLoader";
 import { AskAIPanel } from "../panels/AskAIPanel";
 import { DocumentsView } from "../documents/DocumentsView";
-import { SearchPanel } from "../panels/SearchPanel";
+import { SearchWorkspace } from "../workspaces/SearchWorkspace";
 import { TerminalLog } from "../terminal/TerminalLog";
 import { VectorLabWorkspace } from "../workspaces/VectorLabWorkspace";
 import { useCanvasStore } from "../../store/canvasStore";
@@ -74,9 +74,7 @@ export function AppShell() {
             </section>
             <section aria-label="Search workspace" inert={activeView !== "search"}
               className={`${activeView === "search" ? "flex" : "hidden"} flex-1 flex-col min-h-0 min-w-0`}>
-              <div className="w-full max-w-4xl mx-auto flex-1 min-h-0 p-2 sm:p-4">
-                {activeView === "search" && <SearchPanel />}
-              </div>
+              {activeView === "search" && <SearchWorkspace />}
             </section>
             <VectorLabWorkspace active={activeView === "vector-lab"} />
           </main>
