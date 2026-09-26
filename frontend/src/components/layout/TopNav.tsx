@@ -23,7 +23,7 @@ export function TopNav() {
           API <span className="text-[#f4f4f4]">{apiLabel}</span>
         </span>
         <span className="hidden sm:inline" title={data && !isError ? `Shared ${data.engine.toUpperCase()} index · ${data.metric}` : "Index status unavailable"}>
-          Index: <span className="text-[#f4f4f4]">{data && !isError ? `${data.total_docs.toLocaleString()} vectors` : "—"}</span>
+          Shared index: <span className="text-[#f4f4f4]">{data && !isError ? `${data.total_docs.toLocaleString()} vectors` : "—"}</span>
         </span>
         <span className="hidden md:inline" title={`${modelName} · Inference health is not reported by the API`}>
           LLM: <span className="text-[#888]">Not checked</span>

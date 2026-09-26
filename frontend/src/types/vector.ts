@@ -64,7 +64,6 @@ export interface VectorSampleResponse {
 }
 
 export interface VectorMeta {
-  dimensions: number;
   totalVectors: number;
   indexAlgorithm: Algorithm;
   lastUpdated: string;

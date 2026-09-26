@@ -18,7 +18,7 @@ export function MaintenancePanel() {
     mutationFn: clearDatabase,
     onSuccess: () => {
       clearAll();
-      for (const key of ["dbStatus", "vectorSample", "search", "benchmarks"]) {
+      for (const key of ["documents", "dbStatus", "vectorMeta", "vectorSample", "search", "benchmarks"]) {
         void queryClient.invalidateQueries({ queryKey: [key] });
       }
       setShowClearDialog(false);
@@ -40,9 +40,14 @@ export function MaintenancePanel() {
 
   return (
     <div className="space-y-6">
+      <div>
+        <p className="font-mono text-2xs uppercase tracking-[0.2em] text-[--color-info]">Operations / 04</p>
+        <h2 className="mt-2 text-xl font-semibold tracking-tight">Maintenance</h2>
+        <p className="mt-1 text-xs leading-relaxed text-[--text-secondary]">Save the shared index or manage the vectors and documents owned by your account.</p>
+      </div>
       <div className="border border-[--border-subtle] rounded-md bg-panel p-4 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h2 className="text-sm font-semibold">Save to Disk</h2>
+          <h3 className="text-sm font-semibold">Save to Disk</h3>
           <p className="text-xs text-[#888] mt-1">Create a snapshot of the shared vector index.</p>
         </div>
         <Button variant="outline" onClick={() => saveMutation.mutate()} disabled={busy}>
@@ -53,7 +58,7 @@ export function MaintenancePanel() {
       {saveMutation.isError && <p role="alert" className="text-xs text-error break-words">{saveMutation.error.message}</p>}
       <div className="border border-[--border-subtle] rounded-md bg-panel p-4">
         <div>
-          <h2 className="text-sm font-semibold">Delete a vector</h2>
+          <h3 className="text-sm font-semibold">Delete a vector</h3>
           <p className="text-xs text-[#888] mt-1 leading-relaxed">Remove one indexed vector by ID. Use Documents to delete an entire source.</p>
         </div>
         <div className="mt-4 flex flex-wrap items-end gap-2">
@@ -71,10 +76,10 @@ export function MaintenancePanel() {
       </div>
       <div className="border border-error/20 rounded-md bg-panel p-4 flex flex-wrap items-center justify-between gap-4">
         <div className="max-w-md">
-          <h2 className="text-sm font-semibold">Clear vector data</h2>
+          <h3 className="text-sm font-semibold">Clear vector data</h3>
           <p className="text-xs text-[#888] mt-1 leading-relaxed">Delete your indexed vectors and document metadata. Saved conversations are not deleted.</p>
         </div>
-        <Button variant="danger" onClick={() => setShowClearDialog(true)} disabled={busy}>
+        <Button variant="danger" onClick={() => { clearMutation.reset(); setShowClearDialog(true); }} disabled={busy}>
           {clearMutation.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />} Clear data
         </Button>
       </div>
@@ -82,7 +87,8 @@ export function MaintenancePanel() {
       {clearMutation.isError && <p role="alert" className="text-xs text-error break-words">{clearMutation.error.message}</p>}
       <ConfirmDialog open={showClearDialog} onOpenChange={setShowClearDialog} title="Clear your vector data?"
         description="This permanently deletes your vectors and document metadata. Your conversations and other users' knowledge are not deleted. This action cannot be undone."
-        confirmLabel="Clear my data" onConfirm={() => { if (!busy) clearMutation.mutate(); }} destructive />
+        confirmLabel="Clear my data" onConfirm={() => { if (!busy) clearMutation.mutate(); }} destructive
+        busy={clearMutation.isPending} error={clearMutation.isError ? clearMutation.error.message : null} closeOnConfirm={false} />
       <ConfirmDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog} title="Delete this vector?"
         description={`Permanently delete vector ${vectorId.trim()}? The source document will remain, but this passage will no longer appear in search.`}
         confirmLabel="Delete vector" onConfirm={() => { if (!busy && vectorId.trim()) deleteMutation.mutate(vectorId.trim()); }}

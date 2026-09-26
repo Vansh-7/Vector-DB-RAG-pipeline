@@ -3,6 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { getStatus } from "../api/status";
 import { getVectorSample } from "../api/vectors";
 import { useCanvasStore } from "../store/canvasStore";
+import { useAuthStore } from "../store/authStore";
+import { useEngineStore } from "../store/engineStore";
 import { useTerminalStore } from "../store/terminalStore";
 import { AlertCircle } from "lucide-react";
 
@@ -10,6 +12,9 @@ export function DataLoader() {
   const setVectors = useCanvasStore((s) => s.setVectors);
   const setMeta = useCanvasStore((s) => s.setMeta);
   const setStatus = useTerminalStore((s) => s.setStatus);
+  const userId = useAuthStore((s) => s.user?.id);
+  const setAlgorithm = useEngineStore((s) => s.setAlgorithm);
+  const setMetric = useEngineStore((s) => s.setMetric);
 
   const { isError, isSuccess, data: statusData } = useQuery({
     queryKey: ["dbStatus"],
@@ -19,7 +24,7 @@ export function DataLoader() {
   });
 
   const { data: sampleData } = useQuery({
-    queryKey: ["vectorSample", statusData?.total_docs],
+    queryKey: ["vectorSample", userId, statusData?.total_docs],
     queryFn: () => getVectorSample(2000),
     enabled: isSuccess && !!statusData,
   });
@@ -27,22 +32,24 @@ export function DataLoader() {
   useEffect(() => {
     if (isSuccess && statusData) {
       setStatus("connected");
-      setMeta({
-        dimensions: 768,
-        totalVectors: statusData.total_docs,
-        indexAlgorithm: statusData.engine as any,
-        lastUpdated: new Date().toISOString(),
-      });
+      if (useEngineStore.getState().algorithm !== statusData.engine) setAlgorithm(statusData.engine);
+      if (useEngineStore.getState().metric !== statusData.metric) setMetric(statusData.metric);
     } else if (isError) {
       setStatus("offline");
     }
-  }, [isSuccess, isError, statusData, setStatus, setMeta]);
+  }, [isSuccess, isError, statusData, setStatus, setAlgorithm, setMetric]);
 
   useEffect(() => {
     if (sampleData) {
       setVectors(sampleData.vectors);
+      // /status counts the shared index; /vectors/sample.count is user-scoped.
+      setMeta({
+        totalVectors: sampleData.count,
+        indexAlgorithm: statusData?.engine ?? "hnsw",
+        lastUpdated: new Date().toISOString(),
+      });
     }
-  }, [sampleData, setVectors]);
+  }, [sampleData, statusData?.engine, setVectors, setMeta]);
 
   if (isError) {
     return (

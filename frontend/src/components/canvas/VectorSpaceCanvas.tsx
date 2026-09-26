@@ -7,10 +7,13 @@ import { CanvasLegend } from "./CanvasLegend";
 import { VectorTooltip } from "./VectorTooltip";
 import { formatNumber } from "../../lib/utils";
 import { Tooltip as UITooltip } from "../ui/Tooltip";
+import { useSessionStore } from "../../store/sessionStore";
 
 export function VectorSpaceCanvas() {
   const vectors = useCanvasStore((s) => s.vectors);
   const meta = useCanvasStore((s) => s.meta);
+  const setActiveView = useSessionStore((s) => s.setActiveView);
+  const openVectorLab = useSessionStore((s) => s.openVectorLab);
   const [hiddenCategories, setHiddenCategories] = useState<Set<Category>>(new Set());
 
   const { svgRef, containerRef, tooltip, zoomLevel, resetZoom, zoomIn, zoomOut } = useVectorCanvas(vectors, hiddenCategories);
@@ -55,8 +58,8 @@ export function VectorSpaceCanvas() {
 
       {/* Header / Title */}
       <div className="absolute top-4 left-4 z-20 flex flex-col pointer-events-none">
-        <h1 className="text-sm font-semibold text-[#f4f4f4]">Vector Space Canvas</h1>
-        <h2 className="text-[10px] text-[#888] mt-0.5">2D PCA Projection · Semantic Space</h2>
+        <h2 className="text-sm font-semibold text-[#f4f4f4]">Vector Space Canvas</h2>
+        <p className="text-[10px] text-[#888] mt-0.5">2D PCA Projection · Semantic Space</p>
       </div>
 
       <CanvasLegend
@@ -84,20 +87,32 @@ export function VectorSpaceCanvas() {
         </defs>
       </svg>
 
+      {meta?.totalVectors === 0 && <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center px-6">
+        <div className="pointer-events-auto max-w-sm rounded-md border border-[--border-default] bg-panel/95 p-6 text-center shadow-[0_18px_60px_rgba(0,0,0,0.45)]">
+          <p className="font-mono text-2xs uppercase tracking-[0.18em] text-[--color-info]">Vector space / empty</p>
+          <h3 className="mt-2 text-sm font-semibold">Nothing to project yet.</h3>
+          <p className="mt-2 text-xs leading-relaxed text-[--text-secondary]">Add knowledge to build a searchable index, or inject a vector in Engine.</p>
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-4 text-xs">
+            <button type="button" onClick={() => setActiveView("documents")} className="text-[--color-info] hover:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[--color-info]">Add document</button>
+            <button type="button" onClick={() => openVectorLab("engine")} className="text-[--text-secondary] hover:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[--color-info]">Open Engine</button>
+          </div>
+        </div>
+      </div>}
+
       {/* Canvas bottom controls and footer overlay */}
       <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between z-20 pointer-events-none">
 
         {/* Left Side: Stats (Aligned with sidebar sync cluster area horizontally) */}
         <div className="flex items-center gap-3 pointer-events-auto">
           <div className="border border-[rgba(255,255,255,0.06)] bg-[#111] rounded-[4px] px-3 py-1 flex flex-col justify-center min-w-[100px] shadow-sm">
-            <span className="text-[10px] text-[#888]">Dimensions</span>
+            <span className="text-[10px] text-[#888]" title="The current API does not report embedding dimensionality">Projection dims</span>
             <span className="text-[13px] font-mono font-medium text-[#f4f4f4]">
-              {meta?.dimensions ?? 1536}
+              2D
             </span>
           </div>
 
           <div className="border border-[rgba(255,255,255,0.06)] bg-[#111] rounded-[4px] px-3 py-1 flex flex-col justify-center min-w-[120px] shadow-sm">
-            <span className="text-[10px] text-[#888]">Total Vectors</span>
+            <span className="text-[10px] text-[#888]">Your vectors</span>
             <span className="text-[13px] font-mono font-medium text-[#f4f4f4]">
               {meta ? formatNumber(meta.totalVectors) : "—"}
             </span>
@@ -169,6 +184,8 @@ export function VectorSpaceCanvas() {
             y={tooltip.y}
             payload={tooltip.payload}
             distance={tooltip.distance}
+            containerWidth={containerRef.current?.clientWidth}
+            containerHeight={containerRef.current?.clientHeight}
           />
         </div>
       )}

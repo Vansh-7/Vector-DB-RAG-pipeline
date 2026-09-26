@@ -119,6 +119,7 @@ export function useVectorCanvas(
       const target = event.target as Element;
       if (!target.classList || !target.classList.contains('data-point')) {
         setTooltip(null);
+        setHighlighted([]);
         if (!g.select('.active-ring').empty()) {
           const currentK = baseScaleRef.current || 1;
           g.selectAll('.active-ring')
@@ -134,7 +135,7 @@ export function useVectorCanvas(
       d3Svg.on('.zoom', null);
       d3Svg.on('.bg', null);
     };
-  }, []);
+  }, [setHighlighted]);
 
   useEffect(() => {
     const svg = svgRef.current;
@@ -180,6 +181,8 @@ export function useVectorCanvas(
       .attr('stroke-width', hitAreaStrokeW)
       .on('click', function (event: MouseEvent, d) {
         event.stopPropagation(); // prevent click.bg from firing
+        const distance = useCanvasStore.getState().highlightedScores[d.id];
+        setHighlighted([d.id], distance === undefined ? {} : { [d.id]: distance });
 
         // Bring clicked point to front
         d3.select(this).raise();
@@ -231,7 +234,7 @@ export function useVectorCanvas(
           x: event.clientX - (rect?.left ?? 0),
           y: event.clientY - (rect?.top ?? 0),
           payload: d.payload,
-          distance: highlightedScores[d.id],
+          distance,
         });
 
       });

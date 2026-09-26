@@ -13,7 +13,10 @@ export function CanvasLegend({ hiddenCategories, onToggle }: CanvasLegendProps) 
         return (
           <button
             key={category}
+            type="button"
             onClick={() => onToggle(category)}
+            aria-label={`${isHidden ? "Show" : "Hide"} ${CATEGORY_LABELS[category]} vectors`}
+            aria-pressed={!isHidden}
             className="flex items-center gap-1.5 text-[11px] font-mono cursor-pointer transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-[#555] rounded-sm"
             style={{ opacity: isHidden ? 0.3 : 0.8 }}
             title={`Toggle ${CATEGORY_LABELS[category]}`}

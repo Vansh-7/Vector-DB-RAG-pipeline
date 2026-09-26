@@ -11,13 +11,16 @@ interface SelectProps {
   onValueChange: (value: string) => void;
   options: SelectOption[];
   placeholder?: string;
+  ariaLabel?: string;
+  disabled?: boolean;
 }
 
-export function Select({ value, onValueChange, options, placeholder }: SelectProps) {
+export function Select({ value, onValueChange, options, placeholder, ariaLabel, disabled }: SelectProps) {
   return (
-    <SelectPrimitive.Root value={value} onValueChange={onValueChange}>
+    <SelectPrimitive.Root value={value} onValueChange={onValueChange} disabled={disabled}>
       <SelectPrimitive.Trigger
-        className="flex items-center justify-between w-full bg-[#161616] border border-[rgba(255,255,255,0.1)] rounded-[4px] px-3 py-2 text-sm text-[#f4f4f4] outline-none focus:border-[rgba(255,255,255,0.18)] transition-colors"
+        aria-label={ariaLabel}
+        className="flex items-center justify-between w-full bg-[#161616] border border-[rgba(255,255,255,0.1)] rounded-[4px] px-3 py-2 text-sm text-[#f4f4f4] outline-none focus:border-[rgba(255,255,255,0.18)] transition-colors disabled:opacity-50"
       >
         <SelectPrimitive.Value placeholder={placeholder} />
         <SelectPrimitive.Icon>
