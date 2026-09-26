@@ -29,7 +29,7 @@ export function SearchPanel() {
   const category = useEngineStore((s) => s.category);
   const setHighlighted = useCanvasStore((s) => s.setHighlighted);
   const setQueryPoint = useCanvasStore((s) => s.setQueryPoint);
-  const setActiveTab = useSessionStore((s) => s.setActiveTab);
+  const openVectorLab = useSessionStore((s) => s.openVectorLab);
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["search", searchQuery, algorithm, metric, topK, category],
@@ -249,7 +249,7 @@ export function SearchPanel() {
             {/* Compare Algorithms Navigation Button */}
             <div className="pt-2">
               <button
-                onClick={() => setActiveTab("benchmarks")}
+                onClick={() => openVectorLab("benchmarks")}
                 className="w-full flex items-center justify-between px-4 py-3 bg-[#111] hover:bg-[#161616] border border-[rgba(255,255,255,0.06)] hover:border-[rgba(255,255,255,0.15)] rounded-[8px] transition-colors group"
               >
                 <div className="flex flex-col text-left">

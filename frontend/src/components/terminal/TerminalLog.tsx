@@ -13,6 +13,9 @@ export function TerminalLog() {
   const resizeRef = useRef<HTMLDivElement>(null);
 
   const { isTerminalCollapsed, terminalHeight, setTerminalCollapsed, setTerminalHeight } = useSessionStore();
+  const heightRef = useRef(terminalHeight);
+  const toggleRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => { heightRef.current = terminalHeight; }, [terminalHeight]);
 
   useEffect(() => {
     if (scrollRef.current && !isTerminalCollapsed) {
@@ -34,7 +37,7 @@ export function TerminalLog() {
       if (isTerminalCollapsed) return;
       e.preventDefault();
       startY = e.clientY;
-      startHeight = terminalHeight;
+      startHeight = heightRef.current;
       document.addEventListener("mousemove", onMouseMove);
       document.addEventListener("mouseup", onMouseUp);
       document.body.style.cursor = "ns-resize";
@@ -42,7 +45,7 @@ export function TerminalLog() {
 
     const onMouseMove = (e: MouseEvent) => {
       const deltaY = startY - e.clientY;
-      const newHeight = Math.min(Math.max(startHeight + deltaY, 120), 800); // 120 to 800 max height to avoid eating whole screen
+      const newHeight = Math.min(Math.max(startHeight + deltaY, 120), 400, window.innerHeight * 0.45);
       setTerminalHeight(newHeight);
     };
 
@@ -57,34 +60,52 @@ export function TerminalLog() {
       handle.removeEventListener("mousedown", onMouseDown);
       document.removeEventListener("mousemove", onMouseMove);
       document.removeEventListener("mouseup", onMouseUp);
+      document.body.style.cursor = "";
     };
-  }, [isTerminalCollapsed, terminalHeight, setTerminalHeight]);
+  }, [isTerminalCollapsed, setTerminalHeight]);
 
   return (
     <div
+      role="region" aria-label="Terminal"
+      onKeyDown={(event) => {
+        if (event.key === "Escape" && !isTerminalCollapsed) {
+          setTerminalCollapsed(true);
+          toggleRef.current?.focus();
+        }
+      }}
       className={`border-t border-[rgba(255,255,255,0.06)] bg-[#0a0a0a] flex flex-col transition-[height] duration-300 ease-in-out relative shrink-0`}
-      style={{ height: isTerminalCollapsed ? '32px' : `${terminalHeight}px` }}
+      style={{ height: isTerminalCollapsed ? '32px' : `min(${terminalHeight}px, 45dvh, 400px)` }}
     >
       {/* Resize Handle */}
       {!isTerminalCollapsed && (
         <div
           ref={resizeRef}
+          role="separator" aria-label="Resize terminal" aria-orientation="horizontal"
+          aria-valuemin={120} aria-valuemax={400} aria-valuenow={Math.min(400, terminalHeight)}
+          onKeyDown={(event) => {
+            if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+              event.preventDefault();
+              setTerminalHeight(Math.min(400, Math.max(120, terminalHeight + (event.key === "ArrowUp" ? 20 : -20))));
+            }
+          }}
           tabIndex={0} className="absolute top-0 left-0 right-0 h-1 -mt-0.5 cursor-ns-resize hover:bg-[rgba(255,255,255,0.1)] focus-visible:bg-[rgba(255,255,255,0.2)] focus-visible:outline-none z-10 transition-colors"
         />
       )}
 
       <div
-        tabIndex={0} className="flex items-center justify-between px-3 py-1.5 border-b border-[rgba(255,255,255,0.06)] cursor-pointer select-none h-8 shrink-0 overflow-hidden focus-visible:outline-none focus-visible:bg-[#111]"
-        onClick={() => setTerminalCollapsed(!isTerminalCollapsed)}
+        className="flex items-center justify-between px-3 py-1.5 border-b border-[rgba(255,255,255,0.06)] select-none h-8 shrink-0 overflow-hidden"
       >
-        <div className="flex items-center gap-3 overflow-hidden">
-          <button type="button" className="text-[#444] hover:text-[#f4f4f4] transition-colors focus:outline-none shrink-0">
+        <button ref={toggleRef} type="button" aria-label={isTerminalCollapsed ? "Expand terminal" : "Collapse terminal"}
+          aria-expanded={!isTerminalCollapsed} aria-controls="terminal-output"
+          onClick={() => setTerminalCollapsed(!isTerminalCollapsed)}
+          className="flex flex-1 min-w-0 items-center gap-3 overflow-hidden text-left rounded focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#888]">
+          <span className="text-[#444] hover:text-[#f4f4f4] transition-colors shrink-0">
             {isTerminalCollapsed ? (
               <ChevronUp className="w-3.5 h-3.5" />
             ) : (
               <ChevronDown className="w-3.5 h-3.5" />
             )}
-          </button>
+          </span>
           
           <span className="text-2xs font-medium tracking-widest text-[#555] uppercase shrink-0">
             Terminal
@@ -92,7 +113,7 @@ export function TerminalLog() {
 
           {/* Last log preview when collapsed */}
           {isTerminalCollapsed && lastLog && (
-            <div className="flex items-center gap-2 overflow-hidden px-2 border-l border-[rgba(255,255,255,0.06)]">
+            <span className="flex items-center gap-2 overflow-hidden px-2 border-l border-[rgba(255,255,255,0.06)]">
               <span className="text-[#444] shrink-0 font-mono text-xs hidden sm:inline">[{lastLog.timestamp}]</span>
               <span className="shrink-0 font-medium font-mono text-xs hidden sm:inline" style={{ color: LOG_LEVEL_COLORS[lastLog.level] }}>
                 [{lastLog.level}]
@@ -100,29 +121,29 @@ export function TerminalLog() {
               <span className="text-[#888] font-mono text-xs truncate max-w-[200px] md:max-w-[400px]">
                 {lastLog.message}
               </span>
-            </div>
+            </span>
           )}
 
           {/* Status Indicator */}
-          <div className="flex items-center gap-2 ml-auto pl-2 shrink-0">
+          <span className="flex items-center gap-2 ml-auto pl-2 shrink-0">
             {status === "connected" ? (
-              <div className="flex items-center gap-1 text-2xs text-[#22c55e] font-mono" title="Connected">
+              <span className="flex items-center gap-1 text-2xs text-[#22c55e] font-mono" title="Connected">
                 <Wifi className="w-3 h-3" />
                 <span>LIVE</span>
-              </div>
+              </span>
             ) : status === "connecting" ? (
-              <div className="flex items-center gap-1 text-2xs text-[#f59e0b] font-mono animate-pulse" title="Connecting...">
+              <span className="flex items-center gap-1 text-2xs text-[#f59e0b] font-mono animate-pulse" title="Connecting...">
                 <Wifi className="w-3 h-3" />
                 <span>CONNECTING</span>
-              </div>
+              </span>
             ) : (
-              <div className="flex items-center gap-1 text-2xs text-[#ef4444] font-mono" title="Disconnected. Auto-reconnecting...">
+              <span className="flex items-center gap-1 text-2xs text-[#ef4444] font-mono" title="Disconnected. Auto-reconnecting...">
                 <WifiOff className="w-3 h-3" />
                 <span>OFFLINE</span>
-              </div>
+              </span>
             )}
-          </div>
-        </div>
+          </span>
+        </button>
         
         <button
           type="button"
@@ -139,8 +160,9 @@ export function TerminalLog() {
 
       {/* Log Output Container */}
       <div
+        id="terminal-output"
         ref={scrollRef}
-        className={`flex-1 overflow-y-auto p-3 font-mono text-xs space-y-0.5 ${isTerminalCollapsed ? "hidden" : "block"}`}
+        className={`flex-1 min-h-0 overflow-y-auto break-words p-3 font-mono text-xs space-y-0.5 ${isTerminalCollapsed ? "hidden" : "block"}`}
       >
         {logs.map((entry, i) => (
           <LogEntry key={i} entry={entry} />

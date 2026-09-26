@@ -38,7 +38,7 @@ const CATEGORY_OPTIONS: { value: Category; label: string }[] = CATEGORY_ORDER
     label: CATEGORY_LABELS[value],
   }));
 
-export function Sidebar() {
+export function Sidebar({ embedded = false }: { embedded?: boolean }) {
   const { algorithm, metric, topK, category, setAlgorithm, setMetric, setTopK, setCategory } =
     useEngineStore();
   const { isSidebarCollapsed, setSidebarCollapsed } = useSessionStore();
@@ -155,7 +155,7 @@ export function Sidebar() {
     }
   };
 
-  if (isSidebarCollapsed) {
+  if (isSidebarCollapsed && !embedded) {
     return (
       <aside className="w-[56px] border-r border-[rgba(255,255,255,0.06)] bg-panel flex flex-col items-center shrink-0 py-4 transition-all duration-300">
         <Tooltip content="Expand Sidebar" side="right">
@@ -197,19 +197,19 @@ export function Sidebar() {
   }
 
   return (
-    <aside className="w-[260px] border-r border-[rgba(255,255,255,0.06)] bg-panel flex flex-col shrink-0 transition-all duration-300">
+    <aside className={`${embedded ? "w-full rounded-md border border-[rgba(255,255,255,0.06)]" : "w-[260px] border-r border-[rgba(255,255,255,0.06)]"} bg-panel flex flex-col shrink-0 transition-all duration-300`}>
       <div className="flex items-center justify-between p-4 pb-0">
         <div className="text-2xs font-medium tracking-widest text-[#555] uppercase">
           Engine Configuration
         </div>
-        <Tooltip content="Collapse Sidebar" side="right">
+        {!embedded && <Tooltip content="Collapse Sidebar" side="right">
           <button
             onClick={() => setSidebarCollapsed(true)}
             className="w-8 h-8 -mr-2 rounded-md flex items-center justify-center text-[#888] hover:text-[#f4f4f4] hover:bg-[#1a1a1a] transition-colors focus:outline-none focus:ring-2 focus:ring-[#555]"
           >
             <PanelLeftClose className="w-4 h-4" />
           </button>
-        </Tooltip>
+        </Tooltip>}
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-5 pt-4">

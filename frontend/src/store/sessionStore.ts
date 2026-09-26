@@ -3,8 +3,16 @@ import { persist } from "zustand/middleware";
 import type { ChatMessage } from "../types";
 
 export type ActiveTab = "ask-ai" | "ingest" | "search" | "benchmarks";
+export type WorkspaceView = "chat" | "documents" | "search" | "vector-lab";
+export type LabView = "space" | "engine" | "benchmarks" | "maintenance";
 
 interface SessionState {
+  activeView: WorkspaceView;
+  labView: LabView;
+  isNavigationCollapsed: boolean;
+  setActiveView: (view: WorkspaceView) => void;
+  openVectorLab: (view?: LabView) => void;
+  setNavigationCollapsed: (collapsed: boolean) => void;
   isSidebarCollapsed: boolean;
   isTerminalCollapsed: boolean;
   terminalHeight: number;
@@ -42,9 +50,16 @@ interface SessionState {
 export const useSessionStore = create<SessionState>()(
   persist(
     (set) => ({
+      // Shell navigation is transient; opening the app always starts in Chat.
+      activeView: "chat",
+      labView: "space",
+      isNavigationCollapsed: false,
+      setActiveView: (view) => set({ activeView: view }),
+      openVectorLab: (view = "space") => set({ activeView: "vector-lab", labView: view }),
+      setNavigationCollapsed: (collapsed) => set({ isNavigationCollapsed: collapsed }),
       activeTab: "search",
       isSidebarCollapsed: false,
-      isTerminalCollapsed: false,
+      isTerminalCollapsed: true,
       terminalHeight: 220,
       chatHistory: [],
       setActiveTab: (tab) => set({ activeTab: tab }),
@@ -85,7 +100,7 @@ export const useSessionStore = create<SessionState>()(
       partialize: (state) => ({ 
         activeTab: state.activeTab, 
         isSidebarCollapsed: state.isSidebarCollapsed, 
-        isTerminalCollapsed: state.isTerminalCollapsed, 
+        isNavigationCollapsed: state.isNavigationCollapsed,
         terminalHeight: state.terminalHeight,
         chatHistory: state.chatHistory,
         searchInputValue: state.searchInputValue,
@@ -95,6 +110,14 @@ export const useSessionStore = create<SessionState>()(
         ingestMode: state.ingestMode,
         ingestTitle: state.ingestTitle,
         ingestDescription: state.ingestDescription
+      }),
+      // Ignore the old expanded-terminal preference without migrating chat data.
+      merge: (persisted, current) => ({
+        ...current,
+        ...(persisted as Partial<SessionState>),
+        activeView: "chat",
+        labView: "space",
+        isTerminalCollapsed: true,
       }),
     }
   )

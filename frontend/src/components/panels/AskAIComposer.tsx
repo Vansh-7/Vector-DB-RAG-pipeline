@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { Send, Mic, Settings, Trash2 } from 'lucide-react';
 import { useVoiceInput } from '../../hooks/useVoiceInput';
+import { useSessionStore } from '../../store/sessionStore';
 
 export type QueryStatus = 'READY' | 'PROCESSING' | 'ERROR';
 
@@ -21,6 +22,7 @@ export function AskAIComposer({
   status,
   isCentered,
 }: AskAIComposerProps) {
+  const openVectorLab = useSessionStore((s) => s.openVectorLab);
   const [flash, setFlash] = useState(false);
   const prevStatusRef = useRef<QueryStatus>(status);
 
@@ -70,7 +72,7 @@ export function AskAIComposer({
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Search, summarize, or analyze vectors..."
+          placeholder="Ask a question about your knowledge..."
           rows={1}
           className={`w-full resize-none bg-transparent border-0 outline-none text-[13px] text-[--text-primary] placeholder:text-[--text-tertiary] font-sans px-2 py-2 leading-relaxed transition-all ${
             isCentered ? 'min-h-[80px]' : 'min-h-[44px]'
@@ -124,7 +126,8 @@ export function AskAIComposer({
           <button
             type="button"
             className="text-[--text-tertiary] hover:text-[--text-secondary] transition-colors flex items-center gap-1.5"
-            title="Engine Configuration (See Sidebar)"
+            title="Engine configuration in Vector Lab"
+            onClick={() => openVectorLab('engine')}
           >
             <Settings className="w-3.5 h-3.5" />
           </button>

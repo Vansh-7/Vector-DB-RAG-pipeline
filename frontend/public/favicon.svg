@@ -1,4 +1,17 @@
-<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-  <text x="12" y="18" font-family="JetBrains Mono, monospace" font-size="20"
-        font-weight="500" fill="#f4f4f4" text-anchor="middle">∇</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 46" fill="none">
+  <title>Kernspace</title>
+  <defs>
+    <linearGradient id="kernspace" x1="6" y1="3" x2="37" y2="31" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#c4ecf5"/>
+      <stop offset=".45" stop-color="#56bdf3"/>
+      <stop offset="1" stop-color="#2461fa"/>
+    </linearGradient>
+    <linearGradient id="kernel" x1="8" y1="9" x2="25" y2="42" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#a5dff6"/>
+      <stop offset="1" stop-color="#00b9ed"/>
+    </linearGradient>
+  </defs>
+  <path d="M2 3h44L30.5 28.4l-3.7-5.2L37.5 8.5H10.2L24 32.3l3.1-4 3.7 5.7L24 43 2 3Z" fill="url(#kernspace)" stroke="#279cdb" stroke-width=".6" stroke-linejoin="round"/>
+  <path d="m2 3 22 40 6.8-9-3.7-5.7-3.1 4L10.2 8.5Z" fill="url(#kernel)"/>
+  <path d="M3 3.5h42M10.2 8.5h27.3L26.8 23.2" stroke="#deefff" stroke-opacity=".5" stroke-width=".65"/>
 </svg>

@@ -19,8 +19,11 @@ function stripThinking(text: string): string {
   return result;
 }
 
-export function AskAIPanel() {
+export function AskAIPanel({ onProcessingChange }: { onProcessingChange?: (processing: boolean) => void }) {
   const [status, setStatus] = useState<QueryStatus>('READY');
+  useEffect(() => {
+    onProcessingChange?.(status === 'PROCESSING');
+  }, [status, onProcessingChange]);
   const input = useSessionStore((s) => s.askAiInput);
   const setInput = useSessionStore((s) => s.setAskAiInput);
 
@@ -112,8 +115,9 @@ export function AskAIPanel() {
       {messages.length === 0 ? (
         // Empty State: Jakob's Law & Hick's Law — No mascots, just the composer and a few chips
         <div className="flex-1 flex flex-col items-center justify-center p-4">
+          <img src="/kernspace-logo.png" alt="Kernspace — RAG and Vector Search" className="w-64 sm:w-80 h-auto mb-4 mix-blend-screen" />
           <h2 className="text-lg font-medium text-[--text-primary] mb-6">
-            Query your vector space.
+            Ask a question.
           </h2>
           <div className="w-full max-w-[520px]">
             <AskAIComposer
@@ -152,7 +156,7 @@ export function AskAIPanel() {
                 onSubmit={handleSubmit}
                 status={status}
                 isCentered={false}
-                onClear={() => { clearChat(); setQueryPoint(null); setHighlighted([]); }}
+                onClear={status === 'PROCESSING' ? undefined : () => { clearChat(); setQueryPoint(null); setHighlighted([]); }}
               />
             </div>
           </div>
