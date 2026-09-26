@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { Send, Mic, Settings, Trash2 } from 'lucide-react';
+import { Send, Mic, Settings, Square } from 'lucide-react';
 import { useVoiceInput } from '../../hooks/useVoiceInput';
 import { useSessionStore } from '../../store/sessionStore';
 
@@ -9,7 +9,7 @@ interface AskAIComposerProps {
   input: string;
   setInput: (val: string) => void;
   onSubmit: () => void;
-  onClear?: () => void;
+  onCancel?: () => void;
   status: QueryStatus;
   isCentered: boolean;
 }
@@ -18,7 +18,7 @@ export function AskAIComposer({
   input,
   setInput,
   onSubmit,
-  onClear,
+  onCancel,
   status,
   isCentered,
 }: AskAIComposerProps) {
@@ -103,17 +103,16 @@ export function AskAIComposer({
 
           <button
             type="button"
-            onClick={() => {
-              if (input.trim() && status !== 'PROCESSING') onSubmit();
-            }}
-            disabled={status === 'PROCESSING' || !input.trim()}
+            onClick={() => status === 'PROCESSING' ? onCancel?.() : input.trim() && onSubmit()}
+            disabled={status !== 'PROCESSING' && !input.trim()}
             className="flex items-center justify-center w-8 h-8 bg-white text-black rounded-[4px] hover:bg-[#e5e5e5] active:scale-[0.96] transition-all disabled:opacity-50 disabled:cursor-not-allowed outline-none focus-visible:ring-2 focus-visible:ring-white/50"
-            title="Send Message"
+            title={status === 'PROCESSING' ? 'Stop answer' : 'Send message'}
+            aria-label={status === 'PROCESSING' ? 'Stop answer' : 'Send message'}
           >
             {status === 'PROCESSING' ? (
-              <div className="w-3.5 h-3.5 border-[2px] border-black/20 border-t-black rounded-full animate-spin" />
+              <Square className="w-3.5 h-3.5 fill-current" aria-hidden="true" />
             ) : (
-              <Send className="w-4 h-4 ml-0.5" />
+              <Send className="w-4 h-4 ml-0.5" aria-hidden="true" />
             )}
           </button>
         </div>
@@ -132,17 +131,6 @@ export function AskAIComposer({
             <Settings className="w-3.5 h-3.5" />
           </button>
 
-          {onClear && !isCentered && (
-            <button
-              type="button"
-              onClick={onClear}
-              className="text-[#555] hover:text-[#ef4444] transition-colors flex items-center gap-1.5 text-[10px] uppercase tracking-widest font-mono"
-              title="Clear Conversation"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-              Clear
-            </button>
-          )}
         </div>
 
         {/* UX: Proximity — Status sits directly under composer right-aligned */}

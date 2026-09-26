@@ -2,14 +2,16 @@
 import ReactMarkdown from 'react-markdown';
 import { Bot } from 'lucide-react';
 import type { ChatMessage as ChatMessageType } from '../../types';
+import type { RAGSource } from '../../types';
 import { SourceCitation } from './SourceCitation';
 
 interface ChatMessageProps {
   message: ChatMessageType;
   isStreaming?: boolean;
+  onInspectSources?: (sources: RAGSource[], trigger: HTMLButtonElement) => void;
 }
 
-export function ChatMessage({ message, isStreaming }: ChatMessageProps) {
+export function ChatMessage({ message, isStreaming, onInspectSources }: ChatMessageProps) {
   const isUser = message.role === 'user';
 
   if (isUser) {
@@ -28,7 +30,7 @@ export function ChatMessage({ message, isStreaming }: ChatMessageProps) {
       <div className="w-full max-w-[95%] flex flex-col gap-1 text-left">
         <div className="flex items-center gap-2 mb-1">
           <Bot className="w-3.5 h-3.5 text-[#3b82f6]" />
-          <span className="font-semibold text-xs text-[--text-primary] uppercase tracking-wide">System Response</span>
+          <span className="font-semibold text-xs text-[--text-primary] tracking-wide">Kernspace</span>
         </div>
         
         <div className="text-[13px] leading-relaxed text-[--text-primary] prose prose-invert prose-p:my-1.5 prose-pre:bg-[#0a0a0a] prose-pre:border prose-pre:border-[rgba(255,255,255,0.06)] prose-pre:rounded-[4px] max-w-none relative">
@@ -45,7 +47,7 @@ export function ChatMessage({ message, isStreaming }: ChatMessageProps) {
         </div>
 
         {message.sources && message.sources.length > 0 && (
-          <SourceCitation sources={message.sources} />
+          <SourceCitation sources={message.sources} onInspect={onInspectSources} />
         )}
       </div>
     </div>

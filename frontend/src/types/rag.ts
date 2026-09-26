@@ -10,6 +10,7 @@ export interface RAGQueryRequest {
 
 export interface RAGSource {
   vectorId: string;
+  documentId?: number | null;
   score: number;
   snippet: string;
   category: Category;

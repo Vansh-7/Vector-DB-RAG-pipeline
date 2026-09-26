@@ -1,90 +1,85 @@
-import { apiRequest } from './client';
-import { useTerminalStore } from '../store/terminalStore';
-import { getCurrentTimestamp } from '../lib/utils';
-import type { RAGSource } from '../types';
+import { apiRequest, ApiError } from "./client";
+import { useTerminalStore } from "../store/terminalStore";
+import { getCurrentTimestamp } from "../lib/utils";
+import type { RAGSource } from "../types";
 
-export async function askQuestion(
-  question: string,
-  k: number,
-  onToken: (token: string) => void,
-  onSources: (sources: RAGSource[]) => void,
-  onQueryPoint: (coords: [number, number]) => void,
-  onDone: () => void,
-  onError: (err: string) => void
-): Promise<void> {
+interface AskQuestionOptions {
+  question: string;
+  k: number;
+  conversationId: number | null;
+  signal: AbortSignal;
+  onConversation: (conversation: { id: number; title: string }) => void;
+  onToken: (token: string) => void;
+  onSources: (sources: RAGSource[]) => void;
+  onQueryPoint: (coords: [number, number]) => void;
+}
+
+export async function askQuestion(options: AskQuestionOptions): Promise<void> {
+  const { question, k, conversationId, signal, onConversation, onToken, onSources, onQueryPoint } = options;
   const addLog = useTerminalStore.getState().addLog;
-  addLog({ timestamp: getCurrentTimestamp(), level: 'INFO', message: `Streaming RAG Query: "${question}"` });
+  addLog({ timestamp: getCurrentTimestamp(), level: "INFO", message: `Streaming RAG Query: "${question}"` });
+
+  const response = await apiRequest("/ask", {
+    method: "POST",
+    body: JSON.stringify({ question, k, conversation_id: conversationId }),
+    signal,
+  });
+  signal.throwIfAborted();
+  if (!response.ok) {
+    const body = await response.json().catch(() => null);
+    const detail = typeof body?.detail === "string" ? body.detail : `Request failed (${response.status}).`;
+    throw new ApiError(response.status, detail);
+  }
+
+  const reader = response.body?.getReader();
+  if (!reader) throw new Error("The answer stream is unavailable.");
+  const decoder = new TextDecoder();
+  let buffer = "";
+  let finished = false;
+  const abortReader = () => { void reader.cancel().catch(() => {}); };
+  signal.addEventListener("abort", abortReader, { once: true });
+
+  const handleLine = (line: string) => {
+    if (!line.trim()) return;
+    let event: { type?: string; data?: unknown };
+    try {
+      event = JSON.parse(line);
+    } catch {
+      throw new Error("The answer stream contained an invalid event.");
+    }
+    if (event.type === "conversation") {
+      const data = event.data as { id?: number; title?: string } | undefined;
+      if (typeof data?.id === "number") onConversation({ id: data.id, title: data.title ?? "New chat" });
+    } else if (event.type === "sources" && Array.isArray(event.data)) {
+      onSources(event.data as RAGSource[]);
+    } else if (event.type === "query_2d" && Array.isArray(event.data) && event.data.length >= 2) {
+      onQueryPoint([Number(event.data[0]), Number(event.data[1])]);
+    } else if (event.type === "token" && typeof event.data === "string") {
+      onToken(event.data);
+    } else if (event.type === "error") {
+      throw new Error(typeof event.data === "string" ? event.data : "Answer generation failed.");
+    }
+  };
 
   try {
-    const res = await apiRequest('/ask', {
-      method: 'POST',
-      body: JSON.stringify({ question, k }),
-    });
-
-    if (!res.ok) {
-      if (res.status === 401) return; // The shared client has already ended the expired session.
-      const err = await res.json().catch(() => ({ detail: res.statusText }));
-      onError(err.detail ?? 'Request failed');
-      return;
-    }
-
-    const reader = res.body?.getReader();
-    if (!reader) {
-      onError('No response body');
-      return;
-    }
-
-    const decoder = new TextDecoder();
-    let buffer = '';
-
     while (true) {
+      signal.throwIfAborted();
       const { done, value } = await reader.read();
-      if (done) {
-        if (buffer.trim()) {
-          // Process any remaining buffer
-          try {
-            const parsed = JSON.parse(buffer);
-            if (parsed.type === 'sources') {
-              onSources(parsed.data);
-            } else if (parsed.type === 'token') {
-              onToken(parsed.data);
-            }
-          } catch (e) {
-            console.warn('[ASK DEBUG] Failed to parse final JSON line:', buffer);
-            onToken(buffer);
-          }
-        }
-        addLog({ timestamp: getCurrentTimestamp(), level: 'SUCCESS', message: 'RAG Stream complete.' });
-        onDone();
-        break;
-      }
-      
+      signal.throwIfAborted();
+      if (done) break;
       buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split('\n');
-      buffer = lines.pop() || ''; // Keep the last incomplete line in the buffer
-      
-      for (const line of lines) {
-        if (!line.trim()) continue;
-        try {
-          const parsed = JSON.parse(line);
-          if (parsed.type === 'sources') {
-            onSources(parsed.data);
-          } else if (parsed.type === 'query_2d') {
-            onQueryPoint(parsed.data);
-          } else if (parsed.type === 'token') {
-            onToken(parsed.data);
-          } else if (parsed.type === 'error') {
-            onError(parsed.data);
-          }
-        } catch (e) {
-          console.warn('[ASK DEBUG] Failed to parse JSON line:', line);
-          onToken(line + '\n');
-        }
-      }
+      const lines = buffer.split("\n");
+      buffer = lines.pop() ?? "";
+      for (const line of lines) handleLine(line);
     }
-  } catch (e) {
-    if (e instanceof DOMException && e.name === 'AbortError') return;
-    console.error('[ASK DEBUG] stream error:', e);
-    onError(e instanceof Error ? e.message : String(e));
+    buffer += decoder.decode();
+    if (buffer.trim()) handleLine(buffer);
+    signal.throwIfAborted();
+    finished = true;
+    addLog({ timestamp: getCurrentTimestamp(), level: "SUCCESS", message: "RAG Stream complete." });
+  } finally {
+    signal.removeEventListener("abort", abortReader);
+    if (!finished) await reader.cancel().catch(() => {});
+    reader.releaseLock();
   }
 }

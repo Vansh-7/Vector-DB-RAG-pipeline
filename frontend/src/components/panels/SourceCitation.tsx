@@ -7,9 +7,10 @@ import { useCanvasStore } from '../../store/canvasStore';
 
 interface SourceCitationProps {
   sources: RAGSource[];
+  onInspect?: (sources: RAGSource[], trigger: HTMLButtonElement) => void;
 }
 
-export function SourceCitation({ sources }: SourceCitationProps) {
+export function SourceCitation({ sources, onInspect }: SourceCitationProps) {
   const [expanded, setExpanded] = useState(false);
   const setHighlighted = useCanvasStore((s) => s.setHighlighted);
 
@@ -19,6 +20,14 @@ export function SourceCitation({ sources }: SourceCitationProps) {
   }, [sources]);
 
   if (!sources || sources.length === 0) return null;
+
+  if (onInspect) return (
+    <button type="button" onClick={(event) => onInspect(sortedSources, event.currentTarget)}
+      className="mt-3 inline-flex items-center gap-2 rounded-[4px] border border-[--border-default] bg-elevated px-3 py-2 text-xs text-[--text-secondary] hover:border-[--border-strong] hover:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[--color-info]">
+      <ChevronRight className="w-3.5 h-3.5 text-[--color-info]" aria-hidden="true" />
+      Sources used <span className="font-mono text-[--text-primary]">{sources.length}</span>
+    </button>
+  );
 
   return (
     <div className="mt-3 bg-[#111111] rounded-[6px] border border-[rgba(255,255,255,0.06)] overflow-hidden">

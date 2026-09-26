@@ -2,6 +2,7 @@ import { FileText, LogOut, MessageSquare, Network, PanelLeftClose, PanelLeftOpen
 import { useAuthStore } from "../../store/authStore";
 import { useSessionStore, type WorkspaceView } from "../../store/sessionStore";
 import { Tooltip } from "../ui/Tooltip";
+import { RecentConversations } from "./RecentConversations";
 
 const NAVIGATION = [
   { view: "chat", label: "Chat", icon: MessageSquare },
@@ -10,7 +11,7 @@ const NAVIGATION = [
   { view: "vector-lab", label: "Vector Lab", icon: Network },
 ] satisfies { view: WorkspaceView; label: string; icon: typeof MessageSquare }[];
 
-export function PrimarySidebar({ onNewChat, chatBusy }: { onNewChat: () => void; chatBusy: boolean }) {
+export function PrimarySidebar({ onNewChat, onSelectConversation, chatBusy }: { onNewChat: () => void; onSelectConversation: (id: number) => void; chatBusy: boolean }) {
   const activeView = useSessionStore((s) => s.activeView);
   const setActiveView = useSessionStore((s) => s.setActiveView);
   const collapsed = useSessionStore((s) => s.isNavigationCollapsed);
@@ -48,12 +49,7 @@ export function PrimarySidebar({ onNewChat, chatBusy }: { onNewChat: () => void;
         ))}
       </nav>
       <div className="flex-1 min-h-0 overflow-y-auto">
-        {!collapsed && activeView === "chat" && (
-          <div className="hidden lg:block mx-5 mt-7 border-t border-[--border-subtle] pt-5">
-            <p className="font-mono text-2xs uppercase tracking-widest text-[#555]">Recent chats</p>
-            <p className="text-xs text-[#888] leading-relaxed mt-3">Conversation history will appear here.</p>
-          </div>
-        )}
+        {!collapsed && activeView === "chat" && <div className="hidden lg:block"><RecentConversations chatBusy={chatBusy} onSelect={onSelectConversation} /></div>}
       </div>
       <div className={`m-3 border-t border-[--border-subtle] pt-3 flex items-center min-h-12 ${collapsed ? "justify-center" : "justify-center lg:justify-between"}`}>
         {!collapsed && <div className="hidden lg:flex items-center gap-2 min-w-0">

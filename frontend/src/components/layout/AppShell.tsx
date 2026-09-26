@@ -4,7 +4,6 @@ import { AskAIPanel } from "../panels/AskAIPanel";
 import { DocumentsView } from "../documents/DocumentsView";
 import { SearchPanel } from "../panels/SearchPanel";
 import { TerminalLog } from "../terminal/TerminalLog";
-import { ConfirmDialog } from "../ui/ConfirmDialog";
 import { VectorLabWorkspace } from "../workspaces/VectorLabWorkspace";
 import { useCanvasStore } from "../../store/canvasStore";
 import { useSessionStore } from "../../store/sessionStore";
@@ -17,7 +16,6 @@ export function AppShell() {
   const activeView = useSessionStore((s) => s.activeView);
   const setActiveView = useSessionStore((s) => s.setActiveView);
   const [chatBusy, setChatBusy] = useState(false);
-  const [confirmNewChat, setConfirmNewChat] = useState(false);
   const chatRef = useRef<HTMLElement>(null);
   const documentsQuery = useDocuments();
   const needsKnowledge = documentsQuery.isSuccess && documentsQuery.data.length === 0;
@@ -29,7 +27,7 @@ export function AppShell() {
   const startNewChat = () => {
     if (chatBusy) return;
     const session = useSessionStore.getState();
-    session.clearChat();
+    session.setActiveConversationId(null);
     session.setAskAiInput("");
     useCanvasStore.getState().setHighlighted([]);
     useCanvasStore.getState().setQueryPoint(null);
@@ -37,14 +35,14 @@ export function AppShell() {
     focusComposer();
   };
 
-  const requestNewChat = () => {
+  const selectConversation = (id: number) => {
     if (chatBusy) return;
+    const session = useSessionStore.getState();
+    session.setActiveConversationId(id);
+    session.setAskAiInput("");
+    useCanvasStore.getState().setHighlighted([]);
+    useCanvasStore.getState().setQueryPoint(null);
     setActiveView("chat");
-    if (useSessionStore.getState().chatHistory.length > 0) {
-      setConfirmNewChat(true);
-    } else {
-      startNewChat();
-    }
   };
 
   return (
@@ -55,7 +53,7 @@ export function AppShell() {
       <TopNav />
       <DataLoader />
       <div className="flex flex-1 min-h-0 min-w-0 overflow-hidden">
-        <PrimarySidebar onNewChat={requestNewChat} chatBusy={chatBusy} />
+        <PrimarySidebar onNewChat={startNewChat} onSelectConversation={selectConversation} chatBusy={chatBusy} />
         <div className="flex flex-1 flex-col min-h-0 min-w-0 overflow-hidden">
           <WorkspaceHeader />
           <main id="workspace" tabIndex={-1} className="flex flex-1 flex-col min-h-0 min-w-0 overflow-hidden outline-none">
@@ -85,9 +83,6 @@ export function AppShell() {
           <TerminalLog />
         </div>
       </div>
-      <ConfirmDialog open={confirmNewChat} onOpenChange={setConfirmNewChat}
-        title="Start a new chat?" description="This clears the current chat saved in this browser. Your indexed knowledge will stay available."
-        confirmLabel="Start new chat" onConfirm={startNewChat} />
     </div>
   );
 }
