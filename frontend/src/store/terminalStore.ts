@@ -9,6 +9,7 @@ interface TerminalState {
   addLog: (log: Omit<LogEntry, "id">) => void;
   setStatus: (status: ConnectionStatus) => void;
   clear: () => void;
+  resetForAuthChange: () => void;
 }
 
 export const useTerminalStore = create<TerminalState>()((set) => ({
@@ -20,4 +21,5 @@ export const useTerminalStore = create<TerminalState>()((set) => ({
     })),
   setStatus: (status) => set({ status }),
   clear: () => set({ logs: [] }),
+  resetForAuthChange: () => set({ logs: [], status: "connecting" }),
 }));

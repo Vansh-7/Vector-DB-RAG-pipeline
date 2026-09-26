@@ -38,6 +38,7 @@ export const useCanvasStore = create<CanvasState>()((set) => ({
     set({
       vectors: [],
       highlightedIds: [],
+      highlightedScores: {},
       queryPoint: null,
       pendingInserts: [],
       meta: null,

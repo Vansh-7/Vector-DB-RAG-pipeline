@@ -1,4 +1,4 @@
-import { getStreamUrl } from './client';
+import { apiRequest } from './client';
 import { useTerminalStore } from '../store/terminalStore';
 import { getCurrentTimestamp } from '../lib/utils';
 import type { RAGSource } from '../types';
@@ -16,14 +16,13 @@ export async function askQuestion(
   addLog({ timestamp: getCurrentTimestamp(), level: 'INFO', message: `Streaming RAG Query: "${question}"` });
 
   try {
-    const url = getStreamUrl('/ask');
-    const res = await fetch(url, {
+    const res = await apiRequest('/ask', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ question, k }),
     });
 
     if (!res.ok) {
+      if (res.status === 401) return; // The shared client has already ended the expired session.
       const err = await res.json().catch(() => ({ detail: res.statusText }));
       onError(err.detail ?? 'Request failed');
       return;
@@ -84,6 +83,7 @@ export async function askQuestion(
       }
     }
   } catch (e) {
+    if (e instanceof DOMException && e.name === 'AbortError') return;
     console.error('[ASK DEBUG] stream error:', e);
     onError(e instanceof Error ? e.message : String(e));
   }

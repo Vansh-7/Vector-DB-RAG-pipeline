@@ -1,4 +1,5 @@
-import { FileText, MessageSquare, Network, PanelLeftClose, PanelLeftOpen, Plus, Search, UserRound } from "lucide-react";
+import { FileText, LogOut, MessageSquare, Network, PanelLeftClose, PanelLeftOpen, Plus, Search, UserRound } from "lucide-react";
+import { useAuthStore } from "../../store/authStore";
 import { useSessionStore, type WorkspaceView } from "../../store/sessionStore";
 import { Tooltip } from "../ui/Tooltip";
 
@@ -14,6 +15,8 @@ export function PrimarySidebar({ onNewChat, chatBusy }: { onNewChat: () => void;
   const setActiveView = useSessionStore((s) => s.setActiveView);
   const collapsed = useSessionStore((s) => s.isNavigationCollapsed);
   const setCollapsed = useSessionStore((s) => s.setNavigationCollapsed);
+  const user = useAuthStore((s) => s.user);
+  const logout = useAuthStore((s) => s.logout);
   const labelClass = collapsed ? "hidden" : "hidden lg:inline";
 
   return (
@@ -52,12 +55,20 @@ export function PrimarySidebar({ onNewChat, chatBusy }: { onNewChat: () => void;
           </div>
         )}
       </div>
-      <div className="m-3 border-t border-[--border-subtle] pt-3 flex items-center gap-3 px-2.5 min-h-12" title="Account · Sign-in coming soon">
-        <UserRound className="w-4 h-4 text-[#888] shrink-0" aria-hidden="true" />
-        <div className={labelClass}>
-          <p className="text-xs text-[#f4f4f4]">Account</p>
-          <p className="text-2xs text-[#555] mt-0.5">Sign-in coming soon</p>
-        </div>
+      <div className={`m-3 border-t border-[--border-subtle] pt-3 flex items-center min-h-12 ${collapsed ? "justify-center" : "justify-center lg:justify-between"}`}>
+        {!collapsed && <div className="hidden lg:flex items-center gap-2 min-w-0">
+          <UserRound className="w-4 h-4 text-[#888] shrink-0" aria-hidden="true" />
+          <div className="min-w-0">
+            <p className="text-xs text-[#f4f4f4]">Account</p>
+            <p className="text-2xs text-[#888] mt-0.5 truncate" title={user?.email}>{user?.email}</p>
+          </div>
+        </div>}
+        <Tooltip content="Sign out">
+          <button type="button" onClick={logout} aria-label="Sign out"
+            className="p-2 rounded text-[#888] hover:bg-hover hover:text-[#f4f4f4] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#888]">
+            <LogOut className="w-4 h-4" aria-hidden="true" />
+          </button>
+        </Tooltip>
       </div>
     </aside>
   );

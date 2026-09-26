@@ -25,6 +25,7 @@ interface SessionState {
   addMessage: (message: ChatMessage) => void;
   updateMessage: (id: string, updates: Partial<ChatMessage>) => void;
   clearChat: () => void;
+  resetForAuthChange: () => void;
 
   // Search Panel State
   searchInputValue: string;
@@ -77,6 +78,19 @@ export const useSessionStore = create<SessionState>()(
           ),
         })),
       clearChat: () => set({ chatHistory: [] }),
+      resetForAuthChange: () => set({
+        activeView: "chat",
+        labView: "space",
+        isTerminalCollapsed: true,
+        chatHistory: [],
+        searchInputValue: "",
+        searchQuery: "",
+        searchDismissedIds: [],
+        askAiInput: "",
+        ingestMode: "manual",
+        ingestTitle: "",
+        ingestDescription: "",
+      }),
 
       searchInputValue: "",
       setSearchInputValue: (val) => set({ searchInputValue: val }),
@@ -97,28 +111,21 @@ export const useSessionStore = create<SessionState>()(
     }),
     {
       name: "vectordb-session-storage",
-      partialize: (state) => ({ 
-        activeTab: state.activeTab, 
-        isSidebarCollapsed: state.isSidebarCollapsed, 
+      partialize: (state) => ({
+        isSidebarCollapsed: state.isSidebarCollapsed,
         isNavigationCollapsed: state.isNavigationCollapsed,
         terminalHeight: state.terminalHeight,
-        chatHistory: state.chatHistory,
-        searchInputValue: state.searchInputValue,
-        searchQuery: state.searchQuery,
-        searchDismissedIds: state.searchDismissedIds,
-        askAiInput: state.askAiInput,
-        ingestMode: state.ingestMode,
-        ingestTitle: state.ingestTitle,
-        ingestDescription: state.ingestDescription
       }),
-      // Ignore the old expanded-terminal preference without migrating chat data.
-      merge: (persisted, current) => ({
-        ...current,
-        ...(persisted as Partial<SessionState>),
-        activeView: "chat",
-        labView: "space",
-        isTerminalCollapsed: true,
-      }),
+      // Only restore layout preferences from older storage; never hydrate user content.
+      merge: (persisted, current) => {
+        const saved = persisted as Partial<SessionState> | null;
+        return {
+          ...current,
+          isSidebarCollapsed: saved?.isSidebarCollapsed === true,
+          isNavigationCollapsed: saved?.isNavigationCollapsed === true,
+          terminalHeight: typeof saved?.terminalHeight === "number" ? saved.terminalHeight : current.terminalHeight,
+        };
+      },
     }
   )
 );
