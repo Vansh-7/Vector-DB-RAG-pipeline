@@ -1,9 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { getStatus } from "../../api/status";
-import { useEngineStore } from "../../store/engineStore";
 
 export function TopNav() {
-  const modelName = useEngineStore((s) => s.modelName);
   // Shares DataLoader's status query; no separate polling loop.
   const { data, isError, isPending } = useQuery({
     queryKey: ["dbStatus"], queryFn: getStatus, retry: false,
@@ -25,7 +23,7 @@ export function TopNav() {
         <span className="hidden sm:inline" title={data && !isError ? `Shared ${data.engine.toUpperCase()} index · ${data.metric}` : "Index status unavailable"}>
           Shared index: <span className="text-[#f4f4f4]">{data && !isError ? `${data.total_docs.toLocaleString()} vectors` : "—"}</span>
         </span>
-        <span className="hidden md:inline" title={`${modelName} · Inference health is not reported by the API`}>
+        <span className="hidden md:inline" title="Inference health is not reported by the API">
           LLM: <span className="text-[#888]">Not checked</span>
         </span>
       </div>

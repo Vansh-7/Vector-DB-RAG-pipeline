@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useCanvasStore } from '../../store/canvasStore';
+import { useVectorSample } from '../../hooks/useVectorSample';
 
 interface AskAIPromptChipsProps {
   onSelect: (prompt: string) => void;
@@ -28,7 +28,8 @@ function extractTopic(text: string): string {
 }
 
 export function AskAIPromptChips({ onSelect }: AskAIPromptChipsProps) {
-  const vectors = useCanvasStore((s) => s.vectors);
+  const { data: sample } = useVectorSample();
+  const vectors = sample?.vectors;
 
   const chips = useMemo(() => {
     if (!vectors || vectors.length === 0) return FALLBACK_CHIPS;

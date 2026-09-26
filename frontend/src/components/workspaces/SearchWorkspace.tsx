@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { ArrowRight, ArrowUpRight, FileText, Loader2, RefreshCw, Search, X } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { search } from "../../api/search";
+import { getStatus } from "../../api/status";
 import { useDocuments } from "../../hooks/useDocuments";
 import { useAuthStore } from "../../store/authStore";
 import { useCanvasStore } from "../../store/canvasStore";
@@ -25,15 +26,14 @@ export function SearchWorkspace() {
   const openVectorLab = useSessionStore((s) => s.openVectorLab);
   const userId = useAuthStore((s) => s.user?.id);
   const topK = useEngineStore((s) => s.topK);
-  const algorithm = useEngineStore((s) => s.algorithm);
-  const metric = useEngineStore((s) => s.metric);
+  const { data: engineStatus } = useQuery({ queryKey: ["dbStatus"], queryFn: getStatus, retry: false });
   const setHighlighted = useCanvasStore((s) => s.setHighlighted);
   const setQueryPoint = useCanvasStore((s) => s.setQueryPoint);
   const { data: documents = [], isSuccess: documentsLoaded } = useDocuments();
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const { data, isFetching, isError, error, refetch } = useQuery({
-    queryKey: ["search", userId, submittedQuery, topK, algorithm, metric],
+    queryKey: ["search", userId, submittedQuery, topK, engineStatus?.engine, engineStatus?.metric],
     queryFn: () => search({ q: submittedQuery, k: topK }),
     enabled: userId !== undefined && submittedQuery.trim().length > 0,
     staleTime: 30_000,

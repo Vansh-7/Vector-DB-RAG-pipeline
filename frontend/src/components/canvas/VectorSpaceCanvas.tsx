@@ -1,17 +1,14 @@
 import { useState, useCallback } from "react";
 import { Plus, Minus, Home } from "lucide-react";
-import type { Category } from "../../types";
+import type { Category, VectorPoint2D } from "../../types";
 import { useVectorCanvas } from "../../hooks/useVectorCanvas";
-import { useCanvasStore } from "../../store/canvasStore";
 import { CanvasLegend } from "./CanvasLegend";
 import { VectorTooltip } from "./VectorTooltip";
 import { formatNumber } from "../../lib/utils";
 import { Tooltip as UITooltip } from "../ui/Tooltip";
 import { useSessionStore } from "../../store/sessionStore";
 
-export function VectorSpaceCanvas() {
-  const vectors = useCanvasStore((s) => s.vectors);
-  const meta = useCanvasStore((s) => s.meta);
+export function VectorSpaceCanvas({ vectors, count }: { vectors: VectorPoint2D[]; count?: number }) {
   const setActiveView = useSessionStore((s) => s.setActiveView);
   const openVectorLab = useSessionStore((s) => s.openVectorLab);
   const [hiddenCategories, setHiddenCategories] = useState<Set<Category>>(new Set());
@@ -87,7 +84,7 @@ export function VectorSpaceCanvas() {
         </defs>
       </svg>
 
-      {meta?.totalVectors === 0 && <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center px-6">
+      {count === 0 && <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center px-6">
         <div className="pointer-events-auto max-w-sm rounded-md border border-[--border-default] bg-panel/95 p-6 text-center shadow-[0_18px_60px_rgba(0,0,0,0.45)]">
           <p className="font-mono text-2xs uppercase tracking-[0.18em] text-[--color-info]">Vector space / empty</p>
           <h3 className="mt-2 text-sm font-semibold">Nothing to project yet.</h3>
@@ -114,7 +111,7 @@ export function VectorSpaceCanvas() {
           <div className="border border-[rgba(255,255,255,0.06)] bg-[#111] rounded-[4px] px-3 py-1 flex flex-col justify-center min-w-[120px] shadow-sm">
             <span className="text-[10px] text-[#888]">Your vectors</span>
             <span className="text-[13px] font-mono font-medium text-[#f4f4f4]">
-              {meta ? formatNumber(meta.totalVectors) : "—"}
+              {count !== undefined ? formatNumber(count) : "—"}
             </span>
           </div>
         </div>

@@ -2,13 +2,14 @@ import { Crosshair, Layers3, X } from "lucide-react";
 import { useCanvasStore } from "../../store/canvasStore";
 import { ALGORITHM_DISPLAY, CATEGORY_COLORS, CATEGORY_LABELS, METRIC_DISPLAY } from "../../types/vector";
 import type { DbStatusResponse } from "../../api/status";
+import type { VectorPoint2D } from "../../types/vector";
 
-export function VectorInspector({ status, count, onClose }: {
+export function VectorInspector({ status, vectors, count, onClose }: {
   status?: DbStatusResponse;
+  vectors: VectorPoint2D[];
   count?: number;
   onClose: () => void;
 }) {
-  const vectors = useCanvasStore((s) => s.vectors);
   const highlightedIds = useCanvasStore((s) => s.highlightedIds);
   const highlightedScores = useCanvasStore((s) => s.highlightedScores);
   const queryPoint = useCanvasStore((s) => s.queryPoint);

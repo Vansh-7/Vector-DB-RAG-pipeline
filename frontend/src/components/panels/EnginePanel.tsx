@@ -32,8 +32,6 @@ export function EnginePanel() {
   const setTopK = useEngineStore((s) => s.setTopK);
   const category = useEngineStore((s) => s.category);
   const setCategory = useEngineStore((s) => s.setCategory);
-  const setAlgorithm = useEngineStore((s) => s.setAlgorithm);
-  const setMetric = useEngineStore((s) => s.setMetric);
   const [draftAlgorithm, setDraftAlgorithm] = useState<Algorithm>("hnsw");
   const [draftMetric, setDraftMetric] = useState<DistanceMetric>("cosine");
   const [payload, setPayload] = useState("");
@@ -50,8 +48,6 @@ export function EnginePanel() {
       addLog({ timestamp: getCurrentTimestamp(), level: "INFO", message: `Reconfiguring shared index to ${algorithm}/${metric}…` });
     },
     onSuccess: (result) => {
-      setAlgorithm(result.algorithm);
-      setMetric(result.metric);
       queryClient.setQueryData<DbStatusResponse>(["dbStatus"], {
         engine: result.algorithm,
         metric: result.metric,

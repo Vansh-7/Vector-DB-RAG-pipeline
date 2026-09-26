@@ -2,14 +2,16 @@ import { useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Activity, Network, PanelRightOpen, RefreshCw, Settings2, Terminal, Wrench } from "lucide-react";
 import { getStatus } from "../../api/status";
-import { getVectorSample } from "../../api/vectors";
-import { useAuthStore } from "../../store/authStore";
+import { useVectorSample } from "../../hooks/useVectorSample";
 import { useSessionStore, type LabView } from "../../store/sessionStore";
 import { VectorInspector } from "../canvas/VectorInspector";
 import { VectorSpaceCanvas } from "../canvas/VectorSpaceCanvas";
 import { BenchmarksPanel } from "../panels/BenchmarksPanel";
 import { EnginePanel } from "../panels/EnginePanel";
 import { MaintenancePanel } from "../panels/MaintenancePanel";
+import type { VectorPoint2D } from "../../types/vector";
+
+const EMPTY_VECTORS: VectorPoint2D[] = [];
 
 const SECTIONS = [
   { view: "space", label: "Vector Space", icon: Network },
@@ -23,7 +25,6 @@ export function VectorLabWorkspace({ active }: { active: boolean }) {
   const openVectorLab = useSessionStore((s) => s.openVectorLab);
   const isTerminalCollapsed = useSessionStore((s) => s.isTerminalCollapsed);
   const setTerminalCollapsed = useSessionStore((s) => s.setTerminalCollapsed);
-  const userId = useAuthStore((s) => s.user?.id);
   const [inspectorOpen, setInspectorOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const queryClient = useQueryClient();
@@ -33,11 +34,8 @@ export function VectorLabWorkspace({ active }: { active: boolean }) {
     requestAnimationFrame(() => inspectorToggleRef.current?.focus());
   };
   const { data: status } = useQuery({ queryKey: ["dbStatus"], queryFn: getStatus, retry: false });
-  const { data: sample } = useQuery({
-    queryKey: ["vectorSample", userId, status?.total_docs],
-    queryFn: () => getVectorSample(2000),
-    enabled: userId !== undefined && !!status,
-  });
+  const { data: sample } = useVectorSample();
+  const vectors = sample?.vectors ?? EMPTY_VECTORS;
   const refreshLab = async () => {
     if (isRefreshing) return;
     setIsRefreshing(true);
@@ -88,9 +86,9 @@ export function VectorLabWorkspace({ active }: { active: boolean }) {
         ))}
       </nav>
       {active && view === "space" && <div className="relative flex min-h-0 min-w-0 flex-1 overflow-hidden">
-        <VectorSpaceCanvas />
+        <VectorSpaceCanvas vectors={vectors} count={sample?.count} />
         <div className={`${inspectorOpen ? "flex" : "hidden"} absolute inset-y-0 right-0 z-30 w-[min(320px,calc(100vw-5rem))] min-w-0 border-l border-[--border-default] shadow-[-16px_0_40px_rgba(0,0,0,0.45)] xl:static xl:z-auto xl:flex xl:w-[300px] xl:shrink-0 xl:shadow-none`}>
-          <VectorInspector status={status} count={sample?.count} onClose={closeInspector} />
+          <VectorInspector status={status} vectors={vectors} count={sample?.count} onClose={closeInspector} />
         </div>
       </div>}
       <div className={`${view === "space" ? "hidden" : "block"} flex-1 min-h-0 overflow-y-auto p-4 sm:p-6`}>

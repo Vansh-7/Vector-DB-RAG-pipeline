@@ -63,12 +63,6 @@ export interface VectorSampleResponse {
   count: number;
 }
 
-export interface VectorMeta {
-  totalVectors: number;
-  indexAlgorithm: Algorithm;
-  lastUpdated: string;
-}
-
 export interface InsertVectorRequest {
   category: Category;
   payload: string;
