@@ -1,13 +1,14 @@
 import { useRef, useState } from "react";
 import { DataLoader } from "../DataLoader";
 import { AskAIPanel } from "../panels/AskAIPanel";
-import { IngestPanel } from "../panels/IngestPanel";
+import { DocumentsView } from "../documents/DocumentsView";
 import { SearchPanel } from "../panels/SearchPanel";
 import { TerminalLog } from "../terminal/TerminalLog";
 import { ConfirmDialog } from "../ui/ConfirmDialog";
 import { VectorLabWorkspace } from "../workspaces/VectorLabWorkspace";
 import { useCanvasStore } from "../../store/canvasStore";
 import { useSessionStore } from "../../store/sessionStore";
+import { useDocuments } from "../../hooks/useDocuments";
 import { PrimarySidebar } from "./PrimarySidebar";
 import { TopNav } from "./TopNav";
 import { WorkspaceHeader } from "./WorkspaceHeader";
@@ -18,6 +19,8 @@ export function AppShell() {
   const [chatBusy, setChatBusy] = useState(false);
   const [confirmNewChat, setConfirmNewChat] = useState(false);
   const chatRef = useRef<HTMLElement>(null);
+  const documentsQuery = useDocuments();
+  const needsKnowledge = documentsQuery.isSuccess && documentsQuery.data.length === 0;
 
   const focusComposer = () => {
     requestAnimationFrame(() => chatRef.current?.querySelector("textarea")?.focus());
@@ -59,15 +62,17 @@ export function AppShell() {
             {/* Keep feature owners mounted so navigation preserves streams and file selections. */}
             <section ref={chatRef} aria-label="Chat workspace" inert={activeView !== "chat"}
               className={`${activeView === "chat" ? "flex" : "hidden"} flex-1 flex-col min-h-0 min-w-0`}>
+              {needsKnowledge && <div className="shrink-0 flex flex-wrap items-center justify-between gap-2 border-b border-[--border-subtle] bg-panel/60 px-4 sm:px-6 py-3">
+                <p className="text-xs text-[--text-secondary]">Build your knowledge space to get source-backed answers.</p>
+                <button type="button" onClick={() => setActiveView("documents")} className="text-xs text-[--color-info] hover:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[--color-info]">Add a document</button>
+              </div>}
               <div className="w-full max-w-4xl mx-auto flex-1 min-h-0">
                 <AskAIPanel onProcessingChange={setChatBusy} />
               </div>
             </section>
             <section aria-label="Documents workspace" inert={activeView !== "documents"}
               className={`${activeView === "documents" ? "flex" : "hidden"} flex-1 flex-col min-h-0 min-w-0 overflow-y-auto`}>
-              <div className="w-full max-w-3xl mx-auto flex-1 min-h-[420px] p-2 sm:p-4">
-                <IngestPanel />
-              </div>
+              <DocumentsView />
             </section>
             <section aria-label="Search workspace" inert={activeView !== "search"}
               className={`${activeView === "search" ? "flex" : "hidden"} flex-1 flex-col min-h-0 min-w-0`}>

@@ -24,12 +24,12 @@ export function ConfirmDialog({
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/60 z-50" />
-        <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#161616] border border-[rgba(255,255,255,0.1)] rounded-md p-6 w-[420px] z-50 outline-none">
+        <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#161616] border border-[rgba(255,255,255,0.1)] rounded-md p-6 w-[calc(100vw-2rem)] max-w-[420px] z-50 outline-none">
           <div className="flex items-start justify-between mb-4">
             <Dialog.Title className="text-md font-semibold text-[#f4f4f4]">
               {title}
             </Dialog.Title>
-            <Dialog.Close className="text-[#555] hover:text-[#888] transition-colors">
+            <Dialog.Close aria-label="Close dialog" className="text-[#555] hover:text-[#888] transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#888]">
               <X className="w-4 h-4" />
             </Dialog.Close>
           </div>
