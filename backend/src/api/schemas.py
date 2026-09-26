@@ -1,4 +1,5 @@
-from pydantic import BaseModel, Field
+from datetime import datetime
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class InsertRequest(BaseModel):
@@ -24,13 +25,22 @@ class SearchResultItem(BaseModel):
     distance: float
     metadata: str
     category: str
+    document_id: int | None = None
 
 
 class IngestRequest(BaseModel):
     text: str = Field(
-        ..., description="The raw document text to be ingested into the RAG pipeline."
+        ...,
+        description="Raw document text to ingest.",
     )
-    category: str = Field(default="general", description="Optional category for the document.")
+    category: str = Field(
+        default="general",
+        description="Document category.",
+    )
+    title: str | None = Field(
+        default=None,
+        description="Optional display name for pasted text.",
+    )
 
 
 class AskRequest(BaseModel):
@@ -73,3 +83,20 @@ class BenchmarkResponse(BaseModel):
     algorithms: list[AlgorithmBenchmark]
     timestamp: str
     topology: list[HnswLayerStats] | None = None
+    
+class DocumentResponse(BaseModel):
+    id: int
+    name: str
+    category: str
+    source_type: str
+    status: str
+    chunk_count: int
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+class IngestResponse(BaseModel):
+    document_id: int
+    status: str
+    chunk_count: int
+    message: str

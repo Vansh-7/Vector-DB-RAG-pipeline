@@ -2,13 +2,15 @@ from pydantic import BaseModel, ConfigDict, Field
 
 class VectorItem(BaseModel):
     """
-    Represents a single document or chunk stored in the Vector DB
+    Represents a single document chunk stored in the Vector DB.
     """
 
-    id: int = Field(..., description="Unique identifier for the vector item")
-    metadata: str = Field(..., description="Text content, title, or description of the chunk")
-    category: str = Field(..., description="Category or tag (e.g., 'cs', 'math', 'doc')")
-    embedding: list[float] = Field(..., description="The high-dimensional vector representation")
+    id: int = Field(..., description="Unique identifier for the vector item",)
+    metadata: str = Field(..., description="Text content of the chunk",)
+    category: str = Field(..., description="Category or tag",)
+    embedding: list[float] = Field(..., description="High-dimensional vector representation",)
+    user_id: int | None = Field(default=None, description="Owner of this vector chunk",)
+    document_id: int | None = Field(default=None, description="PostgreSQL document record this chunk belongs to",)
 
 
 class SearchResult(BaseModel):

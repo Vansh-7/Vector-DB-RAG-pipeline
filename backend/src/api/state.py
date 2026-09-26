@@ -1,6 +1,7 @@
 import asyncio
 from config import settings
 from pathlib import Path
+from typing import Any
 
 from core.indexes.hnsw import HNSWIndex
 from core.indexes.kd_tree import KDTreeIndex
@@ -47,5 +48,4 @@ wal.replay(vector_db)
 
 db_lock = asyncio.Lock()
 # PCA State for projecting queries
-pca_model = None
-pca_max_val = 1.0
+pca_models: dict[int, tuple[Any, float]] = {}
