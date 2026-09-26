@@ -2,7 +2,6 @@ import os
 from dataclasses import dataclass
 from pathlib import Path
 
-
 DEFAULT_CORS_ORIGINS = (
     "http://localhost:5173",
     "http://localhost:5174",
@@ -27,6 +26,19 @@ def _get_cors_origins() -> tuple[str, ...]:
     )
 
 
+def _get_operator_user_ids() -> frozenset[int]:
+    raw_ids = os.getenv("OPERATOR_USER_IDS", "")
+    ids: set[int] = set()
+    for value in raw_ids.split(","):
+        value = value.strip()
+        if not value:
+            continue
+        if not value.isascii() or not value.isdecimal() or int(value) < 1:
+            raise ValueError("OPERATOR_USER_IDS must contain positive integer user IDs.")
+        ids.add(int(value))
+    return frozenset(ids)
+
+
 @dataclass(frozen=True)
 class Settings:
     cors_origins: tuple[str, ...]
@@ -40,6 +52,7 @@ class Settings:
     database_url: str
     jwt_secret_key: str
     jwt_access_token_expire_minutes: int
+    operator_user_ids: frozenset[int]
 
 
 def load_settings() -> Settings:
@@ -84,6 +97,7 @@ def load_settings() -> Settings:
         jwt_access_token_expire_minutes=int(
             os.getenv("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", "60")
         ),
+        operator_user_ids=_get_operator_user_ids(),
     )
 
 

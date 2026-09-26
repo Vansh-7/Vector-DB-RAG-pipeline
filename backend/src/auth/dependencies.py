@@ -6,9 +6,9 @@ from fastapi.security import (
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from auth.security import decode_access_token
+from config import settings
 from db.models import User
 from db.session import get_db
-
 
 bearer_scheme = HTTPBearer(
     auto_error=False,
@@ -48,3 +48,14 @@ async def get_current_user(
         )
 
     return user
+
+
+async def get_operator_user(
+    current_user: User = Depends(get_current_user),
+) -> User:
+    if current_user.id not in settings.operator_user_ids:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Operator access required for shared-index operations.",
+        )
+    return current_user

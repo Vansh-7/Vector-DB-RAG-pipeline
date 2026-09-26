@@ -30,13 +30,12 @@ from ai.embedder import embedder
 from ai.generator import llm_generator
 from ai.reranker import cross_encoder
 from api import schemas
-from auth.dependencies import get_current_user
+from auth.dependencies import get_current_user, get_operator_user
 from core.indexes.hnsw import HNSWIndex
 from core.logger import logger
 from core.types import SearchResult, VectorItem
-from db.models import Document, User, Conversation, Message
+from db.models import Conversation, Document, Message, User
 from db.session import AsyncSessionLocal, get_db
-
 
 router = APIRouter()
 
@@ -840,13 +839,12 @@ async def delete_vector(
     status_code=status.HTTP_200_OK,
 )
 async def save_database(
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_operator_user),
 ) -> dict[str, str]:
     """
     Creates a global vector snapshot.
 
-    This remains an authenticated operational endpoint for V1.
-    Long-term it should be restricted to an admin/operator role.
+    Only configured operators may snapshot the shared index.
     """
     try:
         async with state.db_lock:
@@ -1427,13 +1425,12 @@ async def get_db_status() -> dict[str, Any]:
 async def configure_engine(
     algorithm: str,
     metric: str,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_operator_user),
 ) -> dict[str, Any]:
     """
     Reconfigures the shared vector engine.
 
-    This is an authenticated operational endpoint in V1.
-    Long-term this should require an explicit admin/operator role.
+    Only configured operators may rebuild the shared index.
     """
     if algorithm not in (
         "hnsw",
