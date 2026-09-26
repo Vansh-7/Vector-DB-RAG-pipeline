@@ -34,8 +34,8 @@ from auth.dependencies import get_current_user
 from core.indexes.hnsw import HNSWIndex
 from core.logger import logger
 from core.types import SearchResult, VectorItem
-from db.models import Document, User
-from db.session import get_db
+from db.models import Document, User, Conversation, Message
+from db.session import AsyncSessionLocal, get_db
 
 
 router = APIRouter()
@@ -1807,18 +1807,137 @@ async def ingest_file(
 # ---------------------------------------------------------------------------
 # RAG
 # ---------------------------------------------------------------------------
+def _conversation_title_from_question( question: str,) -> str:
+    normalized = " ".join(
+        question.split()
+    ).strip()
 
+    if not normalized:
+        return "New chat"
+
+    return normalized[:80]
+
+
+async def _prepare_chat_turn(
+    session: AsyncSession,
+    *,
+    user_id: int,
+    question: str,
+    conversation_id: int | None,
+) -> Conversation:
+    """
+    Resolves or creates the user's conversation and persists
+    the user's message before the RAG pipeline starts.
+    """
+
+    if conversation_id is None:
+        conversation = Conversation(
+            user_id=user_id,
+            title=_conversation_title_from_question(
+                question
+            ),
+        )
+
+        session.add(
+            conversation
+        )
+
+        # Obtain conversation.id without committing yet.
+        await session.flush()
+
+    else:
+        conversation = await session.scalar(
+            select(Conversation).where(
+                Conversation.id
+                == conversation_id,
+                Conversation.user_id
+                == user_id,
+            )
+        )
+
+        if conversation is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Conversation not found.",
+            )
+
+    conversation.updated_at = (
+        datetime.now(
+            timezone.utc
+        )
+    )
+
+    session.add(
+        Message(
+            conversation_id=conversation.id,
+            role="user",
+            content=question,
+            sources=None,
+        )
+    )
+
+    try:
+        await session.commit()
+        await session.refresh(
+            conversation
+        )
+
+    except Exception as exc:
+        await session.rollback()
+
+        logger.exception(
+            f"Failed saving user message "
+            f"user_id={user_id}: {exc}"
+        )
+
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to persist chat message.",
+        ) from exc
+
+    return conversation
 
 @router.post("/ask")
 async def ask_question(
     request: schemas.AskRequest,
-    current_user: User = Depends(get_current_user),
-    session: AsyncSession = Depends(get_db),
+    current_user: User = Depends(
+        get_current_user
+    ),
+    session: AsyncSession = Depends(
+        get_db
+    ),
 ) -> StreamingResponse:
+    question = (
+        request.question.strip()
+    )
+
+    if not question:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Question cannot be empty.",
+        )
+
+    # ---------------------------------------------------------
+    # 1. Resolve/create conversation + save user message
+    # ---------------------------------------------------------
+
+    conversation = await _prepare_chat_turn(
+        session,
+        user_id=current_user.id,
+        question=question,
+        conversation_id=(
+            request.conversation_id
+        ),
+    )
+
+    # ---------------------------------------------------------
+    # 2. Embed question
+    # ---------------------------------------------------------
+
     try:
         question_vector = (
             await embedder.embed_text(
-                request.question
+                question
             )
         )
 
@@ -1833,10 +1952,26 @@ async def ask_question(
             detail="Embedding service is unavailable.",
         ) from exc
 
+    if (
+        len(question_vector)
+        != state.DEFAULT_DIMS
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=(
+                "Embedding model returned "
+                "an invalid vector."
+            ),
+        )
+
     question_arr = np.asarray(
         question_vector,
         dtype=float,
     )
+
+    # ---------------------------------------------------------
+    # 3. Tenant-safe retrieval
+    # ---------------------------------------------------------
 
     ready_document_ids = (
         await _get_ready_document_ids(
@@ -1851,19 +1986,25 @@ async def ask_question(
             request.k * 4,
         )
 
-        raw_results = _search_user_vectors(
-            query=question_arr,
-            user_id=current_user.id,
-            ready_document_ids=ready_document_ids,
-            k=broad_k,
+        raw_results = (
+            _search_user_vectors(
+                query=question_arr,
+                user_id=current_user.id,
+                ready_document_ids=(
+                    ready_document_ids
+                ),
+                k=broad_k,
+            )
         )
 
         if raw_results:
-            reranked = await asyncio.to_thread(
-                cross_encoder.rerank,
-                request.question,
-                raw_results,
-                top_n=request.k,
+            reranked = (
+                await asyncio.to_thread(
+                    cross_encoder.rerank,
+                    question,
+                    raw_results,
+                    top_n=request.k,
+                )
             )
 
             best_results = [
@@ -1871,7 +2012,8 @@ async def ask_question(
                     score,
                     result,
                 )
-                for score, result in reranked
+                for score, result
+                in reranked
                 if score > 0
             ]
 
@@ -1889,28 +2031,65 @@ async def ask_question(
             detail="RAG retrieval failed.",
         ) from exc
 
-    query_2d = _project_query_for_user(
-        current_user.id,
-        question_arr,
+    # ---------------------------------------------------------
+    # 4. Visualization projection
+    # ---------------------------------------------------------
+
+    query_2d = (
+        _project_query_for_user(
+            current_user.id,
+            question_arr,
+        )
     )
 
+    sources = [
+        {
+            "vectorId": str(
+                result.item.id
+            ),
+            "documentId": getattr(
+                result.item,
+                "document_id",
+                None,
+            ),
+            "category": (
+                result.item.category
+            ),
+            "score": float(score),
+            "snippet": (
+                result.item.metadata
+            ),
+        }
+        for score, result
+        in best_results
+    ]
+
+    best_chunks = [
+        result.item.metadata
+        for _, result
+        in best_results
+    ]
+
+    # ---------------------------------------------------------
+    # 5. Stream LLM output and persist completed assistant answer
+    # ---------------------------------------------------------
+
     async def response_stream():
-        sources = [
-            {
-                "vectorId": str(
-                    result.item.id
-                ),
-                "documentId": getattr(
-                    result.item,
-                    "document_id",
-                    None,
-                ),
-                "category": result.item.category,
-                "score": float(score),
-                "snippet": result.item.metadata,
-            }
-            for score, result in best_results
-        ]
+        # Existing frontend ignores unknown event types, so this is
+        # backward-compatible. Later the frontend can use it to
+        # remember the current conversation ID.
+        yield (
+            json.dumps(
+                {
+                    "type": "conversation",
+                    "data": {
+                        "id": conversation.id,
+                        "title": conversation.title,
+                    },
+                }
+            )
+            + "\n"
+        )
 
         yield (
             json.dumps(
@@ -1933,26 +2112,183 @@ async def ask_question(
                 + "\n"
             )
 
-        best_chunks = [
-            result.item.metadata
-            for _, result in best_results
-        ]
+        assistant_parts: list[str] = []
+        generation_failed = False
 
-        async for chunk in (
-            llm_generator.generate_stream(
-                request.question,
-                best_chunks,
+        try:
+            async for chunk in (
+                llm_generator.generate_stream(
+                    question,
+                    best_chunks,
+                )
+            ):
+                try:
+                    event = json.loads(
+                        chunk
+                    )
+
+                    event_type = (
+                        event.get("type")
+                    )
+
+                    if (
+                        event_type
+                        == "token"
+                    ):
+                        token = str(
+                            event.get(
+                                "data",
+                                "",
+                            )
+                        )
+
+                        assistant_parts.append(
+                            token
+                        )
+
+                    elif (
+                        event_type
+                        == "error"
+                    ):
+                        generation_failed = (
+                            True
+                        )
+
+                except (
+                    json.JSONDecodeError,
+                    TypeError,
+                ):
+                    logger.warning(
+                        "LLM emitted an invalid "
+                        "stream event."
+                    )
+
+                yield chunk
+
+        except asyncio.CancelledError:
+            # Browser/client disconnected.
+            # Do not persist an incomplete assistant answer.
+            logger.info(
+                f"RAG stream cancelled "
+                f"conversation_id="
+                f"{conversation.id}"
             )
+
+            raise
+
+        except Exception as exc:
+            generation_failed = True
+
+            logger.exception(
+                f"LLM stream failed "
+                f"conversation_id="
+                f"{conversation.id}: "
+                f"{exc}"
+            )
+
+            yield (
+                json.dumps(
+                    {
+                        "type": "error",
+                        "data": (
+                            "LLM generation failed."
+                        ),
+                    }
+                )
+                + "\n"
+            )
+
+        # -----------------------------------------------------
+        # Persist only a completed assistant answer.
+        #
+        # Use a new DB session because the streaming response
+        # outlives the normal request-body phase.
+        # -----------------------------------------------------
+
+        if (
+            not generation_failed
+            and assistant_parts
         ):
-            yield chunk
+            assistant_text = (
+                "".join(
+                    assistant_parts
+                ).strip()
+            )
+
+            if assistant_text:
+                try:
+                    async with (
+                        AsyncSessionLocal()
+                        as stream_session
+                    ):
+                        owned_conversation = (
+                            await stream_session.scalar(
+                                select(
+                                    Conversation
+                                ).where(
+                                    Conversation.id
+                                    == conversation.id,
+                                    Conversation.user_id
+                                    == current_user.id,
+                                )
+                            )
+                        )
+
+                        if (
+                            owned_conversation
+                            is not None
+                        ):
+                            stream_session.add(
+                                Message(
+                                    conversation_id=(
+                                        conversation.id
+                                    ),
+                                    role="assistant",
+                                    content=(
+                                        assistant_text
+                                    ),
+                                    sources=(
+                                        sources
+                                        or None
+                                    ),
+                                )
+                            )
+
+                            owned_conversation.updated_at = (
+                                datetime.now(
+                                    timezone.utc
+                                )
+                            )
+
+                            await (
+                                stream_session.commit()
+                            )
+
+                except Exception as exc:
+                    # Answer already reached the client.
+                    # Do not convert a successful generation into
+                    # an API failure just because history persistence
+                    # failed.
+                    logger.exception(
+                        f"Failed persisting "
+                        f"assistant message "
+                        f"conversation_id="
+                        f"{conversation.id}: "
+                        f"{exc}"
+                    )
 
     logger.info(
         f"RAG response started "
         f"user_id={current_user.id}, "
-        f"context_chunks={len(best_results)}"
+        f"conversation_id="
+        f"{conversation.id}, "
+        f"context_chunks="
+        f"{len(best_results)}"
     )
 
     return StreamingResponse(
         response_stream(),
-        media_type="application/x-ndjson",
+        media_type=(
+            "application/x-ndjson"
+        ),
     )

@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 import api.state as state
 from api.auth_routes import router as auth_router
+from api.conversation_routes import router as conversation_router
 from api.routes import router
 from config import settings
 from core.logger import logger
@@ -59,3 +60,4 @@ app.add_middleware(
 
 app.include_router(router, prefix="/api/v1")
 app.include_router(auth_router, prefix="/api/v1")
+app.include_router(conversation_router, prefix="/api/v1")

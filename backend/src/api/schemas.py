@@ -1,6 +1,7 @@
 from datetime import datetime
-from pydantic import BaseModel, ConfigDict, Field
+from typing import Any
 
+from pydantic import BaseModel, ConfigDict, Field
 
 class InsertRequest(BaseModel):
     """Payload for inserting a new chunk into the database."""
@@ -44,9 +45,66 @@ class IngestRequest(BaseModel):
 
 
 class AskRequest(BaseModel):
-    question: str = Field(..., description="The user's plain-text question.")
-    k: int = Field(default=5, ge=1, le=20, description="Number of context chunks to retrieve.")
+    question: str = Field(
+        ...,
+        min_length=1,
+        max_length=10_000,
+        description="The user's plain-text question.",
+    )
 
+    k: int = Field(
+        default=5,
+        ge=1,
+        le=20,
+        description="Number of context chunks to retrieve.",
+    )
+
+    conversation_id: int | None = Field(
+        default=None,
+        ge=1,
+        description=(
+            "Existing conversation to append to. "
+            "Omit to create a new conversation."
+        ),
+    )
+
+class ConversationCreateRequest(BaseModel):
+    title: str | None = Field(
+        default=None,
+        max_length=255,
+    )
+
+
+class ConversationUpdateRequest(BaseModel):
+    title: str = Field(
+        ...,
+        min_length=1,
+        max_length=255,
+    )
+
+
+class ConversationResponse(BaseModel):
+    id: int
+    title: str
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = ConfigDict(
+        from_attributes=True
+    )
+
+
+class MessageResponse(BaseModel):
+    id: int
+    conversation_id: int
+    role: str
+    content: str
+    sources: list[dict[str, Any]] | None = None
+    created_at: datetime
+
+    model_config = ConfigDict(
+        from_attributes=True
+    )
 class TextSearchRequest(BaseModel):
     text: str = Field(..., description="The query string to embed and search for")
     k: int = Field(default=5, ge=1, le=100, description="Number of results to return")
