@@ -1,3 +1,5 @@
+import pytest
+
 from config import load_settings
 
 
@@ -11,6 +13,7 @@ def test_default_config(monkeypatch) -> None:
         "VECTOR_DATA_DIR",
         "VECTOR_DB_FILE",
         "VECTOR_WAL_FILE",
+        "OPERATOR_USER_IDS",
     ]
 
     for env_var in env_vars:
@@ -23,7 +26,9 @@ def test_default_config(monkeypatch) -> None:
     assert settings.llm_model == "qwen2.5:7b"
     assert settings.vector_db_file == "vector_database.pkl"
     assert settings.vector_wal_file == "vector_database.wal"
-    
+    assert settings.operator_user_ids == frozenset()
+
+
 def test_vector_data_directory(monkeypatch) -> None:
     monkeypatch.setenv("VECTOR_DATA_DIR", "/data")
     monkeypatch.delenv("VECTOR_DB_FILE", raising=False)
@@ -54,3 +59,13 @@ def test_config_can_be_overridden(monkeypatch) -> None:
         "https://nabla.example.com",
         "https://admin.example.com",
     )
+
+
+def test_operator_ids_must_be_positive_integers(monkeypatch) -> None:
+    monkeypatch.setenv("OPERATOR_USER_IDS", "2, 7,2")
+    assert load_settings().operator_user_ids == frozenset({2, 7})
+
+    for invalid in ("0", "-1", "1,alice", "1.5"):
+        monkeypatch.setenv("OPERATOR_USER_IDS", invalid)
+        with pytest.raises(ValueError, match="OPERATOR_USER_IDS"):
+            load_settings()
