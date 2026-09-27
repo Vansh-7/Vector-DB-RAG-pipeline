@@ -68,7 +68,9 @@ export function useVoiceInput(onTranscriptUpdate: (text: string) => void) {
       try {
         recognition.stop();
         setIsRecording(false);
-      } catch (e) {}
+      } catch {
+        setIsRecording(false);
+      }
     }
   }, [recognition]);
 

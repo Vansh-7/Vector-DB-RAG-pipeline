@@ -1,6 +1,6 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Activity, Network, PanelRightOpen, RefreshCw, Settings2, Terminal, Wrench } from "lucide-react";
+import { Activity, Loader2, Network, PanelRightOpen, RefreshCw, Settings2, Terminal, Wrench } from "lucide-react";
 import { getStatus } from "../../api/status";
 import { useVectorSample } from "../../hooks/useVectorSample";
 import { useSessionStore, type LabView } from "../../store/sessionStore";
@@ -34,8 +34,12 @@ export function VectorLabWorkspace({ active }: { active: boolean }) {
     requestAnimationFrame(() => inspectorToggleRef.current?.focus());
   };
   const { data: status } = useQuery({ queryKey: ["dbStatus"], queryFn: getStatus, retry: false });
-  const { data: sample } = useVectorSample();
+  const sampleQuery = useVectorSample();
+  const sample = sampleQuery.data;
   const vectors = sample?.vectors ?? EMPTY_VECTORS;
+  useEffect(() => {
+    if (!active || view !== "space") setInspectorOpen(false);
+  }, [active, view]);
   const refreshLab = async () => {
     if (isRefreshing) return;
     setIsRefreshing(true);
@@ -85,8 +89,13 @@ export function VectorLabWorkspace({ active }: { active: boolean }) {
           </button>
         ))}
       </nav>
+      {sampleQuery.isError && <div role="alert" className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-error/20 bg-error/5 px-4 py-2 text-xs text-error">
+        <span>Vector sample is unavailable. {sampleQuery.error instanceof Error ? sampleQuery.error.message : "Try again."}</span>
+        <button type="button" onClick={() => void sampleQuery.refetch()} className="rounded text-[--color-info] hover:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[--color-info]">Retry sample</button>
+      </div>}
       {active && view === "space" && <div className="relative flex min-h-0 min-w-0 flex-1 overflow-hidden">
         <VectorSpaceCanvas vectors={vectors} count={sample?.count} />
+        {sampleQuery.isPending && !sampleQuery.isError && <div role="status" className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center gap-2 text-xs text-[--text-secondary]"><Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> Loading vector space…</div>}
         <div className={`${inspectorOpen ? "flex" : "hidden"} absolute inset-y-0 right-0 z-30 w-[min(320px,calc(100vw-5rem))] min-w-0 border-l border-[--border-default] shadow-[-16px_0_40px_rgba(0,0,0,0.45)] xl:static xl:z-auto xl:flex xl:w-[300px] xl:shrink-0 xl:shadow-none`}>
           <VectorInspector status={status} vectors={vectors} count={sample?.count} onClose={closeInspector} />
         </div>

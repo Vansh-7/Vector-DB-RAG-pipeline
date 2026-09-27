@@ -9,6 +9,7 @@ export interface AuthUser {
   email: string;
   is_active: boolean;
   created_at: string;
+  is_operator: boolean;
 }
 
 type AuthStatus = "checking" | "authenticated" | "unauthenticated" | "verification-error";

@@ -153,6 +153,7 @@ export function TerminalLog() {
           }}
           className="text-[#444] hover:text-[#888] transition-colors shrink-0 ml-2"
           title="Clear terminal"
+          aria-label="Clear terminal logs"
         >
           <X className="w-3 h-3" />
         </button>

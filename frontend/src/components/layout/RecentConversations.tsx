@@ -87,7 +87,9 @@ export function RecentConversations({ chatBusy, onSelect }: { chatBusy: boolean;
                     className="absolute right-1 top-1 rounded p-1.5 text-[--text-secondary] opacity-100 lg:opacity-0 lg:group-hover:opacity-100 lg:group-focus-within:opacity-100 hover:bg-elevated hover:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[--color-info] disabled:opacity-40">
                     <MoreHorizontal className="w-3.5 h-3.5" aria-hidden="true" />
                   </button>
-                  {menuId === conversation.id && <div role="menu" aria-label={`Options for ${conversation.title}`} onKeyDown={(event) => {
+                  {menuId === conversation.id && <div role="menu" aria-label={`Options for ${conversation.title}`} onBlur={(event) => {
+                    if (!event.currentTarget.contains(event.relatedTarget as Node)) setMenuId(null);
+                  }} onKeyDown={(event) => {
                     if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
                     event.preventDefault();
                     const items = [...event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="menuitem"]')];

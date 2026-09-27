@@ -120,7 +120,7 @@ export function SearchWorkspace() {
           </div>
         </div>}
 
-        {submittedQuery && isFetching && !data && !isError && <div aria-label="Loading search results" className="mt-7 space-y-3 animate-pulse">
+        {submittedQuery && isFetching && !data && !isError && <div role="status" aria-label="Loading search results" className="mt-7 space-y-3 animate-pulse">
           {[1, 2, 3].map((index) => <div key={index} className="h-28 rounded-md border border-[--border-subtle] bg-elevated" />)}
         </div>}
 

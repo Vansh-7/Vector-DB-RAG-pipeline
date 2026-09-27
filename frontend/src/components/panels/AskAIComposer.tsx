@@ -69,6 +69,7 @@ export function AskAIComposer({
     >
       <div className="relative flex items-end p-2">
         <textarea
+          aria-label="Ask a question about your knowledge"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
@@ -90,6 +91,7 @@ export function AskAIComposer({
             <button
               type="button"
               onClick={handleMicClick}
+              aria-label={isRecording ? "Stop voice input" : "Start voice input"}
               className={`flex items-center justify-center w-8 h-8 rounded-[4px] transition-colors outline-none focus-visible:bg-[#1a1a1a] ${
                 isRecording
                   ? 'text-[#ef4444] animate-pulse bg-[#ef4444]/10'
@@ -126,6 +128,7 @@ export function AskAIComposer({
             type="button"
             className="text-[--text-tertiary] hover:text-[--text-secondary] transition-colors flex items-center gap-1.5"
             title="Engine configuration in Vector Lab"
+            aria-label="Open Vector Lab engine settings"
             onClick={() => openVectorLab('engine')}
           >
             <Settings className="w-3.5 h-3.5" />

@@ -60,6 +60,8 @@ export function AskAIPromptChips({ onSelect }: AskAIPromptChipsProps) {
     });
   }, [vectors]);
 
+  if (!sample?.count) return null;
+
   return (
     <div className="flex flex-wrap items-center justify-center gap-2 mt-4">
       {chips.map((chip, index) => (

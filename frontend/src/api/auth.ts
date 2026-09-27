@@ -11,7 +11,7 @@ interface TokenResponse {
   token_type: string;
 }
 
-export function register(credentials: Credentials): Promise<AuthUser> {
+export function register(credentials: Credentials): Promise<Omit<AuthUser, "is_operator">> {
   return apiFetch("/auth/register", {
     method: "POST",
     body: JSON.stringify(credentials),

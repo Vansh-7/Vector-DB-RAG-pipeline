@@ -44,7 +44,7 @@ export function ConfirmDialog({
           </Dialog.Description>
           {error && <p role="alert" className="mb-4 text-xs text-error break-words">{error}</p>}
           <div className="flex justify-end gap-3">
-            <Dialog.Close disabled={busy} className="px-4 py-1.5 text-xs text-[#888] border border-[rgba(255,255,255,0.1)] rounded-[4px] hover:bg-[rgba(255,255,255,0.05)] transition-colors disabled:opacity-40">
+            <Dialog.Close disabled={busy} className="px-4 py-1.5 text-xs text-[#888] border border-[rgba(255,255,255,0.1)] rounded-[4px] hover:bg-[rgba(255,255,255,0.05)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--color-info] disabled:opacity-40">
               Cancel
             </Dialog.Close>
             <button
@@ -57,7 +57,7 @@ export function ConfirmDialog({
                 destructive
                   ? 'bg-[#ef4444] text-white hover:bg-[#dc2626]'
                   : 'bg-white text-black hover:bg-[#e5e5e5]'
-              } disabled:opacity-40 disabled:cursor-not-allowed`}
+              } disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--color-info]`}
             >
               {busy ? "Working…" : confirmLabel}
             </button>

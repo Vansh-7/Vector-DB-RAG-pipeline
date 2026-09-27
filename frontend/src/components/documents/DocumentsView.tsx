@@ -17,7 +17,7 @@ export function DocumentsView() {
   const userId = useAuthStore((s) => s.user?.id);
   const setActiveView = useSessionStore((s) => s.setActiveView);
   const setIngestMode = useSessionStore((s) => s.setIngestMode);
-  const { data: documents = [], isPending, isError, refetch } = useDocuments(true);
+  const { data: documents = [], isPending, isError, error, refetch } = useDocuments(true);
   const queryClient = useQueryClient();
   const addButtonRef = useRef<HTMLButtonElement>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -81,13 +81,13 @@ export function DocumentsView() {
       {deleteMutation.isError && <p role="alert" className="text-xs text-error">{deleteMutation.error instanceof Error ? deleteMutation.error.message : "Document could not be deleted."}</p>}
 
       {isPending ? (
-        <div aria-label="Loading documents" className="space-y-3 animate-pulse">
+        <div role="status" aria-label="Loading documents" className="space-y-3 animate-pulse">
           {[1, 2, 3].map((index) => <div key={index} className="h-20 rounded-md border border-[--border-subtle] bg-elevated" />)}
         </div>
       ) : isError ? (
         <div role="alert" className="rounded-md border border-error/20 bg-panel px-5 py-7">
           <p className="text-sm font-medium">Documents could not be loaded.</p>
-          <p className="mt-1 text-xs text-[--text-secondary]">Check the connection and try again.</p>
+          <p className="mt-1 text-xs text-[--text-secondary] break-words">{error instanceof Error ? error.message : "Check the connection and try again."}</p>
           <Button type="button" variant="outline" onClick={() => void refetch()} className="mt-4"><RefreshCw className="w-3.5 h-3.5" /> Retry</Button>
         </div>
       ) : documents.length === 0 ? (
@@ -114,7 +114,8 @@ export function DocumentsView() {
         processing={processing} onProcessingChange={setProcessing} returnFocusRef={addButtonRef} />
       <ConfirmDialog open={selectedForDelete !== null} onOpenChange={(open) => { if (!open) setSelectedForDelete(null); }}
         title="Delete document?" description={`Delete “${selectedForDelete?.name ?? "this document"}” and all of its indexed chunks? This cannot be undone.`}
-        confirmLabel="Delete document" onConfirm={() => { if (selectedForDelete && !deleteMutation.isPending) deleteMutation.mutate(selectedForDelete.id); }} destructive />
+        confirmLabel="Delete document" onConfirm={() => { if (selectedForDelete && !deleteMutation.isPending) deleteMutation.mutate(selectedForDelete.id); }}
+        destructive busy={deleteMutation.isPending} error={deleteMutation.isError ? deleteMutation.error.message : null} closeOnConfirm={false} />
     </div>
   );
 }

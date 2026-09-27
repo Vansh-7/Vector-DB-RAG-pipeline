@@ -67,7 +67,7 @@ export function BenchmarksPanel() {
         <Button type="button" variant="outline" onClick={() => void refetch()} disabled={isFetching}><RefreshCw className="h-3.5 w-3.5" /> Retry</Button>
       </div>}
 
-      {isPending && !isError && <div aria-label="Loading benchmark telemetry" className="grid gap-3 md:grid-cols-3">
+      {isPending && !isError && <div role="status" aria-label="Loading benchmark telemetry" className="grid gap-3 md:grid-cols-3">
         {[1, 2, 3].map((index) => <div key={index} className="h-44 animate-pulse rounded-md border border-[--border-subtle] bg-elevated" />)}
       </div>}
 

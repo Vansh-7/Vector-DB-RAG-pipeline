@@ -5,6 +5,7 @@ import { configureEngine } from "../../api/engine";
 import { getStatus, type DbStatusResponse } from "../../api/status";
 import { insertVector } from "../../api/vectors";
 import { getCurrentTimestamp } from "../../lib/utils";
+import { useAuthStore } from "../../store/authStore";
 import { useEngineStore } from "../../store/engineStore";
 import { useTerminalStore } from "../../store/terminalStore";
 import {
@@ -26,6 +27,7 @@ const categoryOptions = CATEGORY_ORDER.filter((category) => category !== "DOCUME
   .map((category) => ({ value: category, label: CATEGORY_LABELS[category] }));
 
 export function EnginePanel() {
+  const isOperator = useAuthStore((s) => s.user?.is_operator === true);
   const queryClient = useQueryClient();
   const addLog = useTerminalStore((s) => s.addLog);
   const topK = useEngineStore((s) => s.topK);
@@ -81,7 +83,7 @@ export function EnginePanel() {
 
   const submitConfiguration = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!status || configure.isPending) return;
+    if (!isOperator || !status || configure.isPending) return;
     configure.mutate({ algorithm: draftAlgorithm, metric: draftMetric });
   };
   const changed = !!status && (draftAlgorithm !== status.engine || draftMetric !== status.metric);
@@ -108,19 +110,23 @@ export function EnginePanel() {
             <div className="min-w-0 rounded border border-[--border-subtle] bg-elevated p-3"><p className="font-mono text-2xs uppercase tracking-wider text-[--text-tertiary]">Distance</p><p className="mt-2 truncate text-xs font-medium" title={METRIC_DISPLAY[status.metric]}>{METRIC_DISPLAY[status.metric]}</p></div>
           </div>}
           <form onSubmit={submitConfiguration} className="mt-5 space-y-4">
-            <div><p className="mb-2 font-mono text-2xs uppercase tracking-wider text-[--text-secondary]">Index algorithm</p><Select ariaLabel="Index algorithm" value={draftAlgorithm} onValueChange={(value) => setDraftAlgorithm(value as Algorithm)} options={algorithmOptions} disabled={!status || configure.isPending} /></div>
-            <div><p className="mb-2 font-mono text-2xs uppercase tracking-wider text-[--text-secondary]">Distance metric</p><Select ariaLabel="Distance metric" value={draftMetric} onValueChange={(value) => setDraftMetric(value as DistanceMetric)} options={metricOptions} disabled={!status || configure.isPending} /></div>
+            {isOperator && <>
+              <div><p className="mb-2 font-mono text-2xs uppercase tracking-wider text-[--text-secondary]">Index algorithm</p><Select ariaLabel="Index algorithm" value={draftAlgorithm} onValueChange={(value) => setDraftAlgorithm(value as Algorithm)} options={algorithmOptions} disabled={!status || configure.isPending} /></div>
+              <div><p className="mb-2 font-mono text-2xs uppercase tracking-wider text-[--text-secondary]">Distance metric</p><Select ariaLabel="Distance metric" value={draftMetric} onValueChange={(value) => setDraftMetric(value as DistanceMetric)} options={metricOptions} disabled={!status || configure.isPending} /></div>
+            </>}
             <div className="border-t border-[--border-subtle] pt-4">
               <div className="mb-2 flex items-center justify-between"><p className="font-mono text-2xs uppercase tracking-wider text-[--text-secondary]">Top K retrieval</p><span className="font-mono text-sm">{topK}</span></div>
               <Slider ariaLabel="Top K retrieval" value={topK} onValueChange={setTopK} min={1} max={20} />
               <p className="mt-2 text-xs leading-relaxed text-[--text-secondary]">Your local result limit for Search and Chat. Range 1–20.</p>
             </div>
-            <div className="rounded border border-warning/20 bg-warning/5 p-3 text-xs leading-relaxed text-[--text-secondary]"><AlertTriangle className="mr-2 inline h-3.5 w-3.5 text-warning" aria-hidden="true" />Applying an algorithm or metric rebuilds the shared index for all users.</div>
-            {configure.isError && <p role="alert" className="text-xs text-error break-words">{configure.error.message}</p>}
-            {configure.isSuccess && !changed && <p role="status" className="flex items-center gap-2 text-xs text-success"><Check className="h-3.5 w-3.5" /> Engine configuration applied.</p>}
-            <Button type="submit" disabled={!changed || configure.isPending || statusError} className="h-9 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--color-info]">
-              {configure.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />} {configure.isPending ? "Applying…" : "Apply configuration"}
-            </Button>
+            {isOperator ? <>
+              <div className="rounded border border-warning/20 bg-warning/5 p-3 text-xs leading-relaxed text-[--text-secondary]"><AlertTriangle className="mr-2 inline h-3.5 w-3.5 text-warning" aria-hidden="true" />Applying an algorithm or metric rebuilds the shared index for all users.</div>
+              {configure.isError && <p role="alert" className="text-xs text-error break-words">{configure.error.message}</p>}
+              {configure.isSuccess && !changed && <p role="status" className="flex items-center gap-2 text-xs text-success"><Check className="h-3.5 w-3.5" /> Engine configuration applied.</p>}
+              <Button type="submit" disabled={!changed || configure.isPending || statusError} className="h-9 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--color-info]">
+                {configure.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />} {configure.isPending ? "Applying…" : "Apply configuration"}
+              </Button>
+            </> : <p className="rounded border border-[--border-subtle] bg-elevated p-3 text-xs leading-relaxed text-[--text-secondary]">Shared index configuration is managed by Kernspace operators.</p>}
           </form>
         </div>
 

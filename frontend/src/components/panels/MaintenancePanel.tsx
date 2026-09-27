@@ -3,10 +3,12 @@ import { Loader2, Save, Trash2 } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { clearDatabase, deleteVector, saveDatabase } from "../../api/vectors";
 import { useCanvasStore } from "../../store/canvasStore";
+import { useAuthStore } from "../../store/authStore";
 import { Button } from "../ui/Button";
 import { ConfirmDialog } from "../ui/ConfirmDialog";
 
 export function MaintenancePanel() {
+  const isOperator = useAuthStore((s) => s.user?.is_operator === true);
   const [showClearDialog, setShowClearDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [vectorId, setVectorId] = useState("");
@@ -43,9 +45,13 @@ export function MaintenancePanel() {
       <div>
         <p className="font-mono text-2xs uppercase tracking-[0.2em] text-[--color-info]">Operations / 04</p>
         <h2 className="mt-2 text-xl font-semibold tracking-tight">Maintenance</h2>
-        <p className="mt-1 text-xs leading-relaxed text-[--text-secondary]">Save the shared index or manage the vectors and documents owned by your account.</p>
+        <p className="mt-1 text-xs leading-relaxed text-[--text-secondary]">
+          {isOperator
+            ? "Manage the vectors and documents owned by your account, or save the shared index."
+            : "Manage the vectors and documents owned by your account."}
+        </p>
       </div>
-      <div className="border border-[--border-subtle] rounded-md bg-panel p-4 flex flex-wrap items-center justify-between gap-4">
+      {isOperator && <div className="border border-[--border-subtle] rounded-md bg-panel p-4 flex flex-wrap items-center justify-between gap-4">
         <div>
           <h3 className="text-sm font-semibold">Save to Disk</h3>
           <p className="text-xs text-[#888] mt-1">Create a snapshot of the shared vector index.</p>
@@ -53,9 +59,9 @@ export function MaintenancePanel() {
         <Button variant="outline" onClick={() => saveMutation.mutate()} disabled={busy}>
           {saveMutation.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />} Save to Disk
         </Button>
-      </div>
-      {saveMutation.isSuccess && <p role="status" className="text-xs text-success">Snapshot saved to disk.</p>}
-      {saveMutation.isError && <p role="alert" className="text-xs text-error break-words">{saveMutation.error.message}</p>}
+      </div>}
+      {isOperator && saveMutation.isSuccess && <p role="status" className="text-xs text-success">Snapshot saved to disk.</p>}
+      {isOperator && saveMutation.isError && <p role="alert" className="text-xs text-error break-words">{saveMutation.error.message}</p>}
       <div className="border border-[--border-subtle] rounded-md bg-panel p-4">
         <div>
           <h3 className="text-sm font-semibold">Delete a vector</h3>
