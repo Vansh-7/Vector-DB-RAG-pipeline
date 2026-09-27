@@ -3,8 +3,9 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from auth.dependencies import get_current_user
+from auth.dependencies import get_current_user, is_operator
 from auth.schemas import (
+    CurrentUserResponse,
     LoginRequest,
     RegisterRequest,
     TokenResponse,
@@ -17,7 +18,6 @@ from auth.security import (
 )
 from db.models import User
 from db.session import get_db
-
 
 router = APIRouter(
     prefix="/auth",
@@ -107,9 +107,15 @@ async def login(
 
 @router.get(
     "/me",
-    response_model=UserResponse,
+    response_model=CurrentUserResponse,
 )
 async def get_me(
     current_user: User = Depends(get_current_user),
-) -> User:
-    return current_user
+) -> CurrentUserResponse:
+    return CurrentUserResponse(
+        id=current_user.id,
+        email=current_user.email,
+        is_active=current_user.is_active,
+        created_at=current_user.created_at,
+        is_operator=is_operator(current_user),
+    )

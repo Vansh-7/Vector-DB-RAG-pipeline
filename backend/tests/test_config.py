@@ -1,7 +1,4 @@
-<<<<<<< HEAD
-=======
 from pathlib import Path
->>>>>>> 883c85b (test(backend): update protected API and portable path tests)
 import pytest
 
 from config import load_settings

@@ -50,10 +50,14 @@ async def get_current_user(
     return user
 
 
+def is_operator(user: User) -> bool:
+    return user.id in settings.operator_user_ids
+
+
 async def get_operator_user(
     current_user: User = Depends(get_current_user),
 ) -> User:
-    if current_user.id not in settings.operator_user_ids:
+    if not is_operator(current_user):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Operator access required for shared-index operations.",
