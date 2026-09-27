@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+=======
+from pathlib import Path
+>>>>>>> 883c85b (test(backend): update protected API and portable path tests)
 import pytest
 
 from config import load_settings
@@ -37,8 +41,8 @@ def test_vector_data_directory(monkeypatch) -> None:
     settings = load_settings()
 
     assert settings.vector_data_dir == "/data"
-    assert settings.vector_db_file == "/data/vector_database.pkl"
-    assert settings.vector_wal_file == "/data/vector_database.wal"
+    assert Path(settings.vector_db_file) == Path("/data") / "vector_database.pkl"
+    assert Path(settings.vector_wal_file) == Path("/data") / "vector_database.wal"
 
 
 def test_config_can_be_overridden(monkeypatch) -> None:

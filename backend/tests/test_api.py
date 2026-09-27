@@ -3,11 +3,48 @@ import pytest
 
 from fastapi.testclient import TestClient
 
+# Auth
+from types import SimpleNamespace
+from auth.dependencies import get_current_user
+from db.session import get_db
+
 # Import your FastAPI app from main
 from main import app
 
 # Create a test client that mimics a user's browser or Postman
 client = TestClient(app)
+
+class EmptyScalarResult:
+    def all(self):
+        return []
+
+class FakeSession:
+    async def scalars(self, _statement):
+        return EmptyScalarResult()
+
+@pytest.fixture
+def authenticated_client():
+    async def override_current_user():
+        return SimpleNamespace(
+            id=1,
+            email="test@example.com",
+            is_active=True,
+        )
+
+    async def override_get_db():
+        return FakeSession()
+
+    app.dependency_overrides[get_current_user] = (
+        override_current_user
+    )
+    app.dependency_overrides[get_db] = (
+        override_get_db
+    )
+
+    try:
+        yield client
+    finally:
+        app.dependency_overrides.clear()
 
 @pytest.fixture(autouse=True)
 def cleanup_test_db():
@@ -27,7 +64,7 @@ def test_status_endpoint() -> None:
     assert "engine" in data
     assert "total_docs" in data
 
-def test_insert_and_search_endpoints() -> None:
+def test_insert_and_search_endpoints(authenticated_client) -> None:
     """Tests the full lifecycle of inserting a vector via HTTP and searching for it."""
     # 1. Insert a document via the API
     insert_payload = {
@@ -36,7 +73,10 @@ def test_insert_and_search_endpoints() -> None:
         "category": "testing",
         "embedding": [0.5] * 768  # A dummy 768-dimensional vector
     }
-    insert_response = client.post("/api/v1/insert", json=insert_payload)
+    insert_response = authenticated_client.post(
+                        "/api/v1/insert",
+                        json=insert_payload,
+                    )
     assert insert_response.status_code == 201
     assert insert_response.json()["status"] == "success"
 
@@ -45,10 +85,10 @@ def test_insert_and_search_endpoints() -> None:
         "embedding": [0.5] * 768,
         "k": 10  # Increase k to ensure we find our inserted doc even if other data exists
     }
-    search_response = client.post(
-        "/api/v1/search",
-        json=search_payload,
-    )
+    search_response = authenticated_client.post(
+                        "/api/v1/search",
+                        json=search_payload,
+                    )
     assert search_response.status_code == 200
 
     # 3. Verify the results
