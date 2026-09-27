@@ -71,3 +71,31 @@ def test_allowlisted_operator_can_save(monkeypatch) -> None:
         assert cleared == [True]
     finally:
         app.dependency_overrides.clear()
+
+
+@pytest.mark.parametrize(
+    "operator_ids,user_id,expected",
+    [
+        (frozenset(), 1, False),
+        (frozenset({1}), 1, True),
+        (frozenset({1}), 2, False),
+    ],
+)
+def test_auth_me_reports_operator_capability(monkeypatch, operator_ids, user_id, expected) -> None:
+    from datetime import datetime, timezone
+
+    monkeypatch.setattr(
+        "auth.dependencies.settings",
+        SimpleNamespace(operator_user_ids=operator_ids),
+    )
+    user = _user(user_id)
+    user.created_at = datetime.now(timezone.utc)
+    user.is_active = True
+    app.dependency_overrides[get_current_user] = lambda: user
+    try:
+        response = TestClient(app).get("/api/v1/auth/me")
+        assert response.status_code == 200
+        assert response.json()["is_operator"] is expected
+        assert response.json()["id"] == user_id
+    finally:
+        app.dependency_overrides.clear()
