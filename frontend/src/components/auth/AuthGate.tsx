@@ -6,6 +6,7 @@ import { useAuthStore } from "../../store/authStore";
 import { AppShell } from "../layout/AppShell";
 import { Button } from "../ui/Button";
 import { AuthScreen } from "./AuthScreen";
+import { BrandMark } from "../ui/BrandMark";
 
 export function AuthGate() {
   const status = useAuthStore((s) => s.status);
@@ -23,7 +24,7 @@ export function AuthGate() {
       if (controller.signal.aborted || useAuthStore.getState().accessToken !== token) return;
       useAuthStore.getState().verificationFailed(cause instanceof ApiError
         ? cause.message
-        : "Could not connect to the Kernspace API. Check your connection and retry.");
+        : "Could not connect to the Neuebit API. Check your connection and retry.");
     });
     return () => controller.abort();
   }, [status, token]);
@@ -34,7 +35,7 @@ export function AuthGate() {
   return (
     <main className="min-h-dvh bg-base text-[--text-primary] flex items-center justify-center p-6">
       <div className="w-full max-w-sm text-center">
-        <img src="/kernspace-logo.png" alt="Kernspace" className="w-60 h-auto mx-auto mix-blend-screen mb-8" />
+        <div className="flex items-center justify-center gap-2 mb-8"><BrandMark /><span className="text-body font-semibold">Neuebit</span></div>
         {status === "checking" ? (
           <p role="status" className="flex justify-center items-center gap-2 text-sm text-[--text-secondary]">
             <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" /> Verifying your session…

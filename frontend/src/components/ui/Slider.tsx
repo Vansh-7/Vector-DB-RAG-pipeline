@@ -20,9 +20,9 @@ export function Slider({ value, onValueChange, min, max, step = 1, ariaLabel }: 
       step={step}
     >
       <SliderPrimitive.Track className="relative grow rounded-full h-[3px] bg-[rgba(255,255,255,0.08)]">
-        <SliderPrimitive.Range className="absolute rounded-full h-full bg-white" />
+        <SliderPrimitive.Range className="absolute rounded-full h-full bg-[--accent-white]" />
       </SliderPrimitive.Track>
-      <SliderPrimitive.Thumb aria-label={ariaLabel} className="block w-3.5 h-3.5 rounded-full bg-white border-2 border-[#0a0a0a] outline-none focus:ring-1 focus:ring-[rgba(255,255,255,0.3)] transition-colors cursor-pointer" />
+      <SliderPrimitive.Thumb aria-label={ariaLabel} className="block w-3.5 h-3.5 rounded-full bg-[--accent-white] border-2 border-[--bg-panel] outline-none focus-visible:ring-2 focus-visible:ring-[--color-info] transition-colors cursor-pointer" />
     </SliderPrimitive.Root>
   );
 }

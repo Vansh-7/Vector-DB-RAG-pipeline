@@ -1,4 +1,6 @@
 import { useState, useCallback } from "react";
+// avoid-ai-design-ignore-file: CP3
+// The arrows label the actual PCA axis directions; they are not action text.
 import { Plus, Minus, Home } from "lucide-react";
 import type { Category, VectorPoint2D } from "../../types";
 import { useVectorCanvas } from "../../hooks/useVectorCanvas";
@@ -28,7 +30,7 @@ export function VectorSpaceCanvas({ vectors, count }: { vectors: VectorPoint2D[]
   }, []);
 
   return (
-    <div ref={containerRef} className="flex-1 relative overflow-hidden bg-[#0a0a0a] flex flex-col">
+    <div ref={containerRef} className="flex-1 relative overflow-hidden bg-base flex flex-col">
 
       {/* Aesthetic Background with Depth */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
@@ -37,7 +39,7 @@ export function VectorSpaceCanvas({ vectors, count }: { vectors: VectorPoint2D[]
 
         {/* Subtle grid pattern */}
         <div
-          className="absolute inset-0 opacity-[0.12]"
+          className="absolute inset-0 opacity-[0.28]"
           style={{
             backgroundImage: `
               linear-gradient(to right, rgba(255,255,255,0.1) 1px, transparent 1px),
@@ -51,12 +53,12 @@ export function VectorSpaceCanvas({ vectors, count }: { vectors: VectorPoint2D[]
       </div>
 
       {/* Top Gradient Fade to protect text readability */}
-      <div className="absolute top-0 left-0 right-0 h-28 bg-gradient-to-b from-[#0a0a0a] via-[#0a0a0a]/80 to-transparent z-10 pointer-events-none" />
+      <div className="absolute top-0 left-0 right-0 h-28 bg-gradient-to-b from-base via-base/80 to-transparent z-10 pointer-events-none" />
 
       {/* Header / Title */}
       <div className="absolute top-4 left-4 z-20 flex flex-col pointer-events-none">
-        <h2 className="text-sm font-semibold text-[#f4f4f4]">Vector Space Canvas</h2>
-        <p className="text-[10px] text-[#888] mt-0.5">2D PCA Projection · Semantic Space</p>
+        <h2 className="text-sm font-semibold text-[--text-primary]">Vector space</h2>
+        <p className="text-2xs text-[--text-secondary] mt-0.5"><span className="font-mono">2D PCA</span> projection</p>
       </div>
 
       <CanvasLegend
@@ -85,9 +87,8 @@ export function VectorSpaceCanvas({ vectors, count }: { vectors: VectorPoint2D[]
       </svg>
 
       {count === 0 && <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center px-6">
-        <div className="pointer-events-auto max-w-sm rounded-md border border-[--border-default] bg-panel/95 p-6 text-center shadow-[0_18px_60px_rgba(0,0,0,0.45)]">
-          <p className="font-mono text-2xs uppercase tracking-[0.18em] text-[--color-info]">Vector space / empty</p>
-          <h3 className="mt-2 text-sm font-semibold">Nothing to project yet.</h3>
+        <div className="pointer-events-auto max-w-sm p-6 text-center">
+          <h3 className="text-lg font-semibold">Nothing to project yet.</h3>
           <p className="mt-2 text-xs leading-relaxed text-[--text-secondary]">Add knowledge to build a searchable index, or inject a vector in Engine.</p>
           <div className="mt-5 flex flex-wrap items-center justify-center gap-4 text-xs">
             <button type="button" onClick={() => setActiveView("documents")} className="text-[--color-info] hover:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[--color-info]">Add document</button>
@@ -96,78 +97,57 @@ export function VectorSpaceCanvas({ vectors, count }: { vectors: VectorPoint2D[]
         </div>
       </div>}
 
-      {/* Canvas bottom controls and footer overlay */}
-      <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between z-20 pointer-events-none">
-
-        {/* Left Side: Stats (Aligned with sidebar sync cluster area horizontally) */}
-        <div className="flex items-center gap-3 pointer-events-auto">
-          <div className="border border-[rgba(255,255,255,0.06)] bg-[#111] rounded-[4px] px-3 py-1 flex flex-col justify-center min-w-[100px] shadow-sm">
-            <span className="text-[10px] text-[#888]" title="The current API does not report embedding dimensionality">Projection dims</span>
-            <span className="text-[13px] font-mono font-medium text-[#f4f4f4]">
-              2D
-            </span>
-          </div>
-
-          <div className="border border-[rgba(255,255,255,0.06)] bg-[#111] rounded-[4px] px-3 py-1 flex flex-col justify-center min-w-[120px] shadow-sm">
-            <span className="text-[10px] text-[#888]">Your vectors</span>
-            <span className="text-[13px] font-mono font-medium text-[#f4f4f4]">
-              {count !== undefined ? formatNumber(count) : "—"}
-            </span>
-          </div>
-        </div>
-
-        {/* Right Side: PC Labels & Zoom Controls */}
-        <div className="flex items-center gap-4 pointer-events-auto">
-          {/* Axis Labels */}
-          <div className="flex items-center gap-2 font-mono text-[10px] font-medium text-[#555] bg-[#111] border border-[rgba(255,255,255,0.06)] rounded-[4px] px-2 py-1 shadow-sm">
+      {/* Quiet telemetry and a single control surface; PCA labels describe the fixed axes. */}
+      <div className="absolute bottom-4 left-4 right-4 flex flex-wrap items-end justify-between gap-3 z-20 pointer-events-none">
+        <p className="pointer-events-auto rounded px-2 py-2 bg-base/80 text-xs text-[--text-tertiary]" title="Two-dimensional PCA projection of your searchable vectors">
+          <span className="font-mono text-[--text-secondary]">2D</span> projection <span aria-hidden="true">·</span> <span className="font-mono text-[--text-secondary]">{count !== undefined ? formatNumber(count) : "—"}</span> vectors
+        </p>
+        <div role="group" aria-label="Canvas controls" className="flex items-center gap-0.5 pointer-events-auto rounded-md border border-[--border-subtle] bg-panel/95 p-0.5">
+          <div className="hidden sm:flex h-8 items-center gap-2 px-2 font-mono text-2xs text-[--text-secondary]">
             <span title="Principal Component 2 (Y-Axis)">PC2 ↑</span>
-            <div className="w-px h-3 bg-[rgba(255,255,255,0.1)]" />
             <span title="Principal Component 1 (X-Axis)">PC1 →</span>
           </div>
-
-          {/* Zoom & Reset Controls */}
-          <div className="flex items-center bg-[#111] border border-[rgba(255,255,255,0.06)] rounded-[4px] shadow-sm p-0.5">
+          <div aria-hidden="true" className="hidden sm:block w-px h-4 bg-[--border-default] mx-1" />
             <UITooltip content="Zoom In" side="top" sideOffset={8}>
               <button
                 type="button"
                 title="Zoom In"
+                aria-label="Zoom in"
                 onClick={zoomIn}
-                className="p-1.5 text-[#888] hover:text-[#f4f4f4] hover:bg-[#1a1a1a] rounded-[2px] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#555]"
+                className="icon-button"
               >
                 <Plus className="w-3.5 h-3.5" />
               </button>
             </UITooltip>
 
-            <div className="w-px h-3 bg-[rgba(255,255,255,0.1)] mx-0.5" />
-            <div className="px-2 font-mono text-[10px] text-[#888] select-none min-w-[44px] text-center">
+            <div aria-label="Zoom level" className="flex h-8 items-center justify-center px-2 font-mono text-xs text-[--text-secondary] select-none min-w-[48px]">
               {Math.round(zoomLevel * 100)}%
             </div>
-            <div className="w-px h-3 bg-[rgba(255,255,255,0.1)] mx-0.5" />
-
             <UITooltip content="Zoom Out" side="top" sideOffset={8}>
               <button
                 type="button"
                 title="Zoom Out"
+                aria-label="Zoom out"
                 onClick={zoomOut}
-                className="p-1.5 text-[#888] hover:text-[#f4f4f4] hover:bg-[#1a1a1a] rounded-[2px] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#555]"
+                className="icon-button"
               >
                 <Minus className="w-3.5 h-3.5" />
               </button>
             </UITooltip>
 
-            <div className="w-px h-3 bg-[rgba(255,255,255,0.1)] mx-0.5" />
+            <div aria-hidden="true" className="w-px h-4 bg-[--border-default] mx-1" />
 
             <UITooltip content="Reset View" side="top" sideOffset={8}>
               <button
                 type="button"
                 title="Reset View"
+                aria-label="Reset view"
                 onClick={resetZoom}
-                className="p-1.5 text-[#888] hover:text-[#f4f4f4] hover:bg-[#1a1a1a] rounded-[2px] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#555]"
+                className="icon-button"
               >
                 <Home className="w-3.5 h-3.5" />
               </button>
             </UITooltip>
-          </div>
         </div>
       </div>
 

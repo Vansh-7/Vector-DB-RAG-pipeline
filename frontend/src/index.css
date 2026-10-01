@@ -2,21 +2,49 @@
 @tailwind components;
 @tailwind utilities;
 
+/* avoid-ai-design-ignore-file: SD2, T2, SD8 */
+/* The brief locks charcoal, Geist Sans/Mono, and existing semantic/category colors. */
+
+@font-face {
+  font-family: 'Geist Sans';
+  src: url('/fonts/geist-sans-latin.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Geist Mono';
+  src: url('/fonts/geist-mono-latin.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+}
+
 :root {
-  --bg-base: #0a0a0a;
-  --bg-panel: #111111;
-  --bg-elevated: #161616;
-  --bg-hover: #1a1a1a;
-  --bg-active: #222222;
+  color-scheme: dark;
+  --surface-canvas: 17 18 19;
+  --surface-panel: 24 25 26;
+  --surface-elevated: 32 33 35;
+  --surface-hover: 38 39 41;
+  --surface-active: 44 45 47;
+  --bg-base: rgb(var(--surface-canvas));
+  --bg-panel: rgb(var(--surface-panel));
+  --bg-elevated: rgb(var(--surface-elevated));
+  --bg-hover: rgb(var(--surface-hover));
+  --bg-active: rgb(var(--surface-active));
+  --bg-composer: #1d1e1f;
+  --bg-terminal: #0c0d0e;
 
   --border-subtle: rgba(255, 255, 255, 0.06);
   --border-default: rgba(255, 255, 255, 0.10);
   --border-strong: rgba(255, 255, 255, 0.18);
 
-  --text-primary: #f4f4f4;
-  --text-secondary: #888888;
-  --text-tertiary: #555555;
-  --text-inverse: #0a0a0a;
+  --text-primary: #edede8;
+  --text-secondary: #a1a1a1;
+  --text-tertiary: #8b8b8b;
+  --text-placeholder: #777777;
+  --text-inverse: #111213;
 
   --color-tech: #a78bfa;
   --color-finance: #34d399;
@@ -34,7 +62,9 @@
   --score-mid: #f59e0b;
   --score-low: #ef4444;
 
-  --accent-white: #ffffff;
+  --accent-white: #f3f0e6;
+  --accent-white-hover: #e5e2d8;
+  --accent-white-active: #d6d3c9;
   --accent-dim: rgba(255, 255, 255, 0.7);
 }
 
@@ -51,7 +81,8 @@ html, body, #root {
 }
 
 body {
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'Geist Sans', sans-serif;
+  font-size: 14px;
   background: var(--bg-base);
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
@@ -77,89 +108,44 @@ body {
 }
 
 .loading-shimmer {
-  background: linear-gradient(90deg, #111 25%, #1a1a1a 50%, #111 75%);
+  background: linear-gradient(90deg, var(--bg-panel) 25%, var(--bg-hover) 50%, var(--bg-panel) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
 
-.dot-grid {
-  background-color: #0f0f0f;
-  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-  background-size: 24px 24px;
+@layer components {
+  .field {
+    @apply w-full min-w-0 rounded-md border border-[--border-default] bg-elevated px-3 py-2 text-sm text-[--text-primary] outline-none transition-colors placeholder:text-[--text-tertiary] hover:border-[--border-strong] focus:border-[--color-info] focus:ring-1 focus:ring-[--color-info] disabled:opacity-50;
+  }
+  .icon-button {
+    @apply inline-flex h-8 w-8 shrink-0 items-center justify-center rounded text-[--text-secondary] transition-colors hover:bg-hover hover:text-[--text-primary] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--color-info] disabled:cursor-not-allowed disabled:opacity-40;
+  }
+  .document-grid {
+    @apply grid min-w-0 items-center gap-4;
+    grid-template-columns: minmax(0, 1fr) 100px 64px 112px 32px;
+  }
 }
 
-/* Nav Brand Typography */
-.nav-mark {
-  font-family: "JetBrains Mono", monospace;
-  font-size: 22px;
-  font-weight: 500;
-  color: #f4f4f4;
-  line-height: 1;
-  transform: translateY(-1px);
-  transition: color 200ms ease, transform 200ms ease;
-  display: inline-block;
-}
-.nav-mark:hover {
-  color: #a78bfa;
-  transform: translateY(-1px) rotate(-4deg);
+.markdown { overflow-wrap: anywhere; }
+.markdown > * + * { margin-top: 16px; }
+.markdown p { line-height: 1.75; }
+.markdown h1, .markdown h2, .markdown h3 { font-size: 18px; line-height: 1.4; font-weight: 600; margin-top: 28px; }
+.markdown ul, .markdown ol { padding-left: 22px; }
+.markdown ul { list-style: disc; }
+.markdown ol { list-style: decimal; }
+.markdown li + li { margin-top: 8px; }
+.markdown code { font-family: 'Geist Mono', monospace; font-size: 12px; background: var(--bg-elevated); border-radius: 4px; padding: 2px 4px; }
+.markdown pre { overflow-x: auto; padding: 16px; background: var(--bg-terminal); border: 1px solid var(--border-subtle); border-radius: 8px; }
+.markdown pre code { padding: 0; background: none; }
+.markdown blockquote { padding-left: 16px; border-left: 2px solid var(--border-strong); color: var(--text-secondary); }
+.markdown a { color: #8bb5f8; text-decoration: underline; text-underline-offset: 3px; }
+.markdown a:focus-visible { outline: 2px solid var(--color-info); outline-offset: 3px; }
+.markdown img { max-width: 100%; }
+
+@media (max-width: 767px) {
+  .document-grid { grid-template-columns: minmax(0, 1fr) 88px 32px; gap: 12px; }
 }
 
-.nav-wordmark {
-  font-family: "Inter", sans-serif;
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  color: #f4f4f4;
-  text-transform: lowercase;
-}
-
-.nav-version-chip {
-  font-family: "JetBrains Mono", monospace;
-  font-size: 9px;
-  font-weight: 500;
-  letter-spacing: 0.04em;
-  color: #555;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 3px;
-  padding: 2px 6px;
-  text-transform: uppercase;
-}
-
-/* Nav Brand Typography */
-.nav-mark {
-  font-family: "JetBrains Mono", monospace;
-  font-size: 22px;
-  font-weight: 500;
-  color: #f4f4f4;
-  line-height: 1;
-  transform: translateY(-1px);
-  transition: color 200ms ease, transform 200ms ease;
-  display: inline-block;
-}
-.nav-mark:hover {
-  color: #a78bfa;
-  transform: translateY(-1px) rotate(-4deg);
-}
-
-.nav-wordmark {
-  font-family: "Inter", sans-serif;
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  color: #f4f4f4;
-  text-transform: lowercase;
-}
-
-.nav-version-chip {
-  font-family: "JetBrains Mono", monospace;
-  font-size: 9px;
-  font-weight: 500;
-  letter-spacing: 0.04em;
-  color: #555;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 3px;
-  padding: 2px 6px;
-  text-transform: uppercase;
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
 }

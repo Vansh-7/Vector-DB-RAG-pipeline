@@ -73,7 +73,7 @@ export function TerminalLog() {
           toggleRef.current?.focus();
         }
       }}
-      className={`border-t border-[rgba(255,255,255,0.06)] bg-[#0a0a0a] flex flex-col transition-[height] duration-300 ease-in-out relative shrink-0`}
+      className={`border-t border-[--border-subtle] bg-[--bg-terminal] flex flex-col transition-[height] duration-300 ease-in-out relative shrink-0`}
       style={{ height: isTerminalCollapsed ? '32px' : `min(${terminalHeight}px, 45dvh, 400px)` }}
     >
       {/* Resize Handle */}
@@ -98,8 +98,8 @@ export function TerminalLog() {
         <button ref={toggleRef} type="button" aria-label={isTerminalCollapsed ? "Expand terminal" : "Collapse terminal"}
           aria-expanded={!isTerminalCollapsed} aria-controls="terminal-output"
           onClick={() => setTerminalCollapsed(!isTerminalCollapsed)}
-          className="flex flex-1 min-w-0 items-center gap-3 overflow-hidden text-left rounded focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#888]">
-          <span className="text-[#444] hover:text-[#f4f4f4] transition-colors shrink-0">
+          className="flex flex-1 min-w-0 items-center gap-3 overflow-hidden text-left rounded focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[--color-info]">
+          <span className="text-[--text-tertiary] hover:text-[--text-primary] transition-colors shrink-0">
             {isTerminalCollapsed ? (
               <ChevronUp className="w-3.5 h-3.5" />
             ) : (
@@ -107,18 +107,18 @@ export function TerminalLog() {
             )}
           </span>
           
-          <span className="text-2xs font-medium tracking-widest text-[#555] uppercase shrink-0">
+          <span className="text-2xs font-mono font-medium text-[--text-secondary] shrink-0">
             Terminal
           </span>
 
           {/* Last log preview when collapsed */}
           {isTerminalCollapsed && lastLog && (
             <span className="flex items-center gap-2 overflow-hidden px-2 border-l border-[rgba(255,255,255,0.06)]">
-              <span className="text-[#444] shrink-0 font-mono text-xs hidden sm:inline">[{lastLog.timestamp}]</span>
+              <span className="text-[--text-tertiary] shrink-0 font-mono text-xs hidden sm:inline">[{lastLog.timestamp}]</span>
               <span className="shrink-0 font-medium font-mono text-xs hidden sm:inline" style={{ color: LOG_LEVEL_COLORS[lastLog.level] }}>
                 [{lastLog.level}]
               </span>
-              <span className="text-[#888] font-mono text-xs truncate max-w-[200px] md:max-w-[400px]">
+              <span className="text-[--text-secondary] font-mono text-xs truncate max-w-[200px] md:max-w-[400px]">
                 {lastLog.message}
               </span>
             </span>
@@ -151,7 +151,7 @@ export function TerminalLog() {
             e.stopPropagation();
             clear();
           }}
-          className="text-[#444] hover:text-[#888] transition-colors shrink-0 ml-2"
+          className="icon-button !h-6 !w-6 shrink-0 ml-2"
           title="Clear terminal"
           aria-label="Clear terminal logs"
         >
@@ -169,7 +169,7 @@ export function TerminalLog() {
           <LogEntry key={i} entry={entry} />
         ))}
         {logs.length === 0 && (
-          <div className="text-[#555] text-xs font-mono italic">
+          <div className="text-[--text-tertiary] text-xs font-mono italic">
             Waiting for logs...
           </div>
         )}

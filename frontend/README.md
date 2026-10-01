@@ -1,56 +1,30 @@
-# VectorDB Console — Advanced Search Interface
+# Neuebit frontend
 
-VectorDB Console is an industry-standard, production-grade frontend interface built for a custom HNSW-based Vector Database & RAG pipeline. It serves as a visual exploration tool and operational control plane, bridging complex vector mathematics with an intuitive, developer-focused UX. 
+Neuebit lets users upload documents, ask questions with sources, and search related passages. Vector Lab contains the custom vector engine, PCA canvas, benchmarks, and maintenance controls.
 
-The application enables real-time vector scatter plotting using PCA projection, live algorithm benchmarking, manual and bulk document ingestion, and a unified RAG chat interface.
+## Stack and state
 
-![Screenshot](../claude-files/screenshot.png) *(Add a screenshot here)*
+React 19, TypeScript 6, and Vite 8 run the application. Tailwind CSS and existing Radix primitives share the tokens in `src/index.css` and `tailwind.config.js`. Locally hosted Geist Sans is used for product copy; Geist Mono is used for technical values and the terminal. See [DESIGN.md](DESIGN.md) for component and layout rules.
 
-## Architecture
+TanStack Query owns fetched documents, conversations, search results, and engine status. Zustand stores client preferences and transient interaction state. The chat sends authenticated NDJSON requests. The terminal shows client API operation logs and does not use WebSockets.
 
-The frontend is engineered as a robust Single Page Application (SPA) driven by React 18 and TypeScript. Global state is managed efficiently via Zustand, separating domain logic (e.g., Engine Configuration, Canvas State, active sessions) from the UI layer. D3.js handles the high-performance 2D WebGL/SVG scatter plot rendering of the vector space, featuring native pan/zoom capabilities and dynamic hover edge rendering. 
+## Development
 
-Data fetching and caching are orchestrated entirely through TanStack Query (React Query v5), which allows polling for live algorithm benchmarks, managing API request lifecycles for search/ingest actions, and refreshing vector spaces seamlessly. The Terminal Panel establishes a WebSocket connection with the backend to receive live logs and chunking updates during ingestion. SSE (Server-Sent Events) drives the RAG pipeline streaming responses token-by-token directly into the Chat interface.
-
-## Tech Stack
-
-- **Framework:** React 18, Vite 5, TypeScript 5
-- **Styling:** Tailwind CSS v3, Custom Design System
-- **Components:** Radix UI primitives, lucide-react
-- **State Management:** Zustand (with persist middleware)
-- **Data Fetching:** TanStack Query v5, SSE, WebSocket
-- **Visualization:** D3.js v7
-
-## Setup Instructions
-
-### Backend (Python FastAPI)
-
-Assuming the backend is set up according to its respective documentation:
+Start the backend using the [project setup instructions](../README.md). From this directory:
 
 ```bash
-cd backend
-python -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-uvicorn main:app --reload --port 8000
+npm install
+npm run dev
 ```
 
-### Frontend
+Set `VITE_API_BASE_URL` in `.env.local` to the backend origin, for example `http://localhost:8000`. The client appends `/api/v1`.
 
-1. Navigate to the frontend directory:
-   ```bash
-   cd frontend
-   ```
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Set up environment variables:
-   ```bash
-   cp .env.example .env.local
-   ```
-   *(Ensure `VITE_API_BASE_URL` and `VITE_WS_URL` point to the running backend).*
-4. Start the development server:
-   ```bash
-   npm run dev
-   ```
+## Checks
+
+```bash
+npm run build
+npm run lint
+git diff --check
+```
+
+After UI changes, check keyboard focus and the four workspaces at laptop widths. Exercise streaming/cancellation, citations, file upload, document deletion, search-to-canvas highlighting, and operator permissions against a running backend.

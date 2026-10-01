@@ -10,6 +10,8 @@ import { BenchmarksPanel } from "../panels/BenchmarksPanel";
 import { EnginePanel } from "../panels/EnginePanel";
 import { MaintenancePanel } from "../panels/MaintenancePanel";
 import type { VectorPoint2D } from "../../types/vector";
+import { ALGORITHM_DISPLAY, METRIC_DISPLAY } from "../../types/vector";
+import { WorkspaceHeader } from "../layout/WorkspaceHeader";
 
 const EMPTY_VECTORS: VectorPoint2D[] = [];
 
@@ -33,7 +35,7 @@ export function VectorLabWorkspace({ active }: { active: boolean }) {
     setInspectorOpen(false);
     requestAnimationFrame(() => inspectorToggleRef.current?.focus());
   };
-  const { data: status } = useQuery({ queryKey: ["dbStatus"], queryFn: getStatus, retry: false });
+  const { data: status, isError: statusError, isPending: statusPending } = useQuery({ queryKey: ["dbStatus"], queryFn: getStatus, retry: false });
   const sampleQuery = useVectorSample();
   const sample = sampleQuery.data;
   const vectors = sample?.vectors ?? EMPTY_VECTORS;
@@ -54,11 +56,13 @@ export function VectorLabWorkspace({ active }: { active: boolean }) {
   };
   return (
     <section aria-label="Vector Lab workspace" inert={!active} className={`${active ? "flex" : "hidden"} flex-1 min-h-0 min-w-0 flex-col`}>
-      <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-[--border-subtle] bg-panel/40 px-4 py-2">
-        <div className="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1 font-mono text-2xs uppercase tracking-wider text-[--text-secondary]">
-          <span className="text-[--color-info]">Engineering console</span>
-          <span>Your vectors <span className="text-[--text-primary]">{sample?.count.toLocaleString() ?? "—"}</span></span>
-          <span className="hidden sm:inline">Shared index <span className="text-[--text-primary]">{status?.engine.toUpperCase() ?? "—"}</span></span>
+      <WorkspaceHeader view="vector-lab" />
+      <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-y border-[--border-subtle] px-5 sm:px-7 py-2.5">
+        <div aria-label="Service status" className="flex min-w-0 flex-wrap items-center gap-x-5 gap-y-2 text-xs text-[--text-tertiary]">
+          <span role="status" className="flex items-center gap-1.5"><span aria-hidden="true" className={`h-1.5 w-1.5 rounded-full ${statusError ? "bg-error" : statusPending ? "bg-warning" : "bg-success"}`} />API · <span className="text-[--text-primary]">{statusError ? "Offline" : statusPending ? "Connecting" : "Online"}</span></span>
+          <span title="Your searchable vectors">Vectors · <span className="font-mono text-xs text-[--text-primary]">{sample?.count.toLocaleString() ?? "—"}</span></span>
+          <span title={status && !statusError ? `Shared index · ${status.total_docs.toLocaleString()} vectors · ${METRIC_DISPLAY[status.metric]}` : "Index status unavailable"}>Index · <span className="font-mono text-xs text-[--text-primary]">{status && !statusError ? ALGORITHM_DISPLAY[status.engine] : "—"}</span></span>
+          <span title="Inference health is not reported by the API">LLM · <span>Not checked</span></span>
         </div>
         <div className="flex items-center gap-3">
           <button type="button" onClick={() => void refreshLab()} disabled={isRefreshing} aria-label="Refresh Lab data"
@@ -81,10 +85,10 @@ export function VectorLabWorkspace({ active }: { active: boolean }) {
           </button>
         </div>
       </div>
-      <nav aria-label="Vector Lab sections" className="flex shrink-0 gap-1 px-4 border-b border-[--border-subtle] overflow-x-auto">
+      <nav aria-label="Vector Lab sections" className="flex shrink-0 gap-2 px-5 sm:px-7 border-b border-[--border-subtle] overflow-x-auto">
         {SECTIONS.map(({ view: section, label, icon: Icon }) => (
           <button type="button" key={section} onClick={() => openVectorLab(section)} aria-current={view === section ? "page" : undefined}
-            className={`flex items-center gap-2 px-3 py-3 text-xs whitespace-nowrap border-b-2 transition-colors focus-visible:outline-none focus-visible:bg-hover ${view === section ? "border-white text-white" : "border-transparent text-[#888] hover:text-white"}`}>
+            className={`flex items-center gap-2 px-4 py-3 text-sm whitespace-nowrap border-b-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[--color-info] ${view === section ? "border-[--accent-white] text-[--text-primary]" : "border-transparent text-[--text-tertiary] hover:text-[--text-primary]"}`}>
             <Icon className="w-3.5 h-3.5" />{label}
           </button>
         ))}
@@ -96,7 +100,7 @@ export function VectorLabWorkspace({ active }: { active: boolean }) {
       {active && view === "space" && <div className="relative flex min-h-0 min-w-0 flex-1 overflow-hidden">
         <VectorSpaceCanvas vectors={vectors} count={sample?.count} />
         {sampleQuery.isPending && !sampleQuery.isError && <div role="status" className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center gap-2 text-xs text-[--text-secondary]"><Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> Loading vector space…</div>}
-        <div className={`${inspectorOpen ? "flex" : "hidden"} absolute inset-y-0 right-0 z-30 w-[min(320px,calc(100vw-5rem))] min-w-0 border-l border-[--border-default] shadow-[-16px_0_40px_rgba(0,0,0,0.45)] xl:static xl:z-auto xl:flex xl:w-[300px] xl:shrink-0 xl:shadow-none`}>
+        <div className={`${inspectorOpen ? "flex" : "hidden"} absolute inset-y-0 right-0 z-30 w-[min(280px,calc(100vw-5rem))] min-w-0 border-l border-[--border-default] shadow-[-12px_0_32px_rgba(0,0,0,0.3)] xl:static xl:z-auto xl:flex xl:w-[240px] xl:shrink-0 xl:shadow-none`}>
           <VectorInspector status={status} vectors={vectors} count={sample?.count} onClose={closeInspector} />
         </div>
       </div>}

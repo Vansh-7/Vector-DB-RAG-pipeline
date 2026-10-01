@@ -23,9 +23,9 @@ export function SourceCitation({ sources, onInspect }: SourceCitationProps) {
 
   if (onInspect) return (
     <button type="button" onClick={(event) => onInspect(sortedSources, event.currentTarget)}
-      className="mt-3 inline-flex items-center gap-2 rounded-[4px] border border-[--border-default] bg-elevated px-3 py-2 text-xs text-[--text-secondary] hover:border-[--border-strong] hover:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[--color-info]">
-      <ChevronRight className="w-3.5 h-3.5 text-[--color-info]" aria-hidden="true" />
-      Sources used <span className="font-mono text-[--text-primary]">{sources.length}</span>
+      className="mt-4 inline-flex self-start items-center gap-1.5 rounded px-2 py-1.5 text-xs text-[--text-secondary] hover:bg-hover hover:text-[--text-primary] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--color-info]">
+      <ChevronRight className="w-3.5 h-3.5" aria-hidden="true" />
+      {sources.length} {sources.length === 1 ? "source" : "sources"}
     </button>
   );
 

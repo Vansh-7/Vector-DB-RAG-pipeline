@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { AlertCircle, Loader2, RefreshCw } from "lucide-react";
+import { AlertCircle, ArrowUpRight, Loader2, RefreshCw } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { askQuestion } from "../../api/query";
 import { conversationKeys, listConversationMessages } from "../../api/conversations";
@@ -16,6 +16,8 @@ import { AskAIComposer } from "./AskAIComposer";
 import { ChatMessage as ChatMessageView } from "./ChatMessage";
 import { AskAIPromptChips } from "./AskAIPromptChips";
 import { SourcesInspector } from "./SourcesInspector";
+import { WorkspaceHeader } from "../layout/WorkspaceHeader";
+import { BrandEmblem } from "../ui/BrandMark";
 
 function stripThinking(text: string): string {
   const stripped = text.replace(/<thinking>[\s\S]*?<\/thinking>/g, "");
@@ -40,12 +42,13 @@ interface StreamingTurn {
   sources: RAGSource[];
 }
 
-export function AskAIPanel({ onProcessingChange }: { onProcessingChange?: (processing: boolean) => void }) {
+export function AskAIPanel({ onProcessingChange, needsKnowledge }: { onProcessingChange?: (processing: boolean) => void; needsKnowledge: boolean }) {
   const userId = useAuthStore((s) => s.user?.id);
   const conversationId = useSessionStore((s) => s.activeConversationId);
   const setConversationId = useSessionStore((s) => s.setActiveConversationId);
   const input = useSessionStore((s) => s.askAiInput);
   const setInput = useSessionStore((s) => s.setAskAiInput);
+  const setActiveView = useSessionStore((s) => s.setActiveView);
   const topK = useEngineStore((s) => s.topK);
   const setQueryPoint = useCanvasStore((s) => s.setQueryPoint);
   const setHighlighted = useCanvasStore((s) => s.setHighlighted);
@@ -163,25 +166,25 @@ export function AskAIPanel({ onProcessingChange }: { onProcessingChange?: (proce
 
   return (
     <div className="relative flex h-full min-w-0 flex-col overflow-hidden">
-      {conversationId !== null && <div className="shrink-0 border-b border-[--border-subtle] px-4 sm:px-6 py-3">
-        <p className="truncate text-sm font-medium text-[--text-primary]">{conversationTitle ?? "Conversation"}</p>
-        <p className="mt-0.5 font-mono text-[10px] text-[--text-tertiary]">Saved conversation</p>
-      </div>}
+      <WorkspaceHeader view="chat" title={conversationId !== null ? conversationTitle ?? "Conversation" : undefined} description={null} />
       {requestError && <div role="alert" className="flex items-start gap-2 border-b border-error/20 bg-error/5 px-4 py-3 text-xs text-error"><AlertCircle className="mt-0.5 w-4 h-4 shrink-0" /><span className="min-w-0 break-words">{requestError}</span><button type="button" onClick={() => { setRequestError(null); if (conversationId !== null) void messagesQuery.refetch(); }} className="ml-auto shrink-0 underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-error">Dismiss / refresh</button></div>}
       {loading ? <div role="status" aria-label="Loading conversation" className="flex flex-1 items-center justify-center gap-2 text-xs text-[--text-secondary]"><Loader2 className="w-4 h-4 animate-spin" /> Loading conversation</div>
         : failed ? <div role="alert" className="flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center"><p className="text-sm">Conversation could not be loaded.</p><button type="button" onClick={() => void messagesQuery.refetch()} className="flex items-center gap-2 rounded-[4px] border border-[--border-default] px-3 py-2 text-xs hover:bg-hover focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[--color-info]"><RefreshCw className="w-3.5 h-3.5" /> Retry</button></div>
-          : showEmpty ? <div className="flex flex-1 flex-col items-center justify-center p-4">
-            <img src="/kernspace-logo.png" alt="Kernspace — RAG and Vector Search" className="mb-4 h-auto w-64 sm:w-80 mix-blend-screen" />
-            <h2 className="mb-2 text-lg font-medium text-[--text-primary]">Ask a question.</h2>
-            <p className="mb-6 max-w-md text-center text-xs leading-relaxed text-[--text-secondary]">Explore the knowledge in your documents. Answers include the sources used.</p>
-            <div className="w-full max-w-[520px]"><AskAIComposer input={input} setInput={setInput} onSubmit={handleSubmit} status="READY" isCentered /><AskAIPromptChips onSelect={setInput} /></div>
+          : showEmpty ? <div className="flex min-h-0 flex-1 flex-col items-center justify-center overflow-y-auto px-6 pt-6 pb-12">
+            <BrandEmblem className="mb-3 h-14 w-14" />
+            <h2 className="mb-2.5 text-[28px] font-semibold tracking-[-0.035em] text-[--text-primary]">Ask your knowledge</h2>
+            <p className="mb-8 max-w-[390px] text-center text-body leading-relaxed text-[--text-secondary]">Ask a question. Answers include passages from your documents.</p>
+            <div className="w-full max-w-[760px]"><AskAIComposer input={input} setInput={setInput} onSubmit={handleSubmit} status="READY" isCentered /><AskAIPromptChips onSelect={setInput} /></div>
+            {needsKnowledge && <p className="mt-5 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-xs text-[--text-secondary]">Add a document before asking a question.<button type="button" onClick={() => setActiveView("documents")} className="inline-flex items-center gap-1 rounded text-[--text-primary] underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--color-info]">Add a document <ArrowUpRight className="h-3 w-3" /></button></p>}
           </div>
             : <div className="flex min-h-0 flex-1 flex-col">
-              <div className="custom-scrollbar flex-1 space-y-6 overflow-y-auto px-4 py-6 sm:px-6">
-                {messages.map((message, index) => <ChatMessageView key={message.id} message={message} isStreaming={stream !== null && index === messages.length - 1 && message.role === "assistant"} onInspectSources={openInspector} />)}
-                <div ref={messagesEndRef} className="h-2" />
+              <div className="custom-scrollbar flex-1 overflow-y-auto px-5 py-6 sm:px-7">
+                <div className="mx-auto w-full max-w-[760px] space-y-8">
+                  {messages.map((message, index) => <ChatMessageView key={message.id} message={message} isStreaming={stream !== null && index === messages.length - 1 && message.role === "assistant"} onInspectSources={openInspector} />)}
+                  <div ref={messagesEndRef} className="h-2" />
+                </div>
               </div>
-              <div className="shrink-0 border-t border-[--border-subtle] bg-base/90 p-3 sm:p-4"><div className="mx-auto max-w-3xl"><AskAIComposer input={input} setInput={setInput} onSubmit={handleSubmit} onCancel={() => abortRef.current?.abort()} status={stream ? "PROCESSING" : "READY"} isCentered={false} /></div></div>
+              <div className="shrink-0 bg-base px-5 pt-2 pb-5 sm:px-7"><div className="mx-auto max-w-[760px]"><AskAIComposer input={input} setInput={setInput} onSubmit={handleSubmit} onCancel={() => abortRef.current?.abort()} status={stream ? "PROCESSING" : "READY"} isCentered={false} /></div></div>
             </div>}
       {inspectedSources && <SourcesInspector sources={inspectedSources} onClose={closeInspector} />}
     </div>

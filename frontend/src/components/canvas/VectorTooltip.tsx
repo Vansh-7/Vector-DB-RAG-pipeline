@@ -23,16 +23,16 @@ export function VectorTooltip({ id, category, x, y, payload, distance, container
         top: Math.max(12, Math.min(y - 20, containerHeight - 150)),
       }}
     >
-      <div className="bg-[#0f0f0f] border border-[rgba(255,255,255,0.08)] rounded-md p-3 text-sm flex flex-col gap-1.5 min-w-[220px] max-w-[280px] shadow-2xl">
-        <span className="font-mono text-[11px]" style={{ color: categoryColor }}>
-          [{categoryLabel}]
+      <div className="bg-elevated border border-[--border-strong] rounded-md p-3 text-sm flex flex-col gap-1.5 min-w-[220px] max-w-[280px] shadow-2xl">
+        <span className="text-xs" style={{ color: categoryColor }}>
+          {categoryLabel}
         </span>
-        <span className="font-mono text-[10px] text-[#888] break-all">{id}</span>
+        <span className="font-mono text-[10px] text-[--text-secondary] break-all">{id}</span>
         
-        <p className="text-[#f4f4f4] font-mono text-xs leading-relaxed">
+        <p className="text-[--text-primary] text-sm leading-relaxed">
           {payload || "No text payload available for this vector."}
         </p>
-        {distance !== undefined && <span className="border-t border-[--border-subtle] pt-1 font-mono text-[10px] text-[#888]">DISTANCE {distance.toFixed(5)}</span>}
+        {distance !== undefined && <span className="border-t border-[--border-subtle] pt-1 font-mono text-[10px] text-[--text-secondary]">DISTANCE {distance.toFixed(5)}</span>}
       </div>
     </div>
   );

@@ -43,18 +43,17 @@ export function MaintenancePanel() {
   return (
     <div className="space-y-6">
       <div>
-        <p className="font-mono text-2xs uppercase tracking-[0.2em] text-[--color-info]">Operations / 04</p>
-        <h2 className="mt-2 text-xl font-semibold tracking-tight">Maintenance</h2>
+        <h2 className="text-md font-semibold">Maintenance</h2>
         <p className="mt-1 text-xs leading-relaxed text-[--text-secondary]">
           {isOperator
             ? "Manage the vectors and documents owned by your account, or save the shared index."
             : "Manage the vectors and documents owned by your account."}
         </p>
       </div>
-      {isOperator && <div className="border border-[--border-subtle] rounded-md bg-panel p-4 flex flex-wrap items-center justify-between gap-4">
+      {isOperator && <div className="border-b border-[--border-subtle] py-5 flex flex-wrap items-center justify-between gap-4">
         <div>
           <h3 className="text-sm font-semibold">Save to Disk</h3>
-          <p className="text-xs text-[#888] mt-1">Create a snapshot of the shared vector index.</p>
+          <p className="text-xs text-[--text-secondary] mt-1">Create a snapshot of the shared vector index.</p>
         </div>
         <Button variant="outline" onClick={() => saveMutation.mutate()} disabled={busy}>
           {saveMutation.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />} Save to Disk
@@ -62,16 +61,16 @@ export function MaintenancePanel() {
       </div>}
       {isOperator && saveMutation.isSuccess && <p role="status" className="text-xs text-success">Snapshot saved to disk.</p>}
       {isOperator && saveMutation.isError && <p role="alert" className="text-xs text-error break-words">{saveMutation.error.message}</p>}
-      <div className="border border-[--border-subtle] rounded-md bg-panel p-4">
+      <div className="border-b border-[--border-subtle] py-5">
         <div>
           <h3 className="text-sm font-semibold">Delete a vector</h3>
-          <p className="text-xs text-[#888] mt-1 leading-relaxed">Remove one indexed vector by ID. Use Documents to delete an entire source.</p>
+          <p className="text-xs text-[--text-secondary] mt-1 leading-relaxed">Remove one indexed vector by ID. Use Documents to delete an entire source.</p>
         </div>
         <div className="mt-4 flex flex-wrap items-end gap-2">
           <label className="min-w-[180px] flex-1 text-xs text-[--text-secondary]">
             Vector ID
             <input value={vectorId} onChange={(event) => setVectorId(event.target.value)} placeholder="Enter vector ID"
-              className="mt-1.5 h-9 w-full rounded-[4px] border border-[--border-default] bg-elevated px-3 font-mono text-xs text-[--text-primary] outline-none focus:border-[--color-info]" />
+              className="field mt-1.5 h-9 w-full px-3 font-mono text-xs" />
           </label>
           {highlightedIds.length === 1 && <Button type="button" variant="outline" onClick={() => setVectorId(highlightedIds[0])} disabled={busy}>Use selected</Button>}
           <Button type="button" variant="danger" onClick={() => { deleteMutation.reset(); setShowDeleteDialog(true); }} disabled={busy || !vectorId.trim()}>
@@ -80,10 +79,10 @@ export function MaintenancePanel() {
         </div>
         {deleteMutation.isSuccess && <p role="status" className="mt-3 text-xs text-success">Vector deleted.</p>}
       </div>
-      <div className="border border-error/20 rounded-md bg-panel p-4 flex flex-wrap items-center justify-between gap-4">
+      <div className="border-t border-[--border-subtle] py-5 flex flex-wrap items-center justify-between gap-4">
         <div className="max-w-md">
           <h3 className="text-sm font-semibold">Clear vector data</h3>
-          <p className="text-xs text-[#888] mt-1 leading-relaxed">Delete your indexed vectors and document metadata. Saved conversations are not deleted.</p>
+          <p className="text-xs text-[--text-secondary] mt-1 leading-relaxed">Delete your indexed vectors and document metadata. Saved conversations are not deleted.</p>
         </div>
         <Button variant="danger" onClick={() => { clearMutation.reset(); setShowClearDialog(true); }} disabled={busy}>
           {clearMutation.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />} Clear data

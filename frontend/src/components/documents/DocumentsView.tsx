@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { ArrowRight, FilePlus2, FolderOpen, Plus, RefreshCw, Upload } from "lucide-react";
+import { FilePlus2, FolderOpen, Plus, RefreshCw, Upload } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { deleteDocument } from "../../api/documents";
 import { useDocuments } from "../../hooks/useDocuments";
@@ -12,6 +12,7 @@ import { Button } from "../ui/Button";
 import { ConfirmDialog } from "../ui/ConfirmDialog";
 import { AddDocumentDrawer } from "./AddDocumentDrawer";
 import { DocumentList } from "./DocumentList";
+import { WorkspaceHeader } from "../layout/WorkspaceHeader";
 
 export function DocumentsView() {
   const userId = useAuthStore((s) => s.user?.id);
@@ -55,25 +56,19 @@ export function DocumentsView() {
   };
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-7">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-3">
-            <h2 className="text-lg font-semibold tracking-tight">Knowledge</h2>
-            {!isPending && !isError && <span className="font-mono text-2xs text-[--text-secondary] border border-[--border-subtle] rounded px-1.5 py-0.5">{documents.length}</span>}
-          </div>
-          <p className="mt-1 text-xs text-[--text-secondary]">The documents Kernspace uses to answer and search.</p>
-        </div>
-        <Button ref={addButtonRef} type="button" onClick={() => openDrawer()} className="h-9 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--color-info]">
+    <div className="w-full">
+      <WorkspaceHeader view="documents">
+        <Button ref={addButtonRef} type="button" onClick={() => openDrawer()} className="h-9 shrink-0">
           <Plus className="w-4 h-4" aria-hidden="true" /> Add document
         </Button>
-      </div>
+      </WorkspaceHeader>
+      <div className="w-full max-w-6xl mx-auto px-5 sm:px-7 pb-8 pt-5 space-y-5">
 
       {added && (
         <div role="status" className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-success/20 bg-success/5 px-4 py-3">
           <p className="text-xs text-[--text-primary]">{added.status === "ready" ? `Document ready · ${added.chunk_count} ${added.chunk_count === 1 ? "chunk" : "chunks"} indexed.` : "Document added. Processing is in progress."}</p>
           {added.status === "ready" && <button type="button" onClick={() => setActiveView("chat")} className="flex items-center gap-1 text-xs text-success hover:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-success">
-            Ask a question <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
+            Ask a question
           </button>}
         </div>
       )}
@@ -91,12 +86,12 @@ export function DocumentsView() {
           <Button type="button" variant="outline" onClick={() => void refetch()} className="mt-4"><RefreshCw className="w-3.5 h-3.5" /> Retry</Button>
         </div>
       ) : documents.length === 0 ? (
-        <div className="min-h-[340px] rounded-md border border-dashed border-[--border-default] bg-panel/50 flex flex-col items-center justify-center px-6 py-12 text-center">
-          <div className="w-12 h-12 rounded-md border border-[--border-default] bg-elevated flex items-center justify-center text-[--color-info] mb-5">
+        <div className="min-h-[380px] flex flex-col items-center justify-center px-6 py-12 text-center">
+          <div className="w-12 h-12 flex items-center justify-center text-[--text-secondary] mb-5">
             <FolderOpen className="w-5 h-5" aria-hidden="true" />
           </div>
-          <h3 className="text-base font-semibold">No knowledge indexed yet.</h3>
-          <p className="mt-2 max-w-sm text-xs leading-relaxed text-[--text-secondary]">Upload a PDF, text file, or Markdown document, or paste text to start building your vector space.</p>
+          <h3 className="text-lg font-semibold tracking-tight">Add your first document</h3>
+          <p className="mt-2 max-w-sm text-sm leading-relaxed text-[--text-secondary]">Add a PDF, text file, or Markdown document. Neuebit uses it to answer questions and find related passages.</p>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
             <Button type="button" onClick={() => openDrawer("file")}><Upload className="w-3.5 h-3.5" /> Upload file</Button>
             <Button type="button" variant="outline" onClick={() => openDrawer("manual")}><FilePlus2 className="w-3.5 h-3.5" /> Paste text</Button>
@@ -104,11 +99,16 @@ export function DocumentsView() {
         </div>
       ) : (
         <div>
-          <p className="font-mono text-2xs tracking-widest text-[--text-tertiary] uppercase mb-3">Your documents</p>
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+            <p className="text-sm text-[--text-secondary]"><span className="font-mono text-xs">{documents.length}</span> {documents.length === 1 ? "document" : "documents"}</p>
+            <p className="text-xs text-[--text-tertiary]">Upload PDF, TXT, or Markdown, or paste text.</p>
+          </div>
           <DocumentList documents={documents} deletingId={deleteMutation.isPending ? deleteMutation.variables : null}
+            onUploadAgain={() => openDrawer("file")}
             onDelete={(document) => { deleteMutation.reset(); setDeletedName(null); setSelectedForDelete(document); }} />
         </div>
       )}
+      </div>
 
       <AddDocumentDrawer open={drawerOpen} onOpenChange={setDrawerOpen} onSuccess={handleAdded}
         processing={processing} onProcessingChange={setProcessing} returnFocusRef={addButtonRef} />

@@ -132,35 +132,35 @@ export function IngestPanel({ onSuccess, onProcessingChange }: {
 
   return (
     <div className="p-4 space-y-4 flex flex-col h-full">
-      <div className="text-xs text-[#888] mb-1">Upload a document to automatically chunk and embed its contents.</div>
+      <div className="text-xs text-[--text-secondary] mb-1">Upload a document to automatically chunk and embed its contents.</div>
 
       {/* Mode toggle */}
-      <div className="flex bg-[#0a0a0a] rounded-[4px] p-0.5 border border-[rgba(255,255,255,0.06)] shrink-0">
+      <div className="flex bg-base rounded-md p-0.5 border border-[rgba(255,255,255,0.06)] shrink-0">
         <button
           type="button"
           onClick={() => { setMode("file"); mutation.reset(); }}
           disabled={mutation.isPending}
           aria-pressed={mode === "file"}
-          className={`flex-1 text-xs font-medium py-1.5 rounded-[3px] transition-colors ${
+          className={`flex-1 text-sm font-medium py-2 rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--color-info] ${
             mode === "file"
-              ? "bg-[#222] text-[#f4f4f4]"
-              : "text-[#555] hover:text-[#888]"
+              ? "bg-elevated text-[--text-primary]"
+              : "text-[--text-tertiary] hover:text-[--text-secondary]"
           }`}
         >
-          File Drop
+          Upload file
         </button>
         <button
           type="button"
           onClick={() => { setMode("manual"); mutation.reset(); }}
           disabled={mutation.isPending}
           aria-pressed={mode === "manual"}
-          className={`flex-1 text-xs font-medium py-1.5 rounded-[3px] transition-colors ${
+          className={`flex-1 text-sm font-medium py-2 rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--color-info] ${
             mode === "manual"
-              ? "bg-[#222] text-[#f4f4f4]"
-              : "text-[#555] hover:text-[#888]"
+              ? "bg-elevated text-[--text-primary]"
+              : "text-[--text-tertiary] hover:text-[--text-secondary]"
           }`}
         >
-          Manual Entry
+          Paste text
         </button>
       </div>
 
@@ -183,26 +183,26 @@ export function IngestPanel({ onSuccess, onProcessingChange }: {
               onClick={() => { if (!mutation.isPending) fileInputRef.current?.click(); }}
               onKeyDown={(e) => { if (!mutation.isPending && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); fileInputRef.current?.click(); } }}
               role="button" tabIndex={mutation.isPending ? -1 : 0} aria-label="Choose a document file" aria-disabled={mutation.isPending}
-              className={`border-2 border-dashed rounded-md flex-1 min-h-[180px] flex flex-col items-center justify-center gap-3 transition-colors cursor-pointer focus-visible:outline-none focus-visible:border-[--color-info] ${
+              className={`border border-dashed rounded-md flex-1 min-h-[180px] flex flex-col items-center justify-center gap-3 transition-colors cursor-pointer focus-visible:outline-none focus-visible:border-[--color-info] ${
                 isDragOver
                   ? "border-[#22c55e] bg-[#22c55e]/5"
                   : "border-[rgba(255,255,255,0.1)] hover:border-[rgba(255,255,255,0.2)]"
               }`}
             >
-              <Upload className="w-8 h-8 text-[#555]" />
+              <Upload className="w-6 h-6 text-[--text-secondary]" />
               <div className="text-center">
-                <p className="text-sm text-[#888]">Drop file here or click to browse</p>
-                <p className="text-2xs text-[#555] mt-1">.txt, .pdf, .md — max 10MB</p>
+                <p className="text-sm text-[--text-secondary]">Drop file here or click to browse</p>
+                <p className="text-2xs text-[--text-tertiary] mt-1">.txt, .pdf, .md — max 10MB</p>
               </div>
             </div>
 
             {fileError && <p role="alert" className="text-xs text-error">{fileError}</p>}
 
             {droppedFile && (
-              <div className="flex items-center gap-2 px-3 py-2 bg-[#161616] rounded-[4px] border border-[rgba(255,255,255,0.06)]">
-                <FileText className="w-4 h-4 text-[#888]" />
-                <span className="text-sm text-[#f4f4f4] truncate">{droppedFile.name}</span>
-                <span className="text-2xs text-[#555] ml-auto shrink-0">
+              <div className="flex items-center gap-2 px-3 py-2 bg-elevated rounded-md border border-[rgba(255,255,255,0.06)]">
+                <FileText className="w-4 h-4 text-[--text-secondary]" />
+                <span className="text-sm text-[--text-primary] truncate">{droppedFile.name}</span>
+                <span className="text-2xs text-[--text-tertiary] ml-auto shrink-0">
                   {formatFileSize(droppedFile.size)}
                 </span>
               </div>
@@ -211,8 +211,8 @@ export function IngestPanel({ onSuccess, onProcessingChange }: {
         ) : (
           <div className="space-y-3 h-full flex flex-col">
             <div className="shrink-0">
-              <label htmlFor="document-title" className="text-2xs font-medium tracking-widest text-[#555] uppercase block mb-1.5">
-                Title / Topic (optional)
+              <label htmlFor="document-title" className="text-xs text-[--text-secondary] block mb-1.5">
+                Title (optional)
               </label>
               <input
                 id="document-title"
@@ -221,12 +221,12 @@ export function IngestPanel({ onSuccess, onProcessingChange }: {
                 onChange={(e) => setTitle(e.target.value)}
                 disabled={mutation.isPending}
                 placeholder="e.g., System Architecture Guidelines"
-                className="w-full bg-[#161616] border border-[rgba(255,255,255,0.1)] rounded-[4px] px-3 py-2 text-sm text-[#f4f4f4] placeholder:text-[#555] outline-none focus:border-[rgba(255,255,255,0.18)] transition-colors"
+                className="field h-10 px-3 text-sm"
               />
             </div>
             <div className="flex-1 flex flex-col min-h-[160px]">
-              <label htmlFor="document-content" className="text-2xs font-medium tracking-widest text-[#555] uppercase block mb-1.5">
-                Document Content
+              <label htmlFor="document-content" className="text-xs text-[--text-secondary] block mb-1.5">
+                Document content
               </label>
               <textarea
                 id="document-content"
@@ -234,7 +234,7 @@ export function IngestPanel({ onSuccess, onProcessingChange }: {
                 onChange={(e) => setDescription(e.target.value)}
                 disabled={mutation.isPending}
                 placeholder="Paste raw text, markdown, or JSON payload here..."
-                className="w-full flex-1 bg-[#161616] border border-[rgba(255,255,255,0.1)] rounded-[4px] px-3 py-2 text-sm text-[#f4f4f4] placeholder:text-[#555] outline-none resize-none focus:border-[rgba(255,255,255,0.18)] transition-colors"
+                className="field flex-1 resize-none px-3 py-3 text-sm"
               />
             </div>
           </div>
@@ -248,8 +248,8 @@ export function IngestPanel({ onSuccess, onProcessingChange }: {
           type="button"
           onClick={handleReset}
           disabled={mutation.isPending || (!droppedFile && !title.trim() && !description.trim())}
-          className="flex items-center justify-center w-10 h-10 bg-[#161616] hover:bg-[#1a1a1a] border border-[rgba(255,255,255,0.06)] hover:border-[rgba(255,255,255,0.15)] text-[#555] hover:text-[#ef4444] rounded-[4px] transition-colors disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
-          title="Clear Inputs"
+          className="icon-button !h-10 !w-10 disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+          title="Clear inputs" aria-label="Clear inputs"
         >
           <RotateCcw className="w-4 h-4" />
         </button>

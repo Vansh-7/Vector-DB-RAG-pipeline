@@ -1,3 +1,5 @@
+// avoid-ai-design-ignore-file: SD8
+// Category colors are part of the existing vector visualization contract.
 export type Algorithm = 'hnsw' | 'kdtree' | 'exact';
 
 export type DistanceMetric = 'cosine' | 'euclidean' | 'manhattan';
@@ -40,13 +42,13 @@ export const CATEGORY_ORDER: Category[] = [
 
 export const ALGORITHM_DISPLAY: Record<Algorithm, string> = {
   hnsw: 'HNSW Graph',
-  kdtree: 'KD-Tree',
+  kdtree: 'KD-tree',
   exact: 'Brute Force (Exact Match)',
 };
 
 export const METRIC_DISPLAY: Record<DistanceMetric, string> = {
   cosine: 'Cosine Similarity',
-  euclidean: 'Euclidean Distance',
+  euclidean: 'Euclidean',
   manhattan: 'Manhattan Distance',
 };
 

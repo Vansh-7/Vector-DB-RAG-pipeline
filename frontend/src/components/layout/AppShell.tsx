@@ -9,8 +9,6 @@ import { useCanvasStore } from "../../store/canvasStore";
 import { useSessionStore } from "../../store/sessionStore";
 import { useDocuments } from "../../hooks/useDocuments";
 import { PrimarySidebar } from "./PrimarySidebar";
-import { TopNav } from "./TopNav";
-import { WorkspaceHeader } from "./WorkspaceHeader";
 
 export function AppShell() {
   const activeView = useSessionStore((s) => s.activeView);
@@ -46,26 +44,20 @@ export function AppShell() {
   };
 
   return (
-    <div className="h-dvh w-full min-w-0 bg-base text-[#f4f4f4] font-sans flex flex-col overflow-hidden">
+    <div className="h-dvh w-full min-w-0 bg-base text-[--text-primary] font-sans flex flex-col overflow-hidden">
       <a href="#workspace" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-panel focus:p-3">
         Skip to workspace
       </a>
-      <TopNav />
       <DataLoader />
       <div className="flex flex-1 min-h-0 min-w-0 overflow-hidden">
         <PrimarySidebar onNewChat={startNewChat} onSelectConversation={selectConversation} chatBusy={chatBusy} />
         <div className="flex flex-1 flex-col min-h-0 min-w-0 overflow-hidden">
-          <WorkspaceHeader />
           <main id="workspace" tabIndex={-1} className="flex flex-1 flex-col min-h-0 min-w-0 overflow-hidden outline-none">
             {/* Keep feature owners mounted so navigation preserves streams and file selections. */}
             <section ref={chatRef} aria-label="Chat workspace" inert={activeView !== "chat"}
               className={`${activeView === "chat" ? "flex" : "hidden"} flex-1 flex-col min-h-0 min-w-0`}>
-              {needsKnowledge && <div className="shrink-0 flex flex-wrap items-center justify-between gap-2 border-b border-[--border-subtle] bg-panel/60 px-4 sm:px-6 py-3">
-                <p className="text-xs text-[--text-secondary]">Build your knowledge space to get source-backed answers.</p>
-                <button type="button" onClick={() => setActiveView("documents")} className="text-xs text-[--color-info] hover:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[--color-info]">Add a document</button>
-              </div>}
-              <div className="w-full max-w-4xl mx-auto flex-1 min-h-0">
-                <AskAIPanel onProcessingChange={setChatBusy} />
+              <div className="w-full flex-1 min-h-0">
+                <AskAIPanel onProcessingChange={setChatBusy} needsKnowledge={needsKnowledge} />
               </div>
             </section>
             <section aria-label="Documents workspace" inert={activeView !== "documents"}
