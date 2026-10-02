@@ -29,7 +29,7 @@ Set `VITE_API_BASE_URL` in `.env.local` to the backend origin, for example `http
 | `/app` | Replace with `/auth?mode=login` | Existing authenticated workspace |
 | Unknown path | Client Page not found with Return home | Same |
 
-The public page is an entry scaffold in this phase. The approved marketing layout, light theme, screenshots, and motion will follow in later phases.
+The public page currently uses the Phase B marketing foundation. Full navigation, product screenshots, storytelling, and entrance motion will follow in later phases.
 
 `BrowserRouter` uses the installed React Router dependency. Ordinary links add history entries; auth redirects, login/register mode switches, and trailing-slash normalization replace entries. The mode query is authoritative on direct visits, refreshes, and browser history navigation; missing/unknown modes show login. Password fields and visibility reset on mode changes. Leaving an in-progress form prevents its eventual result from signing in.
 
@@ -47,6 +47,12 @@ Keep API requests and static assets out of the HTML navigation fallback. In part
 
 CloudFront/S3 route handling, caching configuration, and verification against the deployed distribution will be implemented and tested on `deploy/v1`. Local Vite preview tests below verify browser routing; they do not verify this production hosting contract. Vercel preview configuration is outside this phase.
 
+## Marketing foundation (Phase B)
+
+See [MARKETING.md](MARKETING.md) for the warm neutral palette, Geist type scale, spacing, radii, and future image/technical-section tokens. Marketing variables use a separate `--marketing-*` namespace; the product palette remains in `src/index.css`.
+
+Public routes use normal document scrolling. The route marker on `html` switches color scheme and document overflow before paint, including for loading/recovery states. `/auth` and `/app` retain their dark, viewport-contained layout. The small token layer is shared; base marketing component styles load with LandingPage.
+
 ## Checks
 
 ```bash
@@ -60,6 +66,8 @@ Routing/session browser checks use the production build and a local Vite preview
 ```bash
 npm run test:entry
 ```
+
+Run the marketing foundation checks with `npm run test:marketing`, or both suites with `npm test`. Marketing checks cover widths from 320 to 1440px, 200% text sizing, visible keyboard focus, reduced motion, document scrolling, and public/auth/app theme isolation. Desktop/mobile review captures are written under the ignored `test-results/` directory.
 
 The suite uses installed Google Chrome by default. To use Playwright's bundled Chromium instead, install it with `npx playwright install chromium` and set `PLAYWRIGHT_CHANNEL=chromium` before running the script. Tests intercept the API with deterministic fixtures; no backend service or real credentials are required. They cover public/app/auth access, login, registration and recovery, refresh, restoration and retry, token expiry, logout, abandoned auth requests, browser history, client 404s, route-chunk recovery, and public bundle isolation. Traces are retained on failure in the ignored `test-results/` directory.
 

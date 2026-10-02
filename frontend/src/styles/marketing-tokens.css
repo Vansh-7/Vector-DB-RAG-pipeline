@@ -1,0 +1,92 @@
+/* Marketing owns its palette. Product tokens in index.css remain independent. */
+.marketing-page,
+html[data-page-surface="marketing"] {
+  --marketing-background-main: #faf9f6;
+  --marketing-background-subtle: #f2f1ec;
+  --marketing-surface: #ffffff;
+  --marketing-text-primary: #23231f;
+  --marketing-text-secondary: #63635c;
+  --marketing-text-muted: #6d6d65;
+  --marketing-border: #e4e3dc;
+  --marketing-border-strong: #b8b8ae;
+  --marketing-brand-ink: #23231f;
+  --marketing-brand-cream: #f3f0e6;
+  --marketing-action-hover: #3b3b34;
+  --marketing-action-active: #161613;
+  --marketing-focus: #23231f;
+
+  --marketing-technical-background: #171817;
+  --marketing-technical-surface: #20211f;
+  --marketing-technical-text: #f3f0e6;
+  --marketing-technical-secondary: #b3b3a9;
+  --marketing-technical-border: rgba(243, 240, 230, 0.12);
+
+  --marketing-font-sans: "Geist Sans", sans-serif;
+  --marketing-font-mono: "Geist Mono", monospace;
+  --marketing-type-display: clamp(2.75rem, 6.2vw, 5.25rem);
+  --marketing-type-heading: clamp(2rem, 4vw, 3.25rem);
+  --marketing-type-lead: clamp(1.0625rem, 1.5vw, 1.25rem);
+  --marketing-type-body: 1rem;
+  --marketing-type-small: 0.875rem;
+
+  --marketing-space-1: 0.25rem;
+  --marketing-space-2: 0.5rem;
+  --marketing-space-3: 0.75rem;
+  --marketing-space-4: 1rem;
+  --marketing-space-6: 1.5rem;
+  --marketing-space-8: 2rem;
+  --marketing-space-12: 3rem;
+  --marketing-space-16: 4rem;
+  --marketing-space-24: 6rem;
+  --marketing-space-32: 8rem;
+  --marketing-container-width: 80rem;
+  --marketing-gutter: clamp(1.25rem, 4vw, 4rem);
+  --marketing-section-space: clamp(4rem, 8vw, 8rem);
+
+  --marketing-radius-button: 0.375rem;
+  --marketing-radius-surface: 0.75rem;
+  --marketing-radius-preview: 0.875rem;
+  --marketing-shadow-preview: 0 18px 48px rgba(35, 35, 31, 0.08);
+  --marketing-motion-fast: 180ms;
+  --marketing-motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* The route marker changes before paint, including while a lazy route loads. */
+html[data-page-surface="marketing"] {
+  color-scheme: light;
+  background: var(--marketing-background-main);
+}
+
+html[data-page-surface="marketing"],
+html[data-page-surface="marketing"] body,
+html[data-page-surface="marketing"] #root {
+  height: auto;
+  min-height: 100%;
+  overflow: visible;
+}
+
+html[data-page-surface="marketing"] body,
+html[data-page-surface="marketing"] .entry-surface {
+  background: var(--marketing-background-main);
+  color: var(--marketing-text-primary);
+  font-size: var(--marketing-type-body);
+}
+
+html[data-page-surface="marketing"] .entry-description {
+  color: var(--marketing-text-secondary);
+}
+
+html[data-page-surface="marketing"] ::-webkit-scrollbar-thumb {
+  background: rgba(35, 35, 31, 0.25);
+}
+
+html[data-page-surface="marketing"] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(35, 35, 31, 0.4);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marketing-page,
+  html[data-page-surface="marketing"] {
+    --marketing-motion-fast: 0ms;
+  }
+}

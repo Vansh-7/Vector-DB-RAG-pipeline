@@ -1,5 +1,7 @@
 # Neuebit visual system
 
+These rules describe the dark authenticated product and auth screen. The public landing page uses the separately scoped [marketing foundation](MARKETING.md).
+
 ## 1. Atmosphere
 
 A calm AI knowledge workspace with a compact sidebar and readable document content. Chat, Documents, and Search prioritize knowledge and answers. Vector Lab exposes the underlying engineering machinery with denser telemetry. The architecture is fixed; refinements change spacing, hierarchy, and interaction surfaces.

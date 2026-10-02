@@ -8,7 +8,9 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "test:entry": "npm run build && playwright test"
+    "test:entry": "npm run build && playwright test tests/entry",
+    "test:marketing": "npm run build && playwright test tests/marketing",
+    "test": "npm run build && playwright test"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.17",
