@@ -1,36 +1,24 @@
-import { useEffect } from "react";
+import { lazy, Suspense } from "react";
+import { Link, Navigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
-import { getMe } from "../../api/auth";
-import { ApiError } from "../../api/client";
 import { useAuthStore } from "../../store/authStore";
-import { AppShell } from "../layout/AppShell";
 import { Button } from "../ui/Button";
 import { AuthScreen } from "./AuthScreen";
 import { BrandMark } from "../ui/BrandMark";
 
-export function AuthGate() {
+const AppShell = lazy(() => import("../layout/AppShell").then((module) => ({ default: module.AppShell })));
+
+export function AuthGate({ intent }: { intent: "auth" | "app" }) {
   const status = useAuthStore((s) => s.status);
-  const token = useAuthStore((s) => s.accessToken);
   const error = useAuthStore((s) => s.error);
 
-  useEffect(() => {
-    if (status !== "checking" || !token) return;
-    const controller = new AbortController();
-    getMe(token, controller.signal).then((user) => {
-      if (!controller.signal.aborted && useAuthStore.getState().accessToken === token) {
-        useAuthStore.getState().signIn(token, user);
-      }
-    }).catch((cause) => {
-      if (controller.signal.aborted || useAuthStore.getState().accessToken !== token) return;
-      useAuthStore.getState().verificationFailed(cause instanceof ApiError
-        ? cause.message
-        : "Could not connect to the Neuebit API. Check your connection and retry.");
-    });
-    return () => controller.abort();
-  }, [status, token]);
-
-  if (status === "authenticated") return <AppShell />;
-  if (status === "unauthenticated") return <AuthScreen />;
+  if (status === "authenticated") {
+    if (intent === "auth") return <Navigate to="/app" replace />;
+    return <Suspense fallback={<main className="min-h-dvh bg-base p-6 text-[--text-primary]"><p role="status">Opening your workspace…</p></main>}><AppShell /></Suspense>;
+  }
+  if (status === "unauthenticated") {
+    return intent === "app" ? <Navigate to="/auth?mode=login" replace /> : <AuthScreen />;
+  }
 
   return (
     <main className="min-h-dvh bg-base text-[--text-primary] flex items-center justify-center p-6">
@@ -42,7 +30,7 @@ export function AuthGate() {
           </p>
         ) : (
           <>
-            <h1 className="text-lg font-semibold">Connection unavailable</h1>
+            <h1 tabIndex={-1} className="text-lg font-semibold">Connection unavailable</h1>
             <p role="alert" className="text-sm text-[--text-secondary] mt-3">{error}</p>
             <div className="flex justify-center gap-3 mt-6">
               <Button type="button" onClick={() => useAuthStore.getState().retryVerification()}>Retry</Button>
@@ -50,6 +38,7 @@ export function AuthGate() {
             </div>
           </>
         )}
+        <Link to="/" className="mt-6 inline-flex min-h-11 items-center rounded text-sm text-[--text-secondary] underline underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4">Back to Neuebit</Link>
       </div>
     </main>
   );

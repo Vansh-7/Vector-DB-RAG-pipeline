@@ -1,4 +1,5 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { getMe, login, register } from "../../api/auth";
 import { ApiError } from "../../api/client";
@@ -6,10 +7,11 @@ import { useAuthStore } from "../../store/authStore";
 import { Button } from "../ui/Button";
 import { BrandEmblem } from "../ui/BrandMark";
 
-type AuthMode = "login" | "register";
-
 export function AuthScreen() {
-  const [mode, setMode] = useState<AuthMode>("login");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const mode = searchParams.get("mode") === "register" ? "register" : "login";
+  const pendingRequest = useRef<AbortController | null>(null);
+  const preserveRegistrationRecovery = useRef(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -20,15 +22,23 @@ export function AuthScreen() {
   const [notice, setNotice] = useState<string | null>(null);
   const sessionError = useAuthStore((s) => s.error);
 
-  const switchMode = () => {
-    useAuthStore.getState().clearError();
-    setMode(mode === "login" ? "register" : "login");
+  useEffect(() => {
     setPassword("");
     setConfirmPassword("");
     setShowPassword(false);
     setShowConfirmation(false);
-    setLocalError(null);
-    setNotice(null);
+    setBusy(false);
+    if (preserveRegistrationRecovery.current) preserveRegistrationRecovery.current = false;
+    else {
+      setLocalError(null);
+      setNotice(null);
+    }
+    return () => pendingRequest.current?.abort();
+  }, [mode]);
+
+  const switchMode = () => {
+    useAuthStore.getState().clearError();
+    setSearchParams({ mode: mode === "login" ? "register" : "login" }, { replace: true });
   };
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
@@ -40,6 +50,8 @@ export function AuthScreen() {
     }
 
     setBusy(true);
+    const controller = new AbortController();
+    pendingRequest.current = controller;
     useAuthStore.getState().clearError();
     setLocalError(null);
     setNotice(null);
@@ -48,19 +60,24 @@ export function AuthScreen() {
       const credentials = { email: email.trim(), password };
       if (mode === "register") {
         await register(credentials);
+        if (controller.signal.aborted) return;
         registered = true;
       }
       const { access_token } = await login(credentials);
-      const user = await getMe(access_token);
+      if (controller.signal.aborted) return;
+      const user = await getMe(access_token, controller.signal);
+      if (controller.signal.aborted) return;
       useAuthStore.getState().signIn(access_token, user);
     } catch (error) {
+      if (controller.signal.aborted) return;
       if (registered) {
-        setMode("login");
+        preserveRegistrationRecovery.current = true;
+        setSearchParams({ mode: "login" }, { replace: true });
         setNotice("Account created. Sign in to continue.");
       }
       setLocalError(error instanceof ApiError ? error.message : "Could not connect to the Neuebit API. Try again.");
     } finally {
-      setBusy(false);
+      if (!controller.signal.aborted) setBusy(false);
     }
   };
 
@@ -72,7 +89,7 @@ export function AuthScreen() {
             <BrandEmblem className="h-14 w-14" />
             <span className="text-body font-semibold tracking-tight">Neuebit</span>
           </div>
-          <h1 className="text-center text-[24px] font-semibold tracking-[-0.03em]">{mode === "login" ? "Welcome back" : "Create your account"}</h1>
+          <h1 tabIndex={-1} className="text-center text-[24px] font-semibold tracking-[-0.03em]">{mode === "login" ? "Welcome back" : "Create your account"}</h1>
           <p className="text-center text-sm text-[--text-secondary] mt-2">{mode === "login" ? "Sign in to your workspace." : "Upload documents and ask questions about them."}</p>
 
           <form onSubmit={submit} className="mt-8 space-y-5">
@@ -122,6 +139,7 @@ export function AuthScreen() {
               {mode === "login" ? "Create an account" : "Sign in"}
             </button>
           </p>
+          <p className="mt-4 text-center"><Link to="/" className="inline-flex min-h-11 items-center rounded text-xs text-[--text-secondary] underline underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4">Back to Neuebit</Link></p>
         </div>
       </div>
     </main>
