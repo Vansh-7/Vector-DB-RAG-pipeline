@@ -1,0 +1,39 @@
+{
+  "origin": "http://127.0.0.1:4176",
+  "capturedAt": "2026-10-02T18:46:55.529Z",
+  "provenance": "Actual authenticated Neuebit Vector Lab rendered with shared authored API fixtures. Sample coordinates are illustrative, not measured PCA or live backend output.",
+  "captures": [
+    {
+      "filename": "vector-lab-desktop-light.webp",
+      "width": 1168,
+      "height": 728,
+      "theme": "light",
+      "format": "desktop",
+      "bytes": 46806
+    },
+    {
+      "filename": "vector-lab-mobile-light.webp",
+      "width": 390,
+      "height": 625,
+      "theme": "light",
+      "format": "mobile",
+      "bytes": 8658
+    },
+    {
+      "filename": "vector-lab-desktop-dark.webp",
+      "width": 1168,
+      "height": 728,
+      "theme": "dark",
+      "format": "desktop",
+      "bytes": 48966
+    },
+    {
+      "filename": "vector-lab-mobile-dark.webp",
+      "width": 390,
+      "height": 625,
+      "theme": "dark",
+      "format": "mobile",
+      "bytes": 9074
+    }
+  ]
+}

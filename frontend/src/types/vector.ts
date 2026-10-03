@@ -13,12 +13,12 @@ export type Category =
   | 'MATHEMATICS';
 
 export const CATEGORY_COLORS: Record<Category, string> = {
-  TECH: '#a78bfa',
-  FINANCE: '#34d399',
-  FOOD: '#f97316',
-  'SPORTS & GAMES': '#38bdf8',
-  DOCUMENTS: '#e879f9',
-  MATHEMATICS: '#facc15',
+  TECH: 'var(--color-tech)',
+  FINANCE: 'var(--color-finance)',
+  FOOD: 'var(--color-food)',
+  'SPORTS & GAMES': 'var(--color-sports)',
+  DOCUMENTS: 'var(--color-documents)',
+  MATHEMATICS: 'var(--color-mathematics)',
 };
 
 export const CATEGORY_LABELS: Record<Category, string> = {

@@ -8,6 +8,7 @@ export default defineConfig({
   workers: 2,
   reporter: "list",
   use: {
+    colorScheme: "light",
     baseURL: "http://127.0.0.1:4173",
     channel: process.env.PLAYWRIGHT_CHANNEL ?? "chrome",
     trace: "retain-on-failure",

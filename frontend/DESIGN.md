@@ -1,6 +1,6 @@
 # Neuebit visual system
 
-These rules describe the dark authenticated product and auth screen. The public landing page uses the separately scoped [marketing foundation](MARKETING.md).
+These rules describe the authenticated product and auth layout in both appearance modes. The public landing has a separate [marketing composition](MARKETING.md), but all routes consume the global semantic colors in `src/styles/theme.css`. `data-theme` owns color; `data-page-surface` owns layout and scrolling only.
 
 ## 1. Atmosphere
 
@@ -8,15 +8,11 @@ A calm AI knowledge workspace with a compact sidebar and readable document conte
 
 ## 2. Palette and roles
 
-- Charcoal canvas (#111213): the application background.
-- Panel (#18191a): navigation, content containers, and contextual inspectors.
-- Elevated surface (#202123): selected rows, fields, and supporting controls.
-- Composer (#1d1e1f): the signature question input surface.
-- Ivory (#f3f0e6): primary actions and the compact hooded duck badge.
-- Muted neutral (#a1a1a1) and tertiary neutral (#8b8b8b): descriptions and labels.
-- Borders: white at 6%, 10%, and 18% opacity, increasing with interaction emphasis.
+Light uses white and neutral gray surfaces with near-black text/actions. Dark uses near-black/charcoal surfaces with light text/actions. Both use the same components, hierarchy, and data. Semantic roles are canvas, surface-subtle, surface, surface-elevated, surface-hover, surface-active, border-subtle/default/strong, text-primary/secondary/tertiary/placeholder/inverse, and primary-action/hover/active/text.
 
-Retain existing category colors and success, warning, error, and focus semantics. Color conveys meaning; avoid ornamental neon, gradients, and glows.
+Tailwind's existing base/panel/elevated utilities resolve theme-aware RGB channel tokens, preserving opacity utilities. Legacy `--bg-*` names remain aliases to semantic roles. Category colors keep their technical meaning with contrast-adjusted light shades. Status and score colors also follow the selected mode. The terminal remains deliberately dark. Avoid neon, decorative gradients, and glows.
+
+Appearance is the single `neuebit-theme` localStorage preference. `index.html` applies it or the OS preference before React; the lightweight React provider owns toggling afterward. It is independent of auth and product state and survives navigation, refresh, and logout.
 
 ## 3. Typography
 
@@ -30,11 +26,11 @@ Use locally hosted Geist Sans for product copy and Geist Mono for numbers, score
 
 ## 4. Components
 
-Keep the existing Button, Select, Slider, Tooltip, and ConfirmDialog primitives. Primary buttons use ivory; secondary buttons use a neutral outline; shell controls use ghost styling. Destructive actions retain a separate semantic danger treatment.
+Keep the existing Button, Select, Slider, Tooltip, and ConfirmDialog primitives. Primary buttons use the semantic contrasting action color; secondary buttons use a neutral outline; shell controls use ghost styling. Destructive actions retain a separate semantic danger treatment.
 
 Ordinary action buttons are 36px high, main search controls 44px, compact navigation 32–34px, and icon controls 32px. Align icons centrally. Use visible keyboard focus, disabled feedback, and existing double-submit protection. Inputs share tokenized surfaces and borders. The composer is one 12px-radius object with a quiet focus outline and an integrated utility row.
 
-The auth mark is 56px with a 6px wordmark gap and 36px before the heading. Center the form slightly above the viewport midpoint. Password visibility controls are local UI state. Keep loading/error feedback next to the form. Primary ivory darkens to #e5e2d8 on hover and #d6d3c9 when pressed.
+The auth mark is 56px with a 6px wordmark gap and 36px before the heading. Center the form slightly above the viewport midpoint. Password visibility controls are local UI state. Keep loading/error feedback next to the form. Auth uses the same semantic surfaces and actions as the other routes. The shared appearance control sits above the form.
 
 Use a faintly framed Documents panel and individual Search/source rows where selection needs hierarchy. Keep assistant answers content-first rather than boxed. Failed documents offer processing guidance and re-upload; do not pretend the API supplies a failure reason or retry endpoint.
 

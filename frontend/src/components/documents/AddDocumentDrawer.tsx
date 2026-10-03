@@ -19,7 +19,7 @@ export function AddDocumentDrawer({ open, onOpenChange, onSuccess, processing, o
   return (
     <Dialog.Root open={open} onOpenChange={(nextOpen) => { if (!processing || nextOpen) onOpenChange(nextOpen); }}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-40 bg-black/70" />
+        <Dialog.Overlay className="fixed inset-0 z-40 bg-[--overlay]" />
         <Dialog.Content
           onOpenAutoFocus={(event) => {
             event.preventDefault();

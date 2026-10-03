@@ -105,7 +105,7 @@ export function EnginePanel() {
               className="icon-button"><RefreshCw className="h-4 w-4" /></button>
           </div>
           {statusPending && <p role="status" className="mt-5 flex items-center gap-2 text-xs text-[--text-secondary]"><Loader2 className="h-3.5 w-3.5 animate-spin" /> Reading current configuration…</p>}
-          {statusError && <div role="alert" className="mt-5 rounded border border-error/20 bg-error/5 p-3 text-xs"><p>Engine status is unavailable.</p><button type="button" onClick={() => void refreshStatus()} className="mt-2 text-[--color-info] hover:text-white">Retry</button></div>}
+          {statusError && <div role="alert" className="mt-5 rounded border border-error/20 bg-error/5 p-3 text-xs"><p>Engine status is unavailable.</p><button type="button" onClick={() => void refreshStatus()} className="mt-2 text-[--color-info] hover:text-[--text-primary]">Retry</button></div>}
           {status && !statusError && <div className="mt-5 grid grid-cols-2 gap-2">
             <div className="min-w-0 border-b border-[--border-subtle] pb-4"><p className="text-xs text-[--text-tertiary]">Active index</p><p className="mt-2 truncate font-mono text-xs" title={ALGORITHM_DISPLAY[status.engine]}>{ALGORITHM_DISPLAY[status.engine]}</p></div>
             <div className="min-w-0 border-b border-[--border-subtle] pb-4"><p className="text-xs text-[--text-tertiary]">Distance</p><p className="mt-2 truncate font-mono text-xs" title={METRIC_DISPLAY[status.metric]}>{METRIC_DISPLAY[status.metric]}</p></div>

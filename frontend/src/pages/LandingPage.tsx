@@ -1,27 +1,33 @@
-import { Link } from "react-router-dom";
+import { lazy, Suspense } from "react";
 import { useAuthStore } from "../store/authStore";
-import { BrandMark } from "../components/ui/BrandMark";
+import { LandingNav } from "../components/marketing/LandingNav";
+import { LandingHero } from "../components/marketing/LandingHero";
+import { FinalCTA, LandingFooter } from "../components/marketing/LandingFooter";
 import "../styles/marketing.css";
 
-// Phase B base page. Full navigation, storytelling, and previews follow separately.
+const ProductTour = lazy(() => import("../components/marketing/ProductTour"));
+const EngineeringSection = lazy(() => import("../components/marketing/EngineeringSection"));
+
 export default function LandingPage() {
   const status = useAuthStore((state) => state.status);
   const hasSession = status !== "unauthenticated";
   const label = status === "authenticated" ? "Open Neuebit" : hasSession ? "Continue to Neuebit" : "Get started";
 
   return (
-    <main className="marketing-page">
-      <div className="marketing-container marketing-section">
-        <div className="marketing-brand"><BrandMark /><span>Neuebit</span></div>
-        <div className="marketing-intro">
-          <h1 tabIndex={-1} className="marketing-title">Your knowledge, in context.</h1>
-          <p className="marketing-lead">Bring your documents together. Ask questions, search by meaning, and follow answers back to their sources.</p>
-          <nav aria-label="Workspace access" className="marketing-actions">
-            <Link to={hasSession ? "/app" : "/auth?mode=register"} className="marketing-button marketing-button--primary">{label}</Link>
-            {!hasSession && <Link to="/auth?mode=login" className="marketing-button marketing-button--secondary">Sign in</Link>}
-          </nav>
-        </div>
-      </div>
-    </main>
+    <div className="marketing-page">
+      <a className="marketing-skip" href="#main-content">Skip to content</a>
+      <LandingNav hasSession={hasSession} accessLabel={label} />
+      <main id="main-content" tabIndex={-1}>
+        <LandingHero accessTo={hasSession ? "/app" : "/auth?mode=register"} accessLabel={label} />
+        <Suspense fallback={<div className="marketing-story-loading" aria-label="Loading product story" />}>
+          <ProductTour />
+        </Suspense>
+        <Suspense fallback={<div className="marketing-engineering-loading" aria-label="Loading engineering story" />}>
+          <EngineeringSection />
+        </Suspense>
+        <FinalCTA accessTo={hasSession ? "/app" : "/auth?mode=register"} accessLabel={label} />
+      </main>
+      <LandingFooter />
+    </div>
   );
 }

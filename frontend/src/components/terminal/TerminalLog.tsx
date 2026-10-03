@@ -73,7 +73,7 @@ export function TerminalLog() {
           toggleRef.current?.focus();
         }
       }}
-      className={`border-t border-[--border-subtle] bg-[--bg-terminal] flex flex-col transition-[height] duration-300 ease-in-out relative shrink-0`}
+      className={`technical-terminal border-t border-[--border-subtle] bg-[--bg-terminal] flex flex-col transition-[height] duration-300 ease-in-out relative shrink-0`}
       style={{ height: isTerminalCollapsed ? '32px' : `min(${terminalHeight}px, 45dvh, 400px)` }}
     >
       {/* Resize Handle */}

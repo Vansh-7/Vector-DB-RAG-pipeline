@@ -41,7 +41,7 @@ export function ChatMessage({ message, isStreaming, onInspectSources }: ChatMess
           
           {/* UX: Zeigarnik Effect — Blinking cursor signals active incompletion during stream */}
           {isStreaming && (
-            <span className="inline-block w-1.5 h-3.5 ml-1 bg-[#3b82f6] animate-pulse align-middle" />
+            <span className="inline-block w-1.5 h-3.5 ml-1 bg-[--color-info] animate-pulse align-middle" />
           )}
         </div>
 

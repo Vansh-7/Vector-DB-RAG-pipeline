@@ -1,0 +1,167 @@
+/* Color belongs to theme; route surface controls layout only. */
+:root,
+:root[data-theme="light"] {
+  color-scheme: light;
+  --surface-canvas-rgb: 255 255 255;
+  --surface-panel-rgb: 255 255 255;
+  --surface-elevated-rgb: 241 241 239;
+  --surface-hover-rgb: 239 239 237;
+  --surface-active-rgb: 233 233 231;
+  --canvas: #ffffff;
+  --surface-subtle: #f7f7f5;
+  --surface: #ffffff;
+  --surface-elevated: #f1f1ef;
+  --surface-hover: #efefed;
+  --surface-active: #e9e9e7;
+  --border-subtle: #eeeeec;
+  --border-default: #e3e3e0;
+  --border-strong: #d3d3cf;
+  --text-primary: #191919;
+  --text-secondary: #5f5e5b;
+  --text-tertiary: #787774;
+  --text-placeholder: #9b9a97;
+  --text-inverse: #ffffff;
+  --primary-action: #191919;
+  --primary-action-hover: #2f2f2f;
+  --primary-action-active: #111111;
+  --primary-action-text: #ffffff;
+  --color-tech-rgb: 117 82 199;
+  --color-finance-rgb: 8 127 91;
+  --color-food-rgb: 183 75 11;
+  --color-sports-rgb: 7 119 157;
+  --color-documents-rgb: 167 53 180;
+  --color-mathematics-rgb: 134 105 0;
+  --color-success-rgb: 21 128 61;
+  --color-error-rgb: 198 44 44;
+  --color-info-rgb: 37 99 198;
+  --color-warning-rgb: 152 98 0;
+  --overlay: rgba(0,0,0,.35);
+  --grid-line: rgba(25,25,25,.09);
+  --brand-mark-filter: grayscale(1);
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --surface-canvas-rgb: 8 9 10;
+  --surface-panel-rgb: 17 18 20;
+  --surface-elevated-rgb: 23 24 26;
+  --surface-hover-rgb: 28 29 32;
+  --surface-active-rgb: 34 35 38;
+  --canvas: #08090a;
+  --surface-subtle: #0d0e10;
+  --surface: #111214;
+  --surface-elevated: #17181a;
+  --surface-hover: #1c1d20;
+  --surface-active: #222326;
+  --border-subtle: rgba(255,255,255,.055);
+  --border-default: rgba(255,255,255,.09);
+  --border-strong: rgba(255,255,255,.15);
+  --text-primary: #f4f4f5;
+  --text-secondary: #a1a1aa;
+  /* Slightly brighter than the starting palette for small product labels. */
+  --text-tertiary: #8b8b94;
+  --text-placeholder: #62626a;
+  --text-inverse: #08090a;
+  --primary-action: #f4f4f5;
+  --primary-action-hover: #e4e4e7;
+  --primary-action-active: #d4d4d8;
+  --primary-action-text: #08090a;
+  --color-tech-rgb: 167 139 250;
+  --color-finance-rgb: 52 211 153;
+  --color-food-rgb: 249 115 22;
+  --color-sports-rgb: 56 189 248;
+  --color-documents-rgb: 232 121 249;
+  --color-mathematics-rgb: 250 204 21;
+  --color-success-rgb: 34 197 94;
+  --color-error-rgb: 239 68 68;
+  --color-info-rgb: 139 181 248;
+  --color-warning-rgb: 245 158 11;
+  --overlay: rgba(0,0,0,.7);
+  --grid-line: rgba(255,255,255,.055);
+  --brand-mark-filter: grayscale(1) invert(1);
+}
+
+:root {
+  background: var(--canvas);
+  /* Shared semantic colors also expose channels for Tailwind opacity utilities. */
+  --color-tech: rgb(var(--color-tech-rgb));
+  --color-finance: rgb(var(--color-finance-rgb));
+  --color-food: rgb(var(--color-food-rgb));
+  --color-sports: rgb(var(--color-sports-rgb));
+  --color-documents: rgb(var(--color-documents-rgb));
+  --color-mathematics: rgb(var(--color-mathematics-rgb));
+  --color-success: rgb(var(--color-success-rgb));
+  --color-error: rgb(var(--color-error-rgb));
+  --color-info: rgb(var(--color-info-rgb));
+  --color-warning: rgb(var(--color-warning-rgb));
+
+  /* Compatibility names keep existing product layouts and utilities intact. */
+  --bg-base: var(--canvas);
+  --bg-panel: var(--surface);
+  --bg-elevated: var(--surface-elevated);
+  --bg-hover: var(--surface-hover);
+  --bg-active: var(--surface-active);
+  --bg-composer: var(--surface-elevated);
+  --bg-terminal: #0c0d0e;
+  --score-high: var(--color-success);
+  --score-mid: var(--color-warning);
+  --score-low: var(--color-error);
+}
+
+.brand-mark { filter: var(--brand-mark-filter); }
+
+/* The terminal is an intentional dark technical subsystem in either mode. */
+.technical-terminal {
+  color-scheme: dark;
+  --text-primary: #f4f4f5;
+  --text-secondary: #a1a1aa;
+  --text-tertiary: #a1a1aa;
+  --border-subtle: rgba(255,255,255,.055);
+  --surface-hover-rgb: 28 29 32;
+  --surface-hover: #1c1d20;
+  --bg-hover: var(--surface-hover);
+  --color-info-rgb: 139 181 248;
+  --color-info: rgb(var(--color-info-rgb));
+}
+
+.theme-control { position: relative; display: inline-flex; flex-shrink: 0; }
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  min-inline-size: 44px;
+  min-block-size: 44px;
+  padding: .5rem;
+  border-radius: 6px;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.theme-toggle:hover { background: var(--surface-hover); color: var(--text-primary); }
+.theme-toggle:focus-visible { outline: 2px solid var(--text-primary); outline-offset: 2px; }
+.theme-toggle svg { flex-shrink: 0; }
+.theme-toggle--label { justify-content: flex-start; text-align: left; }
+.theme-tooltip {
+  position: absolute;
+  inset-block-start: calc(100% + 6px);
+  inset-inline-end: 0;
+  z-index: 60;
+  inline-size: max-content;
+  max-inline-size: min(15rem, calc(100vw - 2rem));
+  padding: .5rem .75rem;
+  background: var(--surface-elevated);
+  color: var(--text-primary);
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  font-size: .75rem;
+  pointer-events: none;
+  visibility: hidden;
+}
+.theme-control:hover .theme-tooltip,
+.theme-toggle:focus-visible + .theme-tooltip { visibility: visible; }
+aside[aria-label="Primary sidebar"] .theme-tooltip {
+  inset-block-start: auto;
+  inset-block-end: calc(100% + 6px);
+  inset-inline-start: 0;
+  inset-inline-end: auto;
+}

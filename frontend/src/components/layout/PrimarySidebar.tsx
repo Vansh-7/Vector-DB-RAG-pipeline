@@ -4,6 +4,7 @@ import { useSessionStore, type WorkspaceView } from "../../store/sessionStore";
 import { Tooltip } from "../ui/Tooltip";
 import { BrandMark } from "../ui/BrandMark";
 import { RecentConversations } from "./RecentConversations";
+import { ThemeToggle } from "../theme/ThemeToggle";
 
 const NAVIGATION = [
   { view: "chat", label: "Chat", icon: MessageSquare },
@@ -62,12 +63,15 @@ export function PrimarySidebar({ onNewChat, onSelectConversation, chatBusy }: { 
           <span aria-hidden="true" className="flex h-7 w-7 shrink-0 items-center justify-center rounded bg-elevated text-xs font-medium text-[--text-secondary]">{user?.email.charAt(0).toUpperCase()}</span>
           {!collapsed && <p className="text-xs text-[--text-secondary] truncate" title={user?.email}>{user?.email}</p>}
         </div>
+        <div className={`flex shrink-0 flex-col items-center${collapsed ? "" : " md:flex-row"}`}>
+        <ThemeToggle />
         <Tooltip content="Sign out">
           <button type="button" onClick={logout} aria-label="Sign out"
             className="icon-button">
             <LogOut className="w-4 h-4" aria-hidden="true" />
           </button>
         </Tooltip>
+        </div>
       </div>
     </aside>
   );

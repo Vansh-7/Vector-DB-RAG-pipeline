@@ -1,9 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
   <title>Neuebit</title>
-  <rect x="2" y="2" width="60" height="60" rx="10" fill="#F3F0E6" stroke="#202123" stroke-width="2.5"/>
-  <path d="M17 22c4-5 10-9 19-11 8 2 14 9 17 18l1 12c-2 4-5 6-8 9l-3 5c-7 4-17 3-23-2l-2-10-3-12c-1-4-1-7 2-9Z" fill="#202123"/>
-  <path d="M24 21c10-1 17 6 19 15 2 9-2 16-10 16-7 0-13-5-14-11l-1-9c0-5 2-9 6-11Z" fill="#F3F0E6"/>
-  <ellipse cx="35" cy="32" rx="2.6" ry="4.2" transform="rotate(9 35 32)" fill="#202123"/>
-  <path d="M12 36c4 1 7-1 10-3 3-2 5 0 6 3 1 2 4 3 6 4 2 2-1 3-5 4-5 2-9 1-13-1l-5-2c-3-2-3-6 1-5Z" fill="#F3F0E6" stroke="#202123" stroke-width="2" stroke-linejoin="round"/>
-  <path d="m23 36-1 1" stroke="#202123" stroke-width="1.8" stroke-linecap="round"/>
+  <rect x="2" y="2" width="60" height="60" rx="10" fill="#FFFFFF" stroke="#191919" stroke-width="2.5"/>
+  <path d="M17 22c4-5 10-9 19-11 8 2 14 9 17 18l1 12c-2 4-5 6-8 9l-3 5c-7 4-17 3-23-2l-2-10-3-12c-1-4-1-7 2-9Z" fill="#191919"/>
+  <path d="M24 21c10-1 17 6 19 15 2 9-2 16-10 16-7 0-13-5-14-11l-1-9c0-5 2-9 6-11Z" fill="#FFFFFF"/>
+  <ellipse cx="35" cy="32" rx="2.6" ry="4.2" transform="rotate(9 35 32)" fill="#191919"/>
+  <path d="M12 36c4 1 7-1 10-3 3-2 5 0 6 3 1 2 4 3 6 4 2 2-1 3-5 4-5 2-9 1-13-1l-5-2c-3-2-3-6 1-5Z" fill="#FFFFFF" stroke="#191919" stroke-width="2" stroke-linejoin="round"/>
+  <path d="m23 36-1 1" stroke="#191919" stroke-width="1.8" stroke-linecap="round"/>
 </svg>

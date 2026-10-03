@@ -67,7 +67,7 @@ export function DocumentsView() {
       {added && (
         <div role="status" className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-success/20 bg-success/5 px-4 py-3">
           <p className="text-xs text-[--text-primary]">{added.status === "ready" ? `Document ready · ${added.chunk_count} ${added.chunk_count === 1 ? "chunk" : "chunks"} indexed.` : "Document added. Processing is in progress."}</p>
-          {added.status === "ready" && <button type="button" onClick={() => setActiveView("chat")} className="flex items-center gap-1 text-xs text-success hover:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-success">
+          {added.status === "ready" && <button type="button" onClick={() => setActiveView("chat")} className="flex items-center gap-1 text-xs text-success hover:text-[--text-primary] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-success">
             Ask a question
           </button>}
         </div>

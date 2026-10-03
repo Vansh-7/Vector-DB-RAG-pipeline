@@ -66,7 +66,7 @@ export function VectorLabWorkspace({ active }: { active: boolean }) {
         </div>
         <div className="flex items-center gap-3">
           <button type="button" onClick={() => void refreshLab()} disabled={isRefreshing} aria-label="Refresh Lab data"
-            className="inline-flex items-center gap-1.5 text-xs text-[--text-secondary] hover:text-white disabled:opacity-40 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[--color-info]">
+            className="inline-flex items-center gap-1.5 text-xs text-[--text-secondary] hover:text-[--text-primary] disabled:opacity-40 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[--color-info]">
             <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? "animate-spin" : ""}`} /> <span className="hidden sm:inline">Refresh</span>
           </button>
           {view === "space" && <button ref={inspectorToggleRef} type="button" onClick={() => {
@@ -76,11 +76,11 @@ export function VectorLabWorkspace({ active }: { active: boolean }) {
               requestAnimationFrame(() => document.querySelector<HTMLButtonElement>('aside[aria-label="Vector inspector"] button[aria-label="Close vector inspector"]')?.focus());
             }
           }} aria-label={inspectorOpen ? "Close vector inspector" : "Open vector inspector"}
-            className="inline-flex items-center gap-1.5 text-xs text-[--text-secondary] hover:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[--color-info] xl:hidden">
+            className="inline-flex items-center gap-1.5 text-xs text-[--text-secondary] hover:text-[--text-primary] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[--color-info] xl:hidden">
             <PanelRightOpen className="h-3.5 w-3.5" /> Inspector
           </button>}
           <button type="button" onClick={() => setTerminalCollapsed(!isTerminalCollapsed)} aria-label={isTerminalCollapsed ? "Open terminal" : "Close terminal"}
-            className="inline-flex items-center gap-1.5 text-xs text-[--text-secondary] hover:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[--color-info]">
+            className="inline-flex items-center gap-1.5 text-xs text-[--text-secondary] hover:text-[--text-primary] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[--color-info]">
             <Terminal className="h-3.5 w-3.5" /> {isTerminalCollapsed ? "Open terminal" : "Close terminal"}
           </button>
         </div>
@@ -88,14 +88,14 @@ export function VectorLabWorkspace({ active }: { active: boolean }) {
       <nav aria-label="Vector Lab sections" className="flex shrink-0 gap-2 px-5 sm:px-7 border-b border-[--border-subtle] overflow-x-auto">
         {SECTIONS.map(({ view: section, label, icon: Icon }) => (
           <button type="button" key={section} onClick={() => openVectorLab(section)} aria-current={view === section ? "page" : undefined}
-            className={`flex items-center gap-2 px-4 py-3 text-sm whitespace-nowrap border-b-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[--color-info] ${view === section ? "border-[--accent-white] text-[--text-primary]" : "border-transparent text-[--text-tertiary] hover:text-[--text-primary]"}`}>
+            className={`flex items-center gap-2 px-4 py-3 text-sm whitespace-nowrap border-b-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[--color-info] ${view === section ? "border-[--primary-action] text-[--text-primary]" : "border-transparent text-[--text-tertiary] hover:text-[--text-primary]"}`}>
             <Icon className="w-3.5 h-3.5" />{label}
           </button>
         ))}
       </nav>
       {sampleQuery.isError && <div role="alert" className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-error/20 bg-error/5 px-4 py-2 text-xs text-error">
         <span>Vector sample is unavailable. {sampleQuery.error instanceof Error ? sampleQuery.error.message : "Try again."}</span>
-        <button type="button" onClick={() => void sampleQuery.refetch()} className="rounded text-[--color-info] hover:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[--color-info]">Retry sample</button>
+        <button type="button" onClick={() => void sampleQuery.refetch()} className="rounded text-[--color-info] hover:text-[--text-primary] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[--color-info]">Retry sample</button>
       </div>}
       {active && view === "space" && <div className="relative flex min-h-0 min-w-0 flex-1 overflow-hidden">
         <VectorSpaceCanvas vectors={vectors} count={sample?.count} />

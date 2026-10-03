@@ -3,15 +3,15 @@ export function formatNumber(n: number): string {
 }
 
 export function getScoreColor(score: number): string {
-  if (score >= 0.9) return '#22c55e';
-  if (score >= 0.7) return '#f59e0b';
-  return '#ef4444';
+  if (score >= 0.9) return 'var(--score-high)';
+  if (score >= 0.7) return 'var(--score-mid)';
+  return 'var(--score-low)';
 }
 
 export function getLatencyColor(ms: number): string {
-  if (ms < 5) return '#22c55e';
-  if (ms <= 20) return '#f59e0b';
-  return '#ef4444';
+  if (ms < 5) return 'var(--score-high)';
+  if (ms <= 20) return 'var(--score-mid)';
+  return 'var(--score-low)';
 }
 
 export function generateId(): string {

@@ -41,7 +41,7 @@ export function VectorInspector({ status, vectors, count, onClose }: {
               {selected.payload && <p className="mt-3 break-words text-sm leading-relaxed text-[--text-primary]">{selected.payload}</p>}
             </> : <p className="mt-3 text-xs leading-relaxed text-[--text-secondary]">This vector is outside the current visualization sample.</p>}
             {selectedDistance !== undefined && <p className="mt-3 text-xs text-[--text-tertiary]">Distance <span className="font-mono text-[--text-secondary]">{selectedDistance.toFixed(5)}</span></p>}
-            <button type="button" onClick={() => setHighlighted([])} className="mt-4 text-xs text-[--color-info] hover:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[--color-info]">Clear selection</button>
+            <button type="button" onClick={() => setHighlighted([])} className="mt-4 text-xs text-[--color-info] hover:text-[--text-primary] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[--color-info]">Clear selection</button>
           </> : <p className="mt-3 text-xs leading-relaxed text-[--text-secondary]">{highlightedIds.length > 1 ? `${highlightedIds.length} vectors highlighted. Select one point to inspect it.` : "Select a point on the canvas or open a Search match here."}</p>}
         </div>
 

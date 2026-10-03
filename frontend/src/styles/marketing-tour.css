@@ -1,0 +1,25 @@
+.product-tour { position: relative; padding-block: 0 clamp(4rem, 8vw, 7.5rem); }
+.tour-legacy-anchor { position: absolute; inset-block-start: 0; }
+.tour-heading { margin-block-end: 2.5rem; }
+.tour-heading h2 { font-size: var(--marketing-type-heading); font-weight: 600; line-height: 1.1; letter-spacing: -.035em; }
+.tour-heading p { font-size: var(--marketing-type-lead); color: var(--text-secondary); margin-block-start: 1.25rem; }
+.tour-navigation { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.25rem; margin-block-end: 1.5rem; }
+.tour-navigation button { display: flex; align-items: center; gap: 1rem; min-block-size: 88px; padding: 1rem; text-align: start; border-block-end: 2px solid var(--border-default); color: var(--text-secondary); }
+.tour-navigation button[aria-selected="true"] { background: var(--capability-soft); color: var(--capability-ink); border-color: var(--capability-mark); border-radius: 6px 6px 0 0; }
+.tour-navigation button > svg { margin-inline-start: auto; flex-shrink: 0; }
+.tour-navigation small { display: block; font-size: .8125rem; margin-block-start: .25rem; }
+.tour-step-number { font-size: .875rem; font-variant-numeric: tabular-nums; }
+.tour-stage { min-inline-size: 0; background: var(--surface); border: 1px solid var(--border-default); border-radius: var(--marketing-radius-preview); }
+.tour-panel { min-block-size: 36rem; }
+.tour-step-intro { padding: 1.5rem 2rem; border-block-end: 1px solid var(--border-subtle); background: var(--surface-subtle); border-radius: var(--marketing-radius-preview) var(--marketing-radius-preview) 0 0; }
+.tour-step-intro h3 { font-size: 1.25rem; font-weight: 500; }
+.tour-step-intro p { color: var(--text-secondary); margin-block-start: .5rem; max-inline-size: 64ch; }
+.tour-hint { padding: 1rem 2rem; color: var(--capability-ink); font-size: .8125rem; border-block-start: 1px solid var(--border-subtle); }
+.tour-sample-note { margin-block-start: 1rem; color: var(--text-secondary); font-size: .75rem; }
+.tour-chapters { display: grid; gap: 4rem; }
+.tour-chapter-copy { margin-block-end: 1.5rem; }
+.tour-chapter-step { color: var(--capability-ink); font-size: .875rem; }
+.tour-chapter-copy h3 { font-size: 1.75rem; font-weight: 600; line-height: 1.2; letter-spacing: -.025em; margin-block-start: .5rem; }
+.tour-chapter-copy p { color: var(--text-secondary); margin-block-start: .875rem; max-inline-size: 50ch; }
+@media (max-width: 767px) { .tour-heading h2 { font-size: 2.5rem; } .tour-hint { padding: 1rem; } }
+@media (prefers-reduced-motion: reduce) { .tour-panel { opacity: 1 !important; transform: none !important; } }

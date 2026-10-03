@@ -135,7 +135,7 @@ export function IngestPanel({ onSuccess, onProcessingChange }: {
       <div className="text-xs text-[--text-secondary] mb-1">Upload a document to automatically chunk and embed its contents.</div>
 
       {/* Mode toggle */}
-      <div className="flex bg-base rounded-md p-0.5 border border-[rgba(255,255,255,0.06)] shrink-0">
+      <div className="flex bg-base rounded-md p-0.5 border border-[--border-subtle] shrink-0">
         <button
           type="button"
           onClick={() => { setMode("file"); mutation.reset(); }}
@@ -185,8 +185,8 @@ export function IngestPanel({ onSuccess, onProcessingChange }: {
               role="button" tabIndex={mutation.isPending ? -1 : 0} aria-label="Choose a document file" aria-disabled={mutation.isPending}
               className={`border border-dashed rounded-md flex-1 min-h-[180px] flex flex-col items-center justify-center gap-3 transition-colors cursor-pointer focus-visible:outline-none focus-visible:border-[--color-info] ${
                 isDragOver
-                  ? "border-[#22c55e] bg-[#22c55e]/5"
-                  : "border-[rgba(255,255,255,0.1)] hover:border-[rgba(255,255,255,0.2)]"
+                  ? "border-success bg-success/5"
+                  : "border-[--border-default] hover:border-[--border-strong]"
               }`}
             >
               <Upload className="w-6 h-6 text-[--text-secondary]" />
@@ -199,7 +199,7 @@ export function IngestPanel({ onSuccess, onProcessingChange }: {
             {fileError && <p role="alert" className="text-xs text-error">{fileError}</p>}
 
             {droppedFile && (
-              <div className="flex items-center gap-2 px-3 py-2 bg-elevated rounded-md border border-[rgba(255,255,255,0.06)]">
+              <div className="flex items-center gap-2 px-3 py-2 bg-elevated rounded-md border border-[--border-subtle]">
                 <FileText className="w-4 h-4 text-[--text-secondary]" />
                 <span className="text-sm text-[--text-primary] truncate">{droppedFile.name}</span>
                 <span className="text-2xs text-[--text-tertiary] ml-auto shrink-0">
@@ -243,7 +243,7 @@ export function IngestPanel({ onSuccess, onProcessingChange }: {
 
       {mutation.isError && <p role="alert" className="text-xs text-error break-words">{mutation.error instanceof Error ? mutation.error.message : "Document could not be added."}</p>}
 
-      <div className="flex items-center gap-2 pt-2 border-t border-[rgba(255,255,255,0.06)] shrink-0">
+      <div className="flex items-center gap-2 pt-2 border-t border-[--border-subtle] shrink-0">
         <button
           type="button"
           onClick={handleReset}

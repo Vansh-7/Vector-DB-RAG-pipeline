@@ -3,10 +3,30 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Neuebit — AI knowledge workspace</title>
-    <meta name="description" content="Neuebit — Production RAG &amp; Custom Vector Search Platform" />
-    <meta name="theme-color" content="#111213" />
+    <title>Neuebit — Your knowledge, in context</title>
+    <meta name="description" content="Ask your documents, search by meaning, and trace answers to their sources. Neuebit is an AI knowledge workspace built on a custom vector engine." />
+    <meta name="theme-color" content="#FFFFFF" />
+    <!-- entry-robots -->
+    <!-- public-share-metadata -->
+    <script>
+      // Resolve appearance before CSS or React can paint. Storage is optional.
+      (() => {
+        let preference;
+        try { preference = localStorage.getItem('neuebit-theme'); } catch {}
+        const theme = preference === 'light' || preference === 'dark'
+          ? preference : matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        document.documentElement.dataset.theme = theme;
+        document.querySelector('meta[name="theme-color"]').content = theme === 'dark' ? '#08090A' : '#FFFFFF';
+        // The static SPA shares one HTML entry. Keep non-public routes out of
+        // indexing before React runs; client route effects maintain this later.
+        if ((location.pathname.replace(/\/+$/, '') || '/') !== '/') {
+          document.querySelector('meta[name="robots"]').content = 'noindex, nofollow';
+          document.querySelectorAll('[data-public-metadata]').forEach((node) => node.remove());
+        }
+      })();
+    </script>
     <link rel="preload" href="/fonts/geist-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/fonts/geist-mono-latin.woff2" as="font" type="font/woff2" crossorigin>
   </head>

@@ -32,28 +32,19 @@ export function VectorSpaceCanvas({ vectors, count }: { vectors: VectorPoint2D[]
   return (
     <div ref={containerRef} className="flex-1 relative overflow-hidden bg-base flex flex-col">
 
-      {/* Aesthetic Background with Depth */}
+      {/* The same neutral grid follows the selected theme. */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-        {/* Deep background gradient */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(255,255,255,0.03)_0%,_transparent_100%)]" />
-
-        {/* Subtle grid pattern */}
         <div
-          className="absolute inset-0 opacity-[0.28]"
+          className="vector-canvas-grid absolute inset-0"
           style={{
             backgroundImage: `
-              linear-gradient(to right, rgba(255,255,255,0.1) 1px, transparent 1px),
-              linear-gradient(to bottom, rgba(255,255,255,0.1) 1px, transparent 1px)
+              linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+              linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px)
             `,
             backgroundSize: '40px 40px',
-            maskImage: 'radial-gradient(ellipse at center, black 0%, transparent 100%)',
-            WebkitMaskImage: 'radial-gradient(ellipse at center, black 0%, transparent 100%)'
           }}
         />
       </div>
-
-      {/* Top Gradient Fade to protect text readability */}
-      <div className="absolute top-0 left-0 right-0 h-28 bg-gradient-to-b from-base via-base/80 to-transparent z-10 pointer-events-none" />
 
       {/* Header / Title */}
       <div className="absolute top-4 left-4 z-20 flex flex-col pointer-events-none">
@@ -74,25 +65,15 @@ export function VectorSpaceCanvas({ vectors, count }: { vectors: VectorPoint2D[]
         height="100%"
         style={{ cursor: "grab" }}
         onDoubleClick={resetZoom}
-      >
-        <defs>
-          <filter id="glow-bright" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
-            <feMerge>
-              <feMergeNode in="coloredBlur"/>
-              <feMergeNode in="SourceGraphic"/>
-            </feMerge>
-          </filter>
-        </defs>
-      </svg>
+      />
 
       {count === 0 && <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center px-6">
         <div className="pointer-events-auto max-w-sm p-6 text-center">
           <h3 className="text-lg font-semibold">Nothing to project yet.</h3>
           <p className="mt-2 text-xs leading-relaxed text-[--text-secondary]">Add knowledge to build a searchable index, or inject a vector in Engine.</p>
           <div className="mt-5 flex flex-wrap items-center justify-center gap-4 text-xs">
-            <button type="button" onClick={() => setActiveView("documents")} className="text-[--color-info] hover:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[--color-info]">Add document</button>
-            <button type="button" onClick={() => openVectorLab("engine")} className="text-[--text-secondary] hover:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[--color-info]">Open Engine</button>
+            <button type="button" onClick={() => setActiveView("documents")} className="text-[--color-info] hover:text-[--text-primary] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[--color-info]">Add document</button>
+            <button type="button" onClick={() => openVectorLab("engine")} className="text-[--text-secondary] hover:text-[--text-primary] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[--color-info]">Open Engine</button>
           </div>
         </div>
       </div>}

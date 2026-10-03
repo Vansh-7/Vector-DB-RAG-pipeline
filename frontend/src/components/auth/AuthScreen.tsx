@@ -6,6 +6,7 @@ import { ApiError } from "../../api/client";
 import { useAuthStore } from "../../store/authStore";
 import { Button } from "../ui/Button";
 import { BrandEmblem } from "../ui/BrandMark";
+import { ThemeToggle } from "../theme/ThemeToggle";
 
 export function AuthScreen() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -83,6 +84,7 @@ export function AuthScreen() {
 
   return (
     <main className="relative h-dvh w-full overflow-y-auto bg-base text-[--text-primary]">
+      <div className="absolute right-3 top-3 z-10"><ThemeToggle /></div>
       <div className="relative flex min-h-full items-center justify-center px-6 pt-8 pb-[104px]">
         <div className="w-full max-w-[360px]">
           <div className="mb-9 flex flex-col items-center gap-1.5">

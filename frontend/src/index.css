@@ -1,3 +1,4 @@
+@import "./styles/theme.css";
 @import "./styles/marketing-tokens.css";
 
 @tailwind base;
@@ -23,52 +24,6 @@
   font-display: swap;
 }
 
-:root {
-  color-scheme: dark;
-  --surface-canvas: 17 18 19;
-  --surface-panel: 24 25 26;
-  --surface-elevated: 32 33 35;
-  --surface-hover: 38 39 41;
-  --surface-active: 44 45 47;
-  --bg-base: rgb(var(--surface-canvas));
-  --bg-panel: rgb(var(--surface-panel));
-  --bg-elevated: rgb(var(--surface-elevated));
-  --bg-hover: rgb(var(--surface-hover));
-  --bg-active: rgb(var(--surface-active));
-  --bg-composer: #1d1e1f;
-  --bg-terminal: #0c0d0e;
-
-  --border-subtle: rgba(255, 255, 255, 0.06);
-  --border-default: rgba(255, 255, 255, 0.10);
-  --border-strong: rgba(255, 255, 255, 0.18);
-
-  --text-primary: #edede8;
-  --text-secondary: #a1a1a1;
-  --text-tertiary: #8b8b8b;
-  --text-placeholder: #777777;
-  --text-inverse: #111213;
-
-  --color-tech: #a78bfa;
-  --color-finance: #34d399;
-  --color-food: #f97316;
-  --color-sports: #38bdf8;
-  --color-documents: #e879f9;
-  --color-mathematics: #facc15;
-
-  --color-success: #22c55e;
-  --color-error: #ef4444;
-  --color-info: #3b82f6;
-  --color-warning: #f59e0b;
-
-  --score-high: #22c55e;
-  --score-mid: #f59e0b;
-  --score-low: #ef4444;
-
-  --accent-white: #f3f0e6;
-  --accent-white-hover: #e5e2d8;
-  --accent-white-active: #d6d3c9;
-  --accent-dim: rgba(255, 255, 255, 0.7);
-}
 
 * {
   margin: 0;
@@ -101,12 +56,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--border-default);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--border-strong);
 }
 
 .loading-shimmer {
@@ -137,10 +92,10 @@ body {
 .markdown ol { list-style: decimal; }
 .markdown li + li { margin-top: 8px; }
 .markdown code { font-family: 'Geist Mono', monospace; font-size: 12px; background: var(--bg-elevated); border-radius: 4px; padding: 2px 4px; }
-.markdown pre { overflow-x: auto; padding: 16px; background: var(--bg-terminal); border: 1px solid var(--border-subtle); border-radius: 8px; }
+.markdown pre { overflow-x: auto; padding: 16px; background: var(--surface-subtle); border: 1px solid var(--border-subtle); border-radius: 8px; }
 .markdown pre code { padding: 0; background: none; }
 .markdown blockquote { padding-left: 16px; border-left: 2px solid var(--border-strong); color: var(--text-secondary); }
-.markdown a { color: #8bb5f8; text-decoration: underline; text-underline-offset: 3px; }
+.markdown a { color: var(--color-info); text-decoration: underline; text-underline-offset: 3px; }
 .markdown a:focus-visible { outline: 2px solid var(--color-info); outline-offset: 3px; }
 .markdown img { max-width: 100%; }
 

@@ -89,7 +89,7 @@ export function SearchWorkspace() {
             <input id="knowledge-search" type="search" value={input} onChange={(event) => setInput(event.target.value)}
               placeholder="Search your knowledge…"
               className="field h-11 pl-11 pr-11 text-body" />
-            {input && <button type="button" onClick={clearSearch} aria-label="Clear search" className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded text-[--text-secondary] hover:bg-hover hover:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[--color-info]"><X className="h-4 w-4" /></button>}
+            {input && <button type="button" onClick={clearSearch} aria-label="Clear search" className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded text-[--text-secondary] hover:bg-hover hover:text-[--text-primary] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[--color-info]"><X className="h-4 w-4" /></button>}
           </div>
           <Button type="submit" disabled={!input.trim() || isFetching} className="h-11 shrink-0 px-5">
             {isFetching ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <Search className="h-4 w-4" aria-hidden="true" />}
@@ -109,7 +109,7 @@ export function SearchWorkspace() {
             <div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center"><Search className="h-5 w-5 text-[--text-secondary]" aria-hidden="true" /></div>
             <h3 className="text-lg font-semibold tracking-tight">Search your documents</h3>
             <p className="mt-2 text-sm leading-relaxed text-[--text-secondary]">Describe what you need, even when you don't remember the exact words.</p>
-            {documentsLoaded && documents.length === 0 && <button type="button" onClick={() => setActiveView("documents")} className="mt-6 inline-flex items-center gap-2 text-xs text-[--color-info] hover:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[--color-info]">Add your first document</button>}
+            {documentsLoaded && documents.length === 0 && <button type="button" onClick={() => setActiveView("documents")} className="mt-6 inline-flex items-center gap-2 text-xs text-[--color-info] hover:text-[--text-primary] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[--color-info]">Add your first document</button>}
           </div>
         </div>}
 
@@ -129,11 +129,11 @@ export function SearchWorkspace() {
           {data.count === 0 ? <div className="mt-6 px-6 py-12 text-center">
             <h3 className="text-sm font-semibold">No matches found.</h3>
             <p className="mt-2 text-xs text-[--text-secondary]">Try a broader description or add more knowledge to search.</p>
-            <button type="button" onClick={() => setActiveView("documents")} className="mt-5 inline-flex items-center gap-2 text-xs text-[--color-info] hover:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[--color-info]">Manage documents</button>
+            <button type="button" onClick={() => setActiveView("documents")} className="mt-5 inline-flex items-center gap-2 text-xs text-[--color-info] hover:text-[--text-primary] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[--color-info]">Manage documents</button>
           </div> : <div className={`mt-2 grid min-w-0 gap-6 ${selected ? "lg:grid-cols-[minmax(0,1fr)_280px]" : ""}`}>
             <div className="min-w-0 space-y-2.5" aria-label="Ranked search results">
               {data.results.map((result, index) => {
-                const categoryColor = CATEGORY_COLORS[result.category as keyof typeof CATEGORY_COLORS] ?? "#a78bfa";
+                const categoryColor = CATEGORY_COLORS[result.category as keyof typeof CATEGORY_COLORS] ?? "var(--color-tech)";
                 const categoryLabel = CATEGORY_LABELS[result.category as keyof typeof CATEGORY_LABELS] ?? result.category;
                 return <button key={result.id} type="button" aria-pressed={selectedId === result.id} onClick={(event) => { selectedTriggerRef.current = event.currentTarget; selectResult(result); }}
                   className={`group w-full min-w-0 rounded-md border px-4 py-4 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--color-info] ${selectedId === result.id ? "border-[--border-strong] bg-elevated" : "border-[--border-subtle] bg-panel/50 hover:border-[--border-default] hover:bg-panel"}`}>

@@ -9,13 +9,15 @@ test("public entry is usable without a session, product code, or product polling
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "Your knowledge, in context." })).toBeFocused();
   await expect(page).toHaveTitle("Neuebit — Your knowledge, in context");
-  await expect(page.getByRole("link", { name: "Get started" })).toHaveAttribute("href", "/auth?mode=register");
+  await expect(page.locator(".marketing-hero").getByRole("link", { name: "Get started" })).toHaveAttribute("href", "/auth?mode=register");
   await expect(page.getByRole("link", { name: "Sign in" })).toHaveAttribute("href", "/auth?mode=login");
   await page.clock.fastForward(30_000);
   expect(calls).toEqual([]);
   expectNoProductCode(scripts);
   await page.keyboard.press("Tab");
-  await expect(page.getByRole("link", { name: "Get started" })).toBeFocused();
+  await expect(page.getByRole("button", { name: "Pause supporting phrases" })).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(page.locator(".marketing-hero").getByRole("link", { name: "Get started" })).toBeFocused();
   await page.keyboard.press("Enter");
   await expect(page.getByRole("heading", { name: "Create your account" })).toBeFocused();
   await expect(page).toHaveURL(/\/auth\?mode=register$/);
@@ -30,17 +32,17 @@ test("public session restoration preserves the page and visitor focus", async ({
   } });
   await page.clock.install();
   await page.goto("/");
-  const open = page.getByRole("link", { name: "Continue to Neuebit" });
+  const open = page.locator(".marketing-hero").getByRole("link", { name: "Continue to Neuebit" });
   await open.focus();
   await expect.poll(() => calls.length).toBe(1);
   restore.resolve();
-  await expect(page.getByRole("link", { name: "Open Neuebit" })).toBeFocused();
+  await expect(page.locator(".marketing-hero").getByRole("link", { name: "Open Neuebit" })).toBeFocused();
   await expect(page).toHaveURL(/\/$/);
   await page.clock.fastForward(30_000);
   expect(calls.map((call) => call.path)).toEqual(["/auth/me"]);
   expect(calls[0].authorization).toBe(`Bearer ${SESSION_TOKEN}`);
   expectNoProductCode(scripts);
-  await page.getByRole("link", { name: "Open Neuebit" }).click();
+  await page.locator(".marketing-hero").getByRole("link", { name: "Open Neuebit" }).click();
   await expectWorkspace(page);
 });
 
@@ -50,7 +52,7 @@ test("expired stored token leaves the public page accessible", async ({ page }) 
     "/auth/me": (route) => reply(route, { detail: "Token expired" }, 401),
   });
   await page.goto("/");
-  await expect(page.getByRole("link", { name: "Get started" })).toBeVisible();
+  await expect(page.locator(".marketing-hero").getByRole("link", { name: "Get started" })).toBeVisible();
   await expect(page).toHaveURL(/\/$/);
   expect(await page.evaluate((key) => localStorage.getItem(key), TOKEN_KEY)).toBeNull();
   expect(calls.map((call) => call.path)).toEqual(["/auth/me"]);
@@ -133,7 +135,7 @@ test("public entry remains available when session verification fails", async ({ 
   });
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "Your knowledge, in context." })).toBeVisible();
-  await page.getByRole("link", { name: "Continue to Neuebit" }).click();
+  await page.locator(".marketing-hero").getByRole("link", { name: "Continue to Neuebit" }).click();
   await expect(page.getByRole("heading", { name: "Connection unavailable" })).toBeVisible();
   await page.getByRole("link", { name: "Back to Neuebit" }).click();
   await expect(page).toHaveURL(/\/$/);
@@ -175,7 +177,7 @@ test("sign in, refresh, public return, and logout preserve the session boundary"
   expect(calls.filter((call) => call.path === "/auth/me")).toHaveLength(2);
   // Successful auth replaced the auth history entry, so Back returns to public.
   await page.goBack();
-  await expect(page.getByRole("link", { name: "Open Neuebit" })).toBeVisible();
+  await expect(page.locator(".marketing-hero").getByRole("link", { name: "Open Neuebit" })).toBeVisible();
   await page.goForward();
   await expectWorkspace(page);
   await page.getByRole("textbox", { name: "Ask a question about your knowledge" }).fill("Private unsent draft");
@@ -184,7 +186,7 @@ test("sign in, refresh, public return, and logout preserve the session boundary"
   await expect(page.getByRole("complementary", { name: "Primary sidebar" })).toHaveCount(0);
   expect(await page.evaluate((key) => localStorage.getItem(key), TOKEN_KEY)).toBeNull();
   await page.goBack();
-  await expect(page.getByRole("link", { name: "Get started" })).toBeVisible();
+  await expect(page.locator(".marketing-hero").getByRole("link", { name: "Get started" })).toBeVisible();
   await page.goForward();
   await expect(page.getByRole("heading", { name: "Welcome back" })).toBeVisible();
   await fillCredentials(page);
@@ -281,7 +283,7 @@ for (const pendingPath of ["/auth/login", "/auth/register", "/auth/me"]) {
     await page.getByRole("button", { name: pendingPath === "/auth/register" ? "Create account" : "Sign in", exact: true }).click();
     await expect.poll(() => calls.some((call) => call.path === pendingPath)).toBe(true);
     await page.getByRole("link", { name: "Back to Neuebit" }).click();
-    await expect(page.getByRole("link", { name: "Get started" })).toBeVisible();
+    await expect(page.locator(".marketing-hero").getByRole("link", { name: "Get started" })).toBeVisible();
     const completed = pendingPath === "/auth/me" ? null
       : page.waitForResponse((response) => response.url().endsWith(pendingPath));
     pending.resolve();
@@ -311,7 +313,7 @@ test("unknown paths show an accessible client 404 and return home", async ({ pag
   await expect(page.getByRole("heading", { name: "Page not found" })).toBeFocused();
   await expect(page).toHaveTitle("Neuebit — Page not found");
   await page.getByRole("link", { name: "Return home" }).click();
-  await expect(page.getByRole("link", { name: "Get started" })).toBeVisible();
+  await expect(page.locator(".marketing-hero").getByRole("link", { name: "Get started" })).toBeVisible();
   expect(calls).toEqual([]);
   expectNoProductCode(scripts);
 });

@@ -85,7 +85,7 @@ export function AskAIComposer({
               aria-label={isRecording ? "Stop voice input" : "Start voice input"}
               className={`icon-button ${
                 isRecording
-                  ? 'text-[#ef4444] animate-pulse bg-[#ef4444]/10'
+                  ? 'text-[--color-error] animate-pulse bg-error/10'
                   : ''
               }`}
               title="Voice Input"
@@ -98,7 +98,7 @@ export function AskAIComposer({
             type="button"
             onClick={() => status === 'PROCESSING' ? onCancel?.() : input.trim() && onSubmit()}
             disabled={status !== 'PROCESSING' && !input.trim()}
-            className="flex items-center justify-center w-8 h-8 bg-[--accent-white] text-[--text-inverse] rounded hover:bg-[--accent-white-hover] active:bg-[--accent-white-active] transition-colors disabled:opacity-30 disabled:cursor-not-allowed outline-none focus-visible:ring-2 focus-visible:ring-[--color-info] focus-visible:ring-offset-2 focus-visible:ring-offset-[--bg-elevated]"
+            className="flex items-center justify-center w-8 h-8 bg-[--primary-action] text-[--text-inverse] rounded hover:bg-[--primary-action-hover] active:bg-[--primary-action-active] transition-colors disabled:opacity-30 disabled:cursor-not-allowed outline-none focus-visible:ring-2 focus-visible:ring-[--color-info] focus-visible:ring-offset-2 focus-visible:ring-offset-[--bg-elevated]"
             title={status === 'PROCESSING' ? 'Stop answer' : 'Send message'}
             aria-label={status === 'PROCESSING' ? 'Stop answer' : 'Send message'}
           >

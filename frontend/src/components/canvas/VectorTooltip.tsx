@@ -13,7 +13,7 @@ interface VectorTooltipProps {
 
 export function VectorTooltip({ id, category, x, y, payload, distance, containerWidth = 320, containerHeight = 200 }: VectorTooltipProps) {
   const categoryLabel = CATEGORY_LABELS[category]?.toLowerCase() || 'unknown';
-  const categoryColor = CATEGORY_COLORS[category] || '#888';
+  const categoryColor = CATEGORY_COLORS[category] || 'var(--text-secondary)';
 
   return (
     <div

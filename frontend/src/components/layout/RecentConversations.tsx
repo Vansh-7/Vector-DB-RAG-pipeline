@@ -68,7 +68,7 @@ export function RecentConversations({ chatBusy, onSelect }: { chatBusy: boolean;
     <div className="mx-3 mt-7 border-t border-[--border-subtle] pt-4 min-w-0">
       <div className="flex items-center justify-between px-2 mb-2">
         <h2 className="text-2xs text-[--text-tertiary]">Recent chats</h2>
-        <button type="button" onClick={() => void query.refetch()} title="Refresh chats" aria-label="Refresh chats" className="rounded p-1 text-[--text-tertiary] hover:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[--color-info]"><RefreshCw className="w-3.5 h-3.5" /></button>
+        <button type="button" onClick={() => void query.refetch()} title="Refresh chats" aria-label="Refresh chats" className="rounded p-1 text-[--text-tertiary] hover:text-[--text-primary] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[--color-info]"><RefreshCw className="w-3.5 h-3.5" /></button>
       </div>
       {actionError && <p role="alert" className="px-2 py-2 text-xs text-error break-words">{actionError}</p>}
       {query.isPending ? <div aria-label="Loading recent chats" className="px-2 py-3 text-xs text-[--text-secondary] flex items-center gap-2"><Loader2 className="w-3.5 h-3.5 animate-spin" /> Loading chats</div>
@@ -84,7 +84,7 @@ export function RecentConversations({ chatBusy, onSelect }: { chatBusy: boolean;
                   </button>
                   <button type="button" onClick={() => setMenuId(menuId === conversation.id ? null : conversation.id)} disabled={chatBusy}
                     aria-label={`Options for ${conversation.title}`} aria-expanded={menuId === conversation.id} aria-haspopup="menu"
-                    className="absolute right-1 top-1 rounded p-1.5 text-[--text-secondary] opacity-100 lg:opacity-0 lg:group-hover:opacity-100 lg:group-focus-within:opacity-100 hover:bg-elevated hover:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[--color-info] disabled:opacity-40">
+                    className="absolute right-1 top-1 rounded p-1.5 text-[--text-secondary] opacity-100 lg:opacity-0 lg:group-hover:opacity-100 lg:group-focus-within:opacity-100 hover:bg-elevated hover:text-[--text-primary] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[--color-info] disabled:opacity-40">
                     <MoreHorizontal className="w-3.5 h-3.5" aria-hidden="true" />
                   </button>
                   {menuId === conversation.id && <div role="menu" aria-label={`Options for ${conversation.title}`} onBlur={(event) => {
@@ -105,7 +105,7 @@ export function RecentConversations({ chatBusy, onSelect }: { chatBusy: boolean;
 
       <Dialog.Root open={renaming !== null} onOpenChange={(open) => { if (!open && !renameMutation.isPending) setRenaming(null); }}>
         <Dialog.Portal>
-          <Dialog.Overlay className="fixed inset-0 z-50 bg-black/70" />
+          <Dialog.Overlay className="fixed inset-0 z-50 bg-[--overlay]" />
           <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100vw-2rem)] max-w-[420px] -translate-x-1/2 -translate-y-1/2 rounded-md border border-[--border-default] bg-panel p-5 shadow-2xl outline-none">
             <div className="flex items-center justify-between gap-3"><Dialog.Title className="text-sm font-semibold">Rename chat</Dialog.Title><Dialog.Close disabled={renameMutation.isPending} aria-label="Close rename dialog" className="icon-button"><X className="w-4 h-4" /></Dialog.Close></div>
             <Dialog.Description className="mt-2 text-xs text-[--text-secondary]">Choose a name that helps you find this conversation later.</Dialog.Description>
@@ -113,7 +113,7 @@ export function RecentConversations({ chatBusy, onSelect }: { chatBusy: boolean;
               <label htmlFor="conversation-title" className="mt-5 mb-1.5 block text-xs text-[--text-secondary]">Conversation name</label>
               <input id="conversation-title" autoFocus value={title} onChange={(event) => setTitle(event.target.value)} maxLength={255} disabled={renameMutation.isPending} className="field h-10 px-3 text-sm" />
               {renameMutation.isError && <p role="alert" className="mt-2 text-xs text-error">{actionError}</p>}
-              <div className="mt-5 flex justify-end gap-2"><Dialog.Close type="button" disabled={renameMutation.isPending} className="rounded-md border border-[--border-default] px-3 py-2 text-xs text-[--text-secondary] hover:bg-hover">Cancel</Dialog.Close><button type="submit" disabled={!title.trim() || renameMutation.isPending} className="rounded-md bg-[--accent-white] px-3 py-2 text-sm font-medium text-[--text-inverse] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--color-info]">{renameMutation.isPending ? "Saving…" : "Save name"}</button></div>
+              <div className="mt-5 flex justify-end gap-2"><Dialog.Close type="button" disabled={renameMutation.isPending} className="rounded-md border border-[--border-default] px-3 py-2 text-xs text-[--text-secondary] hover:bg-hover">Cancel</Dialog.Close><button type="submit" disabled={!title.trim() || renameMutation.isPending} className="rounded-md bg-[--primary-action] px-3 py-2 text-sm font-medium text-[--text-inverse] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--color-info]">{renameMutation.isPending ? "Saving…" : "Save name"}</button></div>
             </form>
           </Dialog.Content>
         </Dialog.Portal>

@@ -30,7 +30,7 @@ export function ConfirmDialog({
   return (
     <Dialog.Root open={open} onOpenChange={(nextOpen) => { if (!busy || nextOpen) onOpenChange(nextOpen); }}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 bg-black/60 z-50" />
+        <Dialog.Overlay className="fixed inset-0 bg-[--overlay] z-50" />
         <Dialog.Content onEscapeKeyDown={(event) => { if (busy) event.preventDefault(); }} onPointerDownOutside={(event) => { if (busy) event.preventDefault(); }} className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-panel border border-[--border-strong] rounded-lg p-6 w-[calc(100vw-2rem)] max-w-[420px] z-50 shadow-xl outline-none">
           <div className="flex items-start justify-between mb-4">
             <Dialog.Title className="text-md font-semibold text-[--text-primary]">

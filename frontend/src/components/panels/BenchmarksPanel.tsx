@@ -48,7 +48,7 @@ export function BenchmarksPanel() {
           <h2 className="text-md font-semibold">Algorithm benchmarks</h2>
           <p className="mt-1 text-xs leading-relaxed text-[--text-secondary]">Compare HNSW, KD-tree, and exact search on your indexed vectors.</p>
         </div>
-        <button type="button" onClick={() => void refetch()} disabled={isFetching} className="inline-flex items-center gap-2 rounded px-2 py-1.5 text-xs text-[--text-secondary] hover:bg-hover hover:text-white disabled:opacity-40 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[--color-info]">
+        <button type="button" onClick={() => void refetch()} disabled={isFetching} className="inline-flex items-center gap-2 rounded px-2 py-1.5 text-xs text-[--text-secondary] hover:bg-hover hover:text-[--text-primary] disabled:opacity-40 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[--color-info]">
           <RefreshCw className={`h-3.5 w-3.5 ${isFetching ? "animate-spin" : ""}`} /> Refresh telemetry
         </button>
       </div>
@@ -79,7 +79,7 @@ export function BenchmarksPanel() {
       {noVectors && <div className="px-6 py-10 text-center">
         <h3 className="text-sm font-semibold">No searchable vectors to benchmark.</h3>
         <p className="mt-2 text-xs text-[--text-secondary]">Add a document or inject a vector, then run the comparison.</p>
-        <button type="button" onClick={() => setActiveView("documents")} className="mt-5 inline-flex items-center gap-2 text-xs text-[--color-info] hover:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[--color-info]">Open Documents</button>
+        <button type="button" onClick={() => setActiveView("documents")} className="mt-5 inline-flex items-center gap-2 text-xs text-[--color-info] hover:text-[--text-primary] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[--color-info]">Open Documents</button>
       </div>}
 
       {data && !noVectors && <div className="space-y-6">
@@ -109,7 +109,7 @@ export function BenchmarksPanel() {
               <div className="flex items-center justify-between"><span className="text-xs font-medium">{layer.level === 0 ? "Base layer" : "Navigable layer"}</span><span className="font-mono text-2xs text-[--color-info]">L{layer.level}</span></div>
               <div className="mt-4 grid grid-cols-2 gap-2 font-mono text-xs"><div><p className="font-sans text-xs text-[--text-tertiary]">Nodes</p><p className="mt-1 text-[--color-tech]">{formatNumber(layer.nodes)}</p></div><div><p className="font-sans text-xs text-[--text-tertiary]">Edges</p><p className="mt-1 text-[--text-primary]">{formatNumber(layer.edges)}</p></div></div>
             </div>)}
-          </div> : <div className="mt-5 rounded-lg bg-panel p-5"><p className="text-xs text-[--text-secondary]">{active?.name === "hnsw" ? "No topology was produced for this run." : "Topology is available when HNSW is the active engine."}</p>{active?.name !== "hnsw" && <button type="button" onClick={() => openVectorLab("engine")} className="mt-3 inline-flex items-center gap-2 text-xs text-[--color-info] hover:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[--color-info]">Open Engine</button>}</div>}
+          </div> : <div className="mt-5 rounded-lg bg-panel p-5"><p className="text-xs text-[--text-secondary]">{active?.name === "hnsw" ? "No topology was produced for this run." : "Topology is available when HNSW is the active engine."}</p>{active?.name !== "hnsw" && <button type="button" onClick={() => openVectorLab("engine")} className="mt-3 inline-flex items-center gap-2 text-xs text-[--color-info] hover:text-[--text-primary] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[--color-info]">Open Engine</button>}</div>}
           <p className="mt-4 text-2xs leading-relaxed text-[--text-tertiary]">Topology is measured from the benchmark HNSW build over your searchable vectors; it is not a live graph view of the shared index.</p>
         </section>
       </div>}

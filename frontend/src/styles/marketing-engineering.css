@@ -1,0 +1,67 @@
+/* Technical composition follows the selected global theme, never forces dark. */
+.marketing-engineering { background: var(--surface-subtle); color: var(--text-primary); }
+.vector-reveal, .architecture-section { scroll-margin-block-start: 6rem; }
+.vector-reveal { padding-block-end: 0; }
+.vector-reveal-intro { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); align-items: end; gap: 2.5rem 4rem; margin-block-end: 3rem; }
+.engineering-eyebrow { display: inline-flex; align-items: center; gap: .625rem; color: var(--capability-ink); font-size: .875rem; font-weight: 500; }
+.engineering-eyebrow > span { inline-size: 6px; block-size: 6px; border-radius: 50%; background: var(--capability-mark); }
+.vector-reveal h2, .architecture-heading h2 { font-size: var(--marketing-type-heading); font-weight: 600; line-height: 1.08; letter-spacing: -.035em; text-wrap: balance; margin: 1.125rem 0 0; }
+.vector-reveal h2 { max-inline-size: 18ch; }
+.vector-reveal-copy > p, .architecture-heading > p { max-inline-size: 46ch; color: var(--text-secondary); line-height: 1.7; margin: 0; }
+.engineering-actions { display: flex; flex-wrap: wrap; gap: .25rem 1.5rem; margin-block-start: 1rem; }
+.engineering-actions a { color: var(--text-primary); font-size: .875rem; font-weight: 500; }
+.vector-reveal-stage { position: relative; }
+.engineering-grid { position: absolute; inset: -24px; inline-size: calc(100% + 48px); block-size: calc(100% + 48px); color: var(--border-default); pointer-events: none; }
+.vector-reveal-figure { position: relative; margin: 0; }
+.vector-reveal-image { background: var(--canvas); border: 1px solid var(--border-default); border-radius: var(--marketing-radius-preview); }
+.engineering-transition { font-size: .9375rem; color: var(--text-secondary); margin-block-end: .75rem; }
+.vector-reveal-figure figcaption { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .375rem 1rem; padding-block: 1rem; color: var(--text-secondary); font-size: .75rem; line-height: 1.6; background: var(--surface-subtle); }
+.engineering-indexes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2rem; margin-block: 2rem 0; }
+.engineering-indexes > div { border-block-start: 1px solid var(--border-default); padding-block-start: 1.25rem; }
+.engineering-indexes dt, .engineering-storage dt { font-family: var(--marketing-font-mono); font-size: .875rem; font-weight: 500; }
+.engineering-indexes dd, .engineering-storage dd { max-inline-size: 41ch; color: var(--text-secondary); margin: .75rem 0 0; font-size: .875rem; line-height: 1.7; }
+.architecture-section { padding-block-start: clamp(5rem, 8vw, 7.5rem); }
+.architecture-heading { max-inline-size: 46rem; margin-block-end: 3rem; }
+.architecture-heading > p { margin-block-start: 1.25rem; font-size: var(--marketing-type-lead); }
+.architecture-pipeline { container-type: inline-size; }
+.architecture-lane + .architecture-lane { margin-block-start: 2.5rem; }
+.architecture-lane-label { display: flex; flex-wrap: wrap; align-items: baseline; gap: .5rem 1.5rem; margin-block-end: 1rem; }
+.architecture-lane-label h3 { font-family: var(--marketing-font-mono); font-size: .8125rem; color: var(--text-primary); font-weight: 500; }
+.architecture-lane-label p { font-size: .8125rem; color: var(--text-secondary); }
+.architecture-nodes { display: grid; gap: 0; list-style: none; padding: 0; margin: 0; }
+.architecture-step { position: relative; min-inline-size: 0; }
+.architecture-node { position: relative; border: 1px solid var(--border-default); background: var(--canvas); border-radius: 6px; padding: 1.25rem; }
+.architecture-node-index { display: block; color: var(--capability-ink, var(--text-tertiary)); font: .6875rem var(--marketing-font-mono); margin-block-end: .75rem; }
+.architecture-node h4 { color: var(--text-primary); font-size: .875rem; line-height: 1.5; font-weight: 500; }
+.architecture-node p { color: var(--text-secondary); font-size: .75rem; line-height: 1.6; margin-block-start: .375rem; }
+.architecture-connector { display: block; inline-size: 32px; block-size: 16px; margin: 1rem auto; color: var(--text-tertiary); transform: rotate(90deg); }
+.architecture-note { max-inline-size: 76ch; color: var(--text-secondary); font-size: .8125rem; line-height: 1.7; margin-block: 1.5rem 0; }
+.engineering-storage { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3rem; margin-block-start: 3rem; border-block-start: 1px solid var(--border-default); padding-block-start: 2rem; }
+.engineering-storage dd { max-inline-size: 53ch; }
+
+@container (min-width: 54rem) {
+  .architecture-nodes { grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 2rem; }
+  .architecture-node { min-block-size: 9rem; block-size: 100%; padding: 1rem; }
+  .architecture-connector { position: absolute; inset-inline-end: -1.875rem; inset-block-start: 50%; transform: translateY(-50%); margin: 0; inline-size: 28px; }
+}
+@media (max-width: 900px) {
+  .vector-reveal-intro { grid-template-columns: minmax(0, 1fr); gap: 1.5rem; }
+  .vector-reveal-copy > p { max-inline-size: 56ch; }
+}
+@media (max-width: 599px) {
+  .vector-reveal-intro { margin-block-end: 2rem; }
+  .vector-reveal h2, .architecture-heading h2 { font-size: 2.5rem; }
+  .vector-reveal-figure figcaption { display: grid; }
+  .engineering-grid { inset: -12px; inline-size: calc(100% + 24px); block-size: calc(100% + 24px); }
+  .engineering-indexes, .engineering-storage { grid-template-columns: minmax(0, 1fr); gap: 1.5rem; }
+  .engineering-indexes { margin-block-start: 1.5rem; }
+  .engineering-indexes dd { max-inline-size: 45ch; }
+  .architecture-heading { margin-block-end: 2rem; }
+}
+/* Font-relative layout also stacks when desktop text is enlarged. */
+@media (min-width: 600px) {
+  .marketing-engineering .marketing-container { container-type: inline-size; }
+  @container (max-width: 35rem) {
+    .vector-reveal-intro, .engineering-indexes, .engineering-storage { grid-template-columns: minmax(0, 1fr); }
+  }
+}
