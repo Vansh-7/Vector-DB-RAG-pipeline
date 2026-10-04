@@ -142,11 +142,12 @@ test("public entry remains available when session verification fails", async ({ 
   expectNoProductCode(scripts);
 });
 
-test("sign out from verification failure removes the token and opens login", async ({ page }) => {
+test("log out from verification failure removes the token and opens login", async ({ page }) => {
   await seedSession(page);
   await stubApi(page, { "/auth/me": (route) => reply(route, { detail: "Unavailable" }, 503) });
   await page.goto("/app");
-  await page.getByRole("button", { name: "Sign out" }).click();
+  await page.getByRole("button", { name: "Log out", exact: true }).click();
+  await page.getByRole("dialog", { name: "Log out of Neuebit?", exact: true }).getByRole("button", { name: "Log out", exact: true }).click();
   await expect(page).toHaveURL(/\/auth\?mode=login$/);
   expect(await page.evaluate((key) => localStorage.getItem(key), TOKEN_KEY)).toBeNull();
   await page.reload();
@@ -182,7 +183,8 @@ test("sign in, refresh, public return, and logout preserve the session boundary"
   await expectWorkspace(page);
   await page.getByRole("textbox", { name: "Ask a question about your knowledge" }).fill("Private unsent draft");
   await page.getByRole("button", { name: "Account menu", exact: true }).click();
-  await page.getByRole("menuitem", { name: "Sign out", exact: true }).click();
+  await page.getByRole("menuitem", { name: "Log out", exact: true }).click();
+  await page.getByRole("dialog", { name: "Log out of Neuebit?", exact: true }).getByRole("button", { name: "Log out", exact: true }).click();
   await expect(page).toHaveURL(/\/auth\?mode=login$/);
   await expect(page.getByRole("complementary", { name: "Primary sidebar" })).toHaveCount(0);
   expect(await page.evaluate((key) => localStorage.getItem(key), TOKEN_KEY)).toBeNull();

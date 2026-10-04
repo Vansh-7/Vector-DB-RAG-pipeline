@@ -1,16 +1,19 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useRef, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { useAuthStore } from "../../store/authStore";
 import { Button } from "../ui/Button";
 import { AuthScreen } from "./AuthScreen";
 import { BrandMark } from "../ui/BrandMark";
+import { ConfirmDialog } from "../ui/ConfirmDialog";
 
 const AppShell = lazy(() => import("../layout/AppShell").then((module) => ({ default: module.AppShell })));
 
 export function AuthGate({ intent }: { intent: "auth" | "app" }) {
   const status = useAuthStore((s) => s.status);
   const error = useAuthStore((s) => s.error);
+  const [confirmLogout, setConfirmLogout] = useState(false);
+  const logoutRef = useRef<HTMLButtonElement>(null);
 
   if (status === "authenticated") {
     if (intent === "auth") return <Navigate to="/app" replace />;
@@ -34,11 +37,14 @@ export function AuthGate({ intent }: { intent: "auth" | "app" }) {
             <p role="alert" className="text-sm text-[--text-secondary] mt-3">{error}</p>
             <div className="flex justify-center gap-3 mt-6">
               <Button type="button" onClick={() => useAuthStore.getState().retryVerification()}>Retry</Button>
-              <Button type="button" variant="outline" onClick={() => useAuthStore.getState().logout()}>Sign out</Button>
+              <Button ref={logoutRef} type="button" variant="outline" onClick={() => setConfirmLogout(true)}>Log out</Button>
             </div>
           </>
         )}
         <Link to="/" className="mt-6 inline-flex min-h-11 items-center rounded text-sm text-[--text-secondary] underline underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4">Back to Neuebit</Link>
+        <ConfirmDialog open={confirmLogout} onOpenChange={setConfirmLogout} title="Log out of Neuebit?"
+          description="You'll need to sign in again to access your workspace." confirmLabel="Log out"
+          onConfirm={() => useAuthStore.getState().logout()} returnFocusRef={logoutRef} />
       </div>
     </main>
   );

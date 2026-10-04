@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { FileText, FlaskConical, MessageSquare, PanelLeft, Plus, Search } from "lucide-react";
 import { useSessionStore, type WorkspaceView } from "../../store/sessionStore";
 import { Tooltip } from "../ui/Tooltip";
@@ -17,6 +18,15 @@ export function PrimarySidebar({ onNewChat, onSelectConversation, chatBusy }: { 
   const setActiveView = useSessionStore((s) => s.setActiveView);
   const collapsed = useSessionStore((s) => s.isNavigationCollapsed);
   const setCollapsed = useSessionStore((s) => s.setNavigationCollapsed);
+  const [narrowRail, setNarrowRail] = useState(() => window.matchMedia("(max-width: 767px)").matches);
+  useEffect(() => {
+    const media = window.matchMedia("(max-width: 767px)");
+    const update = () => setNarrowRail(media.matches);
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
+  const iconOnly = collapsed || narrowRail;
 
   return (
     <aside aria-label="Primary sidebar" data-collapsed={collapsed} className="primary-sidebar shrink-0 bg-panel border-r border-[--border-subtle] flex flex-col min-h-0">
@@ -33,7 +43,7 @@ export function PrimarySidebar({ onNewChat, onSelectConversation, chatBusy }: { 
             </button>
           </Tooltip>
         </div>
-        <Tooltip content={chatBusy ? "Wait for the current answer to finish" : "New chat"}>
+        <Tooltip content={chatBusy ? "Wait for the current answer to finish" : "New chat"} enabled={iconOnly}>
           <button type="button" onClick={onNewChat} disabled={chatBusy} aria-label="New chat"
             className="sidebar-control sidebar-new-chat">
             <Plus className="w-4 h-4 shrink-0" aria-hidden="true" /><span className="sidebar-label">New chat</span>
@@ -42,7 +52,7 @@ export function PrimarySidebar({ onNewChat, onSelectConversation, chatBusy }: { 
       </div>
       <nav aria-label="Primary navigation" className="sidebar-navigation">
         {NAVIGATION.map(({ view, label, icon: Icon }) => (
-          <Tooltip key={view} content={label}>
+          <Tooltip key={view} content={label} enabled={iconOnly}>
             <button type="button" aria-label={label} aria-current={activeView === view ? "page" : undefined}
               onClick={() => setActiveView(view)}
               className="sidebar-control sidebar-nav-control">

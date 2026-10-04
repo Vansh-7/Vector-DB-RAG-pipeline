@@ -61,7 +61,8 @@ export function MaintenancePanel() {
       </div>}
       {isOperator && saveMutation.isSuccess && <p role="status" className="text-xs text-success">Snapshot saved to disk.</p>}
       {isOperator && saveMutation.isError && <p role="alert" className="text-xs text-error break-words">{saveMutation.error.message}</p>}
-      <div className="border-b border-[--border-subtle] py-5">
+      <div className="divide-y divide-[--border-subtle]">
+      <section className="pb-6">
         <div>
           <h3 className="text-sm font-semibold">Delete a vector</h3>
           <p className="text-xs text-[--text-secondary] mt-1 leading-relaxed">Remove one indexed vector by ID. Use Documents to delete an entire source.</p>
@@ -78,8 +79,8 @@ export function MaintenancePanel() {
           </Button>
         </div>
         {deleteMutation.isSuccess && <p role="status" className="mt-3 text-xs text-success">Vector deleted.</p>}
-      </div>
-      <div className="border-t border-[--border-subtle] py-5 flex flex-wrap items-center justify-between gap-4">
+      </section>
+      <section className="pt-6 flex flex-wrap items-center justify-between gap-4">
         <div className="max-w-md">
           <h3 className="text-sm font-semibold">Clear vector data</h3>
           <p className="text-xs text-[--text-secondary] mt-1 leading-relaxed">Delete your indexed vectors and document metadata. Saved conversations are not deleted.</p>
@@ -87,6 +88,7 @@ export function MaintenancePanel() {
         <Button variant="danger" onClick={() => { clearMutation.reset(); setShowClearDialog(true); }} disabled={busy}>
           {clearMutation.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />} Clear data
         </Button>
+      </section>
       </div>
       {clearMutation.isSuccess && <p role="status" className="text-xs text-success">Your vector data was cleared.</p>}
       {clearMutation.isError && <p role="alert" className="text-xs text-error break-words">{clearMutation.error.message}</p>}

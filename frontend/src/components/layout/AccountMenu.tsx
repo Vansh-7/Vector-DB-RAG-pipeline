@@ -4,6 +4,7 @@ import { useAuthStore } from "../../store/authStore";
 import { ThemeToggle } from "../theme/ThemeToggle";
 import { useTheme } from "../theme/themeContext";
 import { Tooltip } from "../ui/Tooltip";
+import { ConfirmDialog } from "../ui/ConfirmDialog";
 
 export function AccountMenu() {
   const user = useAuthStore((s) => s.user);
@@ -11,6 +12,7 @@ export function AccountMenu() {
   const { theme } = useTheme();
   const [open, setOpen] = useState(false);
   const [appearance, setAppearance] = useState(false);
+  const [confirmLogout, setConfirmLogout] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -101,10 +103,13 @@ export function AccountMenu() {
           <Palette size={16} aria-hidden="true" /><span>Appearance</span>
           <span className="account-menu-value">{theme === "light" ? "Light" : "Dark"}</span><ChevronRight size={14} aria-hidden="true" />
         </button>
-        <button type="button" role="menuitem" className="account-menu-row" onClick={() => { close(false); logout(); }}>
-          <LogOut size={16} aria-hidden="true" /> Sign out
+        <button type="button" role="menuitem" className="account-menu-row" onClick={() => { close(false); setConfirmLogout(true); }}>
+          <LogOut size={16} aria-hidden="true" /> Log out
         </button>
       </>}
     </div>}
+    <ConfirmDialog open={confirmLogout} onOpenChange={setConfirmLogout} title="Log out of Neuebit?"
+      description="You'll need to sign in again to access your workspace." confirmLabel="Log out"
+      onConfirm={logout} returnFocusRef={triggerRef} />
   </div>;
 }

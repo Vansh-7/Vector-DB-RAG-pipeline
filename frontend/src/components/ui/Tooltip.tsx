@@ -27,13 +27,16 @@ export function Tooltip({
   children,
   content,
   side = "right",
-  sideOffset = 8
+  sideOffset = 8,
+  enabled = true
 }: {
   children: React.ReactNode;
   content: React.ReactNode;
   side?: "top" | "right" | "bottom" | "left";
   sideOffset?: number;
+  enabled?: boolean;
 }) {
+  if (!enabled) return <>{children}</>;
   return (
     <TooltipProvider delayDuration={200}>
       <TooltipRoot>

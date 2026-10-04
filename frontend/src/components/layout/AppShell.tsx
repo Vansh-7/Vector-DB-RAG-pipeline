@@ -7,7 +7,6 @@ import { TerminalLog } from "../terminal/TerminalLog";
 import { VectorLabWorkspace } from "../workspaces/VectorLabWorkspace";
 import { useCanvasStore } from "../../store/canvasStore";
 import { useSessionStore } from "../../store/sessionStore";
-import { useDocuments } from "../../hooks/useDocuments";
 import { PrimarySidebar } from "./PrimarySidebar";
 import { AddDocumentPane } from "../documents/AddDocumentPane";
 import type { IngestResponse } from "../../types/ingest";
@@ -21,8 +20,6 @@ export function AppShell() {
   const [ingestBusy, setIngestBusy] = useState(false);
   const [added, setAdded] = useState<IngestResponse | null>(null);
   const chatRef = useRef<HTMLElement>(null);
-  const documentsQuery = useDocuments();
-  const needsKnowledge = documentsQuery.isSuccess && documentsQuery.data.length === 0;
   const documentPaneOpen = documentPaneView === activeView;
   const openDocumentPane = (mode?: "file" | "manual") => {
     if (mode && !ingestBusy) useSessionStore.getState().setIngestMode(mode);
@@ -74,7 +71,7 @@ export function AppShell() {
             <section ref={chatRef} aria-label="Chat workspace" inert={activeView !== "chat"}
               className={`${activeView === "chat" ? "flex" : "hidden"} flex-1 flex-col min-h-0 min-w-0`}>
               <div className="w-full flex-1 min-h-0">
-                <AskAIPanel onProcessingChange={setChatBusy} needsKnowledge={needsKnowledge} active={activeView === "chat"}
+                <AskAIPanel onProcessingChange={setChatBusy} active={activeView === "chat"}
                   documentPaneOpen={documentPaneOpen} onAddDocument={() => openDocumentPane("file")} />
               </div>
             </section>

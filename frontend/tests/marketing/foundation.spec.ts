@@ -52,7 +52,8 @@ test("public page scrolls with the document and public-to-app navigation isolate
   await expectWorkspace(page);
   await expect(page.locator(".marketing-page")).toHaveCount(0);
   expect(await page.locator("body").evaluate((element) => getComputedStyle(element).backgroundColor)).toBe(productBody.background);
-  await page.getByRole("button", { name: "Sign out", exact: true }).click();
+  await page.getByRole("button", { name: "Log out", exact: true }).click();
+  await page.getByRole("dialog", { name: "Log out of Neuebit?", exact: true }).getByRole("button", { name: "Log out", exact: true }).click();
   await page.getByRole("link", { name: "Back to Neuebit" }).click();
   await expect(page.getByRole("heading", { name: "Your knowledge, in context." })).toBeVisible();
   expect(await page.locator("body").evaluate((element) => getComputedStyle(element).colorScheme)).toBe("light");

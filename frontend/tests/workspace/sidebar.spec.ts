@@ -64,11 +64,11 @@ for (const theme of ["light", "dark"] as const) {
     const { calls } = await knowledgeApi(page); await page.goto("/app");
     const trigger = page.getByRole("button", { name: "Account menu", exact: true });
     await trigger.focus(); await page.keyboard.press("ArrowUp");
-    await expect(page.getByRole("menuitem", { name: "Sign out", exact: true })).toBeFocused();
+    await expect(page.getByRole("menuitem", { name: "Log out", exact: true })).toBeFocused();
     await page.keyboard.press("Home");
     await expect(page.getByRole("menuitem", { name: /Appearance/ })).toBeFocused();
     await page.keyboard.press("ArrowDown");
-    await expect(page.getByRole("menuitem", { name: "Sign out", exact: true })).toBeFocused();
+    await expect(page.getByRole("menuitem", { name: "Log out", exact: true })).toBeFocused();
     await page.keyboard.press("ArrowDown");
     await page.keyboard.press("ArrowRight");
     await expect(page.getByRole("menu", { name: "Appearance", exact: true })).toBeVisible();
@@ -92,6 +92,7 @@ for (const theme of ["light", "dark"] as const) {
     await expect(page.getByRole("menu")).toHaveCount(0);
     await page.getByRole("textbox", { name: "Ask a question about your knowledge" }).fill("Private draft");
     await trigger.click(); await page.keyboard.press("End"); await page.keyboard.press("Enter");
+    await page.getByRole("dialog", { name: "Log out of Neuebit?", exact: true }).getByRole("button", { name: "Log out", exact: true }).click();
     await expect(page.getByRole("heading", { name: "Welcome back" })).toBeVisible();
     expect(await page.evaluate((key) => localStorage.getItem(key), TOKEN_KEY)).toBeNull();
     expect(calls.filter((call) => call.path.startsWith("/auth")).map((call) => call.path)).toEqual(["/auth/me"]);
