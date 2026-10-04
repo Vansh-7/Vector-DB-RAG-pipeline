@@ -1,4 +1,4 @@
-import { test, expect, deferred, seedSession, stubApi, fillCredentials, expectWorkspace, expectNoProductCode, SESSION_TOKEN } from "../entry/fixtures";
+import { test, expect, deferred, seedSession, stubApi, fillCredentials, expectWorkspace, expectNoProductCode, SESSION_TOKEN, chooseAppTheme, signOutFromApp } from "../entry/fixtures";
 import { appearance, knowledgeApi } from "./fixtures";
 
 for (const [os, stored, expected] of [
@@ -43,10 +43,9 @@ test("landing toggle is keyboard accessible, persists on refresh, and preserves 
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await expectWorkspace(page);
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
-  await page.getByRole("button", { name: "Switch to light theme" }).focus();
-  await page.keyboard.press("Space");
+  await chooseAppTheme(page, "light");
   await expect(page.locator("body")).toHaveCSS("background-color", "rgb(255, 255, 255)");
-  await page.getByRole("button", { name: "Sign out" }).click();
+  await signOutFromApp(page);
   await expect(page.getByRole("heading", { name: "Welcome back" })).toBeVisible();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
   expect(await page.evaluate(() => localStorage.getItem("neuebit-theme"))).toBe("light");
@@ -163,7 +162,7 @@ for (const theme of ["light", "dark"] as const) {
     await expect(page.getByRole("complementary", { name: "Vector inspector" }).getByText("sample-1", { exact: true })).toBeVisible();
     await page.screenshot({ path: testInfo.outputPath(`vector-lab-1440-${theme}.png`) });
     const requestsBeforeToggle = calls.length;
-    await sidebar.getByRole("button", { name: `Switch to ${theme === "light" ? "dark" : "light"} theme` }).click();
+    await chooseAppTheme(page, theme === "light" ? "dark" : "light");
     await expect(page.getByRole("complementary", { name: "Vector inspector" }).getByText("sample-1", { exact: true })).toBeVisible();
     await expect(page.locator("body")).toHaveCSS("background-color", theme === "light" ? "rgb(8, 9, 10)" : "rgb(255, 255, 255)");
     expect(calls.length).toBe(requestsBeforeToggle);
@@ -194,10 +193,9 @@ for (const theme of ["light", "dark"] as const) {
         await expect(page.getByRole("region", { name: `${view} workspace` })).toBeVisible();
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
       }
-      await sidebar.getByRole("button", { name: `Switch to ${theme === "light" ? "dark" : "light"} theme` }).focus();
-      await page.keyboard.press("Enter");
+      await chooseAppTheme(page, theme === "light" ? "dark" : "light");
       await expect(page.locator("html")).toHaveAttribute("data-theme", theme === "light" ? "dark" : "light");
-      await page.getByRole("button", { name: "Sign out" }).click();
+      await signOutFromApp(page);
       await expect(page.getByRole("heading", { name: "Welcome back" })).toBeVisible();
       await expect(page.locator("html")).toHaveAttribute("data-theme", theme === "light" ? "dark" : "light");
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);

@@ -83,14 +83,16 @@ export function AskAIComposer({
               type="button"
               onClick={handleMicClick}
               aria-label={isRecording ? "Stop voice input" : "Start voice input"}
-              className={`icon-button ${
+              aria-pressed={isRecording}
+              className={`icon-button relative ${
                 isRecording
-                  ? 'text-[--color-error] animate-pulse bg-error/10'
+                  ? 'text-[--color-error] bg-error/10'
                   : ''
               }`}
-              title="Voice Input"
+              title={isRecording ? "Stop voice input" : "Start voice input"}
             >
-              <Mic className="w-4 h-4" />
+              <Mic className="w-4 h-4" aria-hidden="true" />
+              {isRecording && <span aria-hidden="true" className="absolute right-1 top-1 h-1 w-1 rounded-full bg-error" />}
             </button>
           )}
 

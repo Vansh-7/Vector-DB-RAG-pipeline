@@ -181,7 +181,8 @@ test("sign in, refresh, public return, and logout preserve the session boundary"
   await page.goForward();
   await expectWorkspace(page);
   await page.getByRole("textbox", { name: "Ask a question about your knowledge" }).fill("Private unsent draft");
-  await page.getByRole("button", { name: "Sign out", exact: true }).click();
+  await page.getByRole("button", { name: "Account menu", exact: true }).click();
+  await page.getByRole("menuitem", { name: "Sign out", exact: true }).click();
   await expect(page).toHaveURL(/\/auth\?mode=login$/);
   await expect(page.getByRole("complementary", { name: "Primary sidebar" })).toHaveCount(0);
   expect(await page.evaluate((key) => localStorage.getItem(key), TOKEN_KEY)).toBeNull();

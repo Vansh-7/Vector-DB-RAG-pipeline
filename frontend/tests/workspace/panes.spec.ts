@@ -85,7 +85,7 @@ for (const theme of ["light", "dark"] as const) {
       if (width >= 768) {
         await expect(sidebar.getByRole("heading", { name: "Recent chats" })).toBeVisible();
         await sidebar.getByRole("button", { name: "Collapse navigation" }).click();
-        await expect(sidebar).toHaveCSS("width", "64px");
+        await expect(sidebar).toHaveCSS("width", "56px");
         await sidebar.getByRole("button", { name: "Expand navigation" }).click();
       }
     });

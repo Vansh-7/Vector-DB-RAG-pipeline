@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
-import { Loader2, MessageSquare, MoreHorizontal, Pencil, RefreshCw, Trash2, X } from "lucide-react";
+import { Loader2, MoreHorizontal, Pencil, RefreshCw, Trash2, X } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { conversationKeys, deleteConversation, renameConversation } from "../../api/conversations";
 import { useConversations } from "../../hooks/useConversations";
@@ -65,7 +65,7 @@ export function RecentConversations({ chatBusy, onSelect }: { chatBusy: boolean;
   });
 
   return (
-    <div className="mx-3 mt-7 border-t border-[--border-subtle] pt-4 min-w-0">
+    <div className="mx-2.5 mt-7 border-t border-[--border-subtle] pt-4 min-w-0">
       <div className="flex items-center justify-between px-2 mb-2">
         <h2 className="text-2xs text-[--text-tertiary]">Recent chats</h2>
         <button type="button" onClick={() => void query.refetch()} title="Refresh chats" aria-label="Refresh chats" className="rounded p-1 text-[--text-tertiary] hover:text-[--text-primary] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[--color-info]"><RefreshCw className="w-3.5 h-3.5" /></button>
@@ -79,12 +79,12 @@ export function RecentConversations({ chatBusy, onSelect }: { chatBusy: boolean;
                 <li key={conversation.id} className="relative group min-w-0" ref={menuId === conversation.id ? menuRef : undefined}>
                   <button type="button" onClick={() => onSelect(conversation.id)} disabled={chatBusy}
                     aria-current={activeId === conversation.id ? "page" : undefined} title={conversation.title}
-                    className={`flex items-center gap-2 w-full min-w-0 rounded-md py-2 pl-2 pr-8 text-left text-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[--color-info] disabled:opacity-50 ${activeId === conversation.id ? "bg-elevated text-[--text-primary]" : "text-[--text-secondary] hover:bg-hover hover:text-[--text-primary]"}`}>
-                    <MessageSquare className="w-3.5 h-3.5 shrink-0 opacity-60" aria-hidden="true" /><span className="truncate">{conversation.title}</span>
+                    className="recent-chat-row flex items-center w-full min-w-0 h-8 rounded-md pl-2 pr-8 text-left text-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[--color-info] disabled:opacity-50">
+                    <span className="truncate">{conversation.title}</span>
                   </button>
                   <button type="button" onClick={() => setMenuId(menuId === conversation.id ? null : conversation.id)} disabled={chatBusy}
                     aria-label={`Options for ${conversation.title}`} aria-expanded={menuId === conversation.id} aria-haspopup="menu"
-                    className="absolute right-1 top-1 rounded p-1.5 text-[--text-secondary] opacity-100 lg:opacity-0 lg:group-hover:opacity-100 lg:group-focus-within:opacity-100 hover:bg-elevated hover:text-[--text-primary] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[--color-info] disabled:opacity-40">
+                    className="absolute right-1 top-[3px] flex h-[26px] w-[26px] items-center justify-center rounded-md text-[--text-secondary] opacity-100 lg:opacity-0 lg:group-hover:opacity-100 lg:group-focus-within:opacity-100 hover:bg-elevated hover:text-[--text-primary] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[--color-info] disabled:opacity-40">
                     <MoreHorizontal className="w-3.5 h-3.5" aria-hidden="true" />
                   </button>
                   {menuId === conversation.id && <div role="menu" aria-label={`Options for ${conversation.title}`} onBlur={(event) => {
@@ -95,7 +95,7 @@ export function RecentConversations({ chatBusy, onSelect }: { chatBusy: boolean;
                     const items = [...event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="menuitem"]')];
                     const index = items.indexOf(document.activeElement as HTMLButtonElement);
                     items[(index + (event.key === "ArrowDown" ? 1 : -1) + items.length) % items.length]?.focus();
-                  }} className="absolute z-30 right-0 top-9 w-36 rounded-md border border-[--border-default] bg-elevated p-1 shadow-xl">
+                  }} className="absolute z-30 right-0 top-[calc(100%+4px)] w-36 rounded-md border border-[--border-default] bg-elevated p-1">
                     <button type="button" role="menuitem" onClick={() => { setRenaming(conversation); setTitle(conversation.title); setActionError(null); setMenuId(null); }} className="flex w-full items-center gap-2 rounded px-2 py-2 text-left text-xs hover:bg-hover focus-visible:outline-none focus-visible:bg-hover"><Pencil className="w-3.5 h-3.5" /> Rename</button>
                     <button type="button" role="menuitem" onClick={() => { deleteMutation.reset(); setDeleting(conversation); setActionError(null); setMenuId(null); }} className="flex w-full items-center gap-2 rounded px-2 py-2 text-left text-xs text-error hover:bg-error/10 focus-visible:outline-none focus-visible:bg-error/10"><Trash2 className="w-3.5 h-3.5" /> Delete</button>
                   </div>}

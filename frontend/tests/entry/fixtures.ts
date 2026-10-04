@@ -20,6 +20,18 @@ export const test = base.extend<{ runtimeErrors: string[] }>({
 });
 export { expect };
 
+export async function chooseAppTheme(page: Page, theme: "light" | "dark") {
+  await page.getByRole("button", { name: "Account menu", exact: true }).click();
+  await page.getByRole("menuitem", { name: /Appearance/ }).click();
+  await page.getByRole("menuitemradio", { name: theme === "light" ? "Light" : "Dark", exact: true }).focus();
+  await page.keyboard.press("Space");
+}
+
+export async function signOutFromApp(page: Page) {
+  await page.getByRole("button", { name: "Account menu", exact: true }).click();
+  await page.getByRole("menuitem", { name: "Sign out", exact: true }).click();
+}
+
 export function deferred() {
   let resolve!: () => void;
   const promise = new Promise<void>((done) => { resolve = done; });
