@@ -17,7 +17,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       "inline-flex min-h-9 items-center justify-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--color-info] focus-visible:ring-offset-2 focus-visible:ring-offset-[--bg-base] disabled:opacity-40 disabled:cursor-not-allowed";
 
     const variants = {
-      primary: "bg-[--primary-action] text-[--text-inverse] hover:bg-[--primary-action-hover] active:bg-[--primary-action-active]",
+      primary: "bg-[--primary-action] text-[--primary-action-text] hover:bg-[--primary-action-hover] active:bg-[--primary-action-active]",
       outline: "border border-[--border-default] bg-elevated text-[--text-primary] hover:bg-hover hover:border-[--border-strong]",
       ghost: "text-[--text-secondary] hover:bg-hover hover:text-[--text-primary]",
       danger: "border border-error/30 bg-error/5 text-error hover:bg-error/10 hover:border-error/50",

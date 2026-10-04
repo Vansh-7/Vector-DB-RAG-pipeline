@@ -1,0 +1,91 @@
+/* Authenticated surfaces share geometry in both themes. Public pages keep their tokens. */
+.authenticated-app {
+  --canvas: #faf9f6;
+  --surface: #f1f0ed;
+  --surface-elevated: #eeedea;
+  --surface-hover: #e9e8e4;
+  --surface-canvas-rgb: 250 249 246;
+  --surface-panel-rgb: 241 240 237;
+  --surface-elevated-rgb: 238 237 234;
+  --surface-hover-rgb: 233 232 228;
+  --pane-surface: #ffffff;
+  --composer-surface: #ffffff;
+  --composer-focus-surface: #fdfcf9;
+  --text-secondary: #615e58;
+  --text-tertiary: #737069;
+  --text-placeholder: #74716b;
+  --primary-action: #2563c6;
+  --primary-action-hover: #2057b0;
+  --primary-action-active: #194994;
+  --primary-action-text: #ffffff;
+  --bg-base: var(--canvas);
+  --bg-panel: var(--surface);
+  --bg-elevated: var(--surface-elevated);
+  --bg-hover: var(--surface-hover);
+  --bg-composer: var(--composer-surface);
+  caret-color: var(--color-info);
+}
+:root[data-theme="dark"] .authenticated-app {
+  --canvas: #141519;
+  --surface: #18191d;
+  --surface-elevated: #202126;
+  --surface-hover: #26272d;
+  --surface-canvas-rgb: 20 21 25;
+  --surface-panel-rgb: 24 25 29;
+  --surface-elevated-rgb: 32 33 38;
+  --surface-hover-rgb: 38 39 45;
+  --pane-surface: #1b1c20;
+  --composer-surface: #202126;
+  --composer-focus-surface: #23242a;
+  --text-secondary: #acadb5;
+  --text-tertiary: #93949e;
+  --text-placeholder: #898a94;
+  --primary-action: #3569cc;
+  --primary-action-hover: #2b5ebf;
+  --primary-action-active: #2452ac;
+}
+.authenticated-app ::selection { background: rgb(var(--color-info-rgb) / .2); }
+.authenticated-app .theme-toggle { min-inline-size: 32px; min-block-size: 32px; padding: .375rem; }
+.context-pane {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 380px;
+  inline-size: 380px;
+  min-inline-size: 0;
+  block-size: 100%;
+  border-inline-start: 1px solid var(--border-default);
+  background: var(--pane-surface);
+  outline: none;
+  transition: opacity 180ms ease-out, transform 180ms ease-out, display 180ms allow-discrete;
+}
+.context-pane[hidden] { display: none; opacity: 0; transform: translateX(6px); }
+@starting-style { .context-pane:not([hidden]) { opacity: 0; transform: translateX(6px); } }
+.context-pane[data-layout="overlay"] {
+  position: fixed;
+  inset-block: 0;
+  inset-inline-end: 0;
+  z-index: 50;
+  inline-size: min(380px, 100vw);
+}
+.context-pane-backdrop { position: fixed; inset: 0; z-index: 49; background: var(--overlay); }
+.context-pane-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-shrink: 0; padding: 20px; border-block-end: 1px solid var(--border-subtle); }
+.pane-section-label { font-size: 12px; font-weight: 500; color: var(--text-secondary); }
+.chat-composer { background: var(--composer-surface); border: 1px solid var(--border-default); border-radius: 12px; transition: background 160ms ease-out, border-color 160ms ease-out; }
+.chat-composer:focus-within { background: var(--composer-focus-surface); border-color: var(--border-strong); }
+.lab-tabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); flex-shrink: 0; border-block-end: 1px solid var(--border-subtle); }
+.lab-tab { display: flex; align-items: center; justify-content: center; gap: 8px; min-block-size: 44px; padding: 10px 12px; font-size: 13px; color: var(--text-tertiary); border-block-end: 2px solid transparent; transition: color 160ms ease-out, background 160ms ease-out; }
+.lab-tab:hover { color: var(--text-primary); background: var(--surface-hover); }
+.lab-tab[aria-current="page"] { color: var(--text-primary); font-weight: 500; background: var(--surface-elevated); border-block-end-color: var(--text-primary); }
+.lab-tab:focus-visible { outline: 2px solid var(--color-info); outline-offset: -3px; }
+@media (max-width: 639px) {
+  .context-pane[data-layout="overlay"] { inline-size: 100vw; border: 0; }
+  .authenticated-app .icon-button, .authenticated-app .theme-toggle, .composer-send { min-inline-size: 44px; min-block-size: 44px; }
+  .authenticated-app aside[aria-label="Primary sidebar"] nav button,
+  .authenticated-app aside[aria-label="Primary sidebar"] button[aria-label="New chat"] { min-block-size: 44px; }
+  .lab-tab { flex-direction: column; gap: 4px; padding-inline: 4px; font-size: 11px; }
+  .chat-composer [role="status"] { font-size: 11px; line-height: 1.4; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .context-pane, .chat-composer, .lab-tab { transition: none; transform: none; }
+}

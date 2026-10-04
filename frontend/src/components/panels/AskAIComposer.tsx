@@ -1,6 +1,5 @@
-import { ArrowUp, Mic, Settings, Square } from 'lucide-react';
+import { ArrowUp, Mic, Plus, Square } from 'lucide-react';
 import { useVoiceInput } from '../../hooks/useVoiceInput';
-import { useSessionStore } from '../../store/sessionStore';
 
 export type QueryStatus = 'READY' | 'PROCESSING' | 'ERROR';
 
@@ -9,6 +8,7 @@ interface AskAIComposerProps {
   setInput: (val: string) => void;
   onSubmit: () => void;
   onCancel?: () => void;
+  onAddDocument: () => void;
   status: QueryStatus;
   isCentered: boolean;
 }
@@ -18,10 +18,10 @@ export function AskAIComposer({
   setInput,
   onSubmit,
   onCancel,
+  onAddDocument,
   status,
   isCentered,
 }: AskAIComposerProps) {
-  const openVectorLab = useSessionStore((s) => s.openVectorLab);
 
   const { isRecording, isSupported, start, stop } = useVoiceInput((text) => {
     // Append transcribed text
@@ -51,7 +51,7 @@ export function AskAIComposer({
   // UX: Law of Common Region — All controls and status live in one grouped bounded box
   return (
     <div
-      className="w-full flex flex-col bg-[--bg-composer] border border-[--border-subtle] rounded-lg transition-colors focus-within:border-[--border-strong] focus-within:ring-1 focus-within:ring-[--border-subtle]"
+      className="chat-composer w-full flex flex-col"
     >
       <div className="px-5 pt-4">
         <textarea
@@ -74,7 +74,7 @@ export function AskAIComposer({
       </div>
       <div className="flex items-center justify-between gap-3 px-4 pb-4 pt-2">
         <div className="flex min-w-0 items-center gap-2">
-          <button type="button" className="icon-button h-7 w-7" title="Engine configuration in Vector Lab" aria-label="Open Vector Lab engine settings" onClick={() => openVectorLab('engine')}><Settings className="h-3.5 w-3.5" /></button>
+          <button type="button" className="icon-button" title="Add document to knowledge" aria-label="Add document to knowledge" onClick={onAddDocument}><Plus className="h-4 w-4" aria-hidden="true" /></button>
           <span role="status" className={`text-xs ${status === 'ERROR' ? 'text-error' : 'text-[--text-tertiary]'}`}>{status === 'PROCESSING' ? 'Generating answer…' : status === 'ERROR' ? 'Try again' : 'Answers from your documents'}</span>
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
@@ -98,7 +98,7 @@ export function AskAIComposer({
             type="button"
             onClick={() => status === 'PROCESSING' ? onCancel?.() : input.trim() && onSubmit()}
             disabled={status !== 'PROCESSING' && !input.trim()}
-            className="flex items-center justify-center w-8 h-8 bg-[--primary-action] text-[--text-inverse] rounded hover:bg-[--primary-action-hover] active:bg-[--primary-action-active] transition-colors disabled:opacity-30 disabled:cursor-not-allowed outline-none focus-visible:ring-2 focus-visible:ring-[--color-info] focus-visible:ring-offset-2 focus-visible:ring-offset-[--bg-elevated]"
+            className="composer-send flex items-center justify-center w-8 h-8 bg-[--primary-action] text-[--primary-action-text] rounded-md hover:bg-[--primary-action-hover] active:bg-[--primary-action-active] transition-colors disabled:opacity-30 disabled:cursor-not-allowed outline-none focus-visible:ring-2 focus-visible:ring-[--color-info] focus-visible:ring-offset-2 focus-visible:ring-offset-[--bg-elevated]"
             title={status === 'PROCESSING' ? 'Stop answer' : 'Send message'}
             aria-label={status === 'PROCESSING' ? 'Stop answer' : 'Send message'}
           >

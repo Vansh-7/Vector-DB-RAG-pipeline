@@ -42,7 +42,13 @@ interface StreamingTurn {
   sources: RAGSource[];
 }
 
-export function AskAIPanel({ onProcessingChange, needsKnowledge }: { onProcessingChange?: (processing: boolean) => void; needsKnowledge: boolean }) {
+export function AskAIPanel({ onProcessingChange, needsKnowledge, active, documentPaneOpen, onAddDocument }: {
+  onProcessingChange?: (processing: boolean) => void;
+  needsKnowledge: boolean;
+  active: boolean;
+  documentPaneOpen: boolean;
+  onAddDocument: () => void;
+}) {
   const userId = useAuthStore((s) => s.user?.id);
   const conversationId = useSessionStore((s) => s.activeConversationId);
   const setConversationId = useSessionStore((s) => s.setActiveConversationId);
@@ -57,15 +63,19 @@ export function AskAIPanel({ onProcessingChange, needsKnowledge }: { onProcessin
   const [stream, setStream] = useState<StreamingTurn | null>(null);
   const [requestError, setRequestError] = useState<string | null>(null);
   const [inspectedSources, setInspectedSources] = useState<RAGSource[] | null>(null);
+  const [sourcesOpen, setSourcesOpen] = useState(false);
   const inspectorTriggerRef = useRef<HTMLButtonElement | null>(null);
   const closeInspector = useCallback((restoreFocus = true) => {
-    setInspectedSources(null);
+    setSourcesOpen(false);
     if (restoreFocus) requestAnimationFrame(() => inspectorTriggerRef.current?.focus());
   }, []);
   const openInspector = useCallback((sources: RAGSource[], trigger: HTMLButtonElement) => {
+    if (documentPaneOpen) return;
     inspectorTriggerRef.current = trigger;
     setInspectedSources(sources);
-  }, []);
+    setSourcesOpen(true);
+  }, [documentPaneOpen]);
+  const addDocument = () => { closeInspector(false); onAddDocument(); };
   const isProcessing = stream !== null;
   const messagesQuery = useConversationMessages(conversationId, stream === null);
   const conversationsQuery = useConversations();
@@ -79,6 +89,7 @@ export function AskAIPanel({ onProcessingChange, needsKnowledge }: { onProcessin
     if (previousConversationRef.current !== conversationId && !streamGuard.current) {
       setRequestError(null);
       setInspectedSources(null);
+      setSourcesOpen(false);
     }
     previousConversationRef.current = conversationId;
   }, [conversationId]);
@@ -104,6 +115,7 @@ export function AskAIPanel({ onProcessingChange, needsKnowledge }: { onProcessin
     setInput("");
     setRequestError(null);
     setInspectedSources(null);
+    setSourcesOpen(false);
     setHighlighted([]);
     setQueryPoint(null);
     setStream({ base: serverMessages, question, answer: "", sources: [] });
@@ -165,7 +177,8 @@ export function AskAIPanel({ onProcessingChange, needsKnowledge }: { onProcessin
   const showEmpty = !loading && !failed && messages.length === 0;
 
   return (
-    <div className="relative flex h-full min-w-0 flex-col overflow-hidden">
+    <div className="relative flex h-full min-w-0 overflow-hidden">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
       <WorkspaceHeader view="chat" title={conversationId !== null ? conversationTitle ?? "Conversation" : undefined} description={null} />
       {requestError && <div role="alert" className="flex items-start gap-2 border-b border-error/20 bg-error/5 px-4 py-3 text-xs text-error"><AlertCircle className="mt-0.5 w-4 h-4 shrink-0" /><span className="min-w-0 break-words">{requestError}</span><button type="button" onClick={() => { setRequestError(null); if (conversationId !== null) void messagesQuery.refetch(); }} className="ml-auto shrink-0 underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-error">Dismiss / refresh</button></div>}
       {loading ? <div role="status" aria-label="Loading conversation" className="flex flex-1 items-center justify-center gap-2 text-xs text-[--text-secondary]"><Loader2 className="w-4 h-4 animate-spin" /> Loading conversation</div>
@@ -174,7 +187,7 @@ export function AskAIPanel({ onProcessingChange, needsKnowledge }: { onProcessin
             <BrandEmblem className="mb-3 h-14 w-14" />
             <h2 className="mb-2.5 text-[28px] font-semibold tracking-[-0.035em] text-[--text-primary]">Ask your knowledge</h2>
             <p className="mb-8 max-w-[390px] text-center text-body leading-relaxed text-[--text-secondary]">Ask a question. Answers include passages from your documents.</p>
-            <div className="w-full max-w-[760px]"><AskAIComposer input={input} setInput={setInput} onSubmit={handleSubmit} status="READY" isCentered /><AskAIPromptChips onSelect={setInput} /></div>
+            <div className="w-full max-w-[760px]"><AskAIComposer input={input} setInput={setInput} onSubmit={handleSubmit} onAddDocument={addDocument} status="READY" isCentered /><AskAIPromptChips onSelect={setInput} /></div>
             {needsKnowledge && <p className="mt-5 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-xs text-[--text-secondary]">Add a document before asking a question.<button type="button" onClick={() => setActiveView("documents")} className="inline-flex items-center gap-1 rounded text-[--text-primary] underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--color-info]">Add a document <ArrowUpRight className="h-3 w-3" /></button></p>}
           </div>
             : <div className="flex min-h-0 flex-1 flex-col">
@@ -184,9 +197,10 @@ export function AskAIPanel({ onProcessingChange, needsKnowledge }: { onProcessin
                   <div ref={messagesEndRef} className="h-2" />
                 </div>
               </div>
-              <div className="shrink-0 bg-base px-5 pt-2 pb-5 sm:px-7"><div className="mx-auto max-w-[760px]"><AskAIComposer input={input} setInput={setInput} onSubmit={handleSubmit} onCancel={() => abortRef.current?.abort()} status={stream ? "PROCESSING" : "READY"} isCentered={false} /></div></div>
+              <div className="shrink-0 bg-base px-5 pt-2 pb-5 sm:px-7"><div className="mx-auto max-w-[760px]"><AskAIComposer input={input} setInput={setInput} onSubmit={handleSubmit} onAddDocument={addDocument} onCancel={() => abortRef.current?.abort()} status={stream ? "PROCESSING" : "READY"} isCentered={false} /></div></div>
             </div>}
-      {inspectedSources && <SourcesInspector sources={inspectedSources} onClose={closeInspector} />}
+      </div>
+      {inspectedSources && <SourcesInspector sources={inspectedSources} onClose={closeInspector} active={sourcesOpen && active && !documentPaneOpen} />}
     </div>
   );
 }

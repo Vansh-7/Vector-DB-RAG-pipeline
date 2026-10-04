@@ -24,7 +24,7 @@ export function PrimarySidebar({ onNewChat, onSelectConversation, chatBusy }: { 
 
   return (
     <aside aria-label="Primary sidebar" className={`${collapsed ? "w-16" : "w-16 md:w-[232px]"} shrink-0 bg-panel border-r border-[--border-subtle] flex flex-col min-h-0`}>
-      <div className="px-3 pt-4 pb-3 space-y-5">
+      <div className="px-3 pt-4 pb-3 space-y-4">
         <div className={`flex ${collapsed ? "flex-col gap-2" : "justify-center md:justify-between"} items-center min-h-8`}>
           <div className="flex items-center gap-2" aria-label="Neuebit">
             <BrandMark />
@@ -39,7 +39,7 @@ export function PrimarySidebar({ onNewChat, onSelectConversation, chatBusy }: { 
         </div>
         <Tooltip content={chatBusy ? "Wait for the current answer to finish" : "New chat"}>
           <button type="button" onClick={onNewChat} disabled={chatBusy} aria-label="New chat"
-            className="flex items-center justify-center gap-2 w-full h-[34px] rounded border border-[--border-default] bg-elevated text-[--text-primary] text-sm font-medium hover:bg-hover hover:border-[--border-strong] transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--color-info]">
+            className="flex items-center justify-center gap-2 w-full h-[34px] rounded-md border border-[--border-default] text-[--text-primary] text-sm font-medium hover:bg-hover hover:border-[--border-strong] transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--color-info]">
             <Plus className="w-4 h-4 shrink-0" /><span className={labelClass}>New chat</span>
           </button>
         </Tooltip>

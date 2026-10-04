@@ -36,7 +36,9 @@ Use a faintly framed Documents panel and individual Search/source rows where sel
 
 ## 5. Layout
 
-The sidebar is 232px expanded and 64px collapsed. Recent chats stay visible in the expanded sidebar across all four workspaces. Chat content/composer cap at 760px. The Vector Lab inspector is 240px on wide desktops and an existing contextual overlay on smaller laptops. Give visualization space back to the canvas; group axis labels and zoom actions in one quiet floating surface. The collapsed terminal is 32px high.
+The sidebar is 232px expanded and 64px collapsed. Recent chats stay visible in the expanded sidebar across all four workspaces. Chat content/composer cap at 760px. Answer Sources and Add Document use one 380px ContextPane frame. It docks when its actual host is at least 1020px wide, retaining 640px for the task; narrower hosts use a focus-contained dialog, full width on mobile. Desktop panes use complementary semantics and never dim or shadow the workspace. One shell-owned ingestion component serves Documents and Chat's “Add document to knowledge” action. File choice survives pane dismissal, navigation, and docking changes; nothing becomes a per-message attachment.
+
+Authenticated-only tokens in `src/styles/application.css` layer warm canvas, neutral navigation, and white work surfaces in light mode; charcoal canvas, nav, and pane surfaces in dark mode. App primary actions use Neuebit blue and `--primary-action-text`. Public landing and auth tokens remain unchanged. Both app themes share all dimensions and layout rules. The Vector Lab inspector remains 240px on wide desktops. Lab actions belong beside its title, followed by four equal-width tabs and telemetry relevant to the chosen area; never invent LLM or persistence health. The collapsed terminal is 32px high.
 
 Use min-width: 0, bounded content, filename truncation with full-name reveal, wrapping excerpts, and scrollable inspectors. Preserve the desktop/laptop priority and avoid introducing routing or additional feature architecture.
 

@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { FilePlus2, FolderOpen, Plus, RefreshCw, Upload } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { deleteDocument } from "../../api/documents";
@@ -10,21 +10,19 @@ import type { DocumentRecord } from "../../types/document";
 import type { IngestResponse } from "../../types/ingest";
 import { Button } from "../ui/Button";
 import { ConfirmDialog } from "../ui/ConfirmDialog";
-import { AddDocumentDrawer } from "./AddDocumentDrawer";
 import { DocumentList } from "./DocumentList";
 import { WorkspaceHeader } from "../layout/WorkspaceHeader";
 
-export function DocumentsView() {
+export function DocumentsView({ onAddDocument, added, onClearAdded }: {
+  onAddDocument: (mode?: "file" | "manual") => void;
+  added: IngestResponse | null;
+  onClearAdded: () => void;
+}) {
   const userId = useAuthStore((s) => s.user?.id);
   const setActiveView = useSessionStore((s) => s.setActiveView);
-  const setIngestMode = useSessionStore((s) => s.setIngestMode);
   const { data: documents = [], isPending, isError, error, refetch } = useDocuments(true);
   const queryClient = useQueryClient();
-  const addButtonRef = useRef<HTMLButtonElement>(null);
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [processing, setProcessing] = useState(false);
   const [selectedForDelete, setSelectedForDelete] = useState<DocumentRecord | null>(null);
-  const [added, setAdded] = useState<IngestResponse | null>(null);
   const [deletedName, setDeletedName] = useState<string | null>(null);
 
   const deleteMutation = useMutation({
@@ -36,29 +34,21 @@ export function DocumentsView() {
       }
       useCanvasStore.getState().setHighlighted([]);
       useCanvasStore.getState().setQueryPoint(null);
-      setAdded(null);
+      onClearAdded();
       setDeletedName(documents.find((document) => document.id === id)?.name ?? "Document");
       setSelectedForDelete(null);
     },
   });
 
   const openDrawer = (mode?: "file" | "manual") => {
-    if (mode) setIngestMode(mode);
-    setAdded(null);
-    setDrawerOpen(true);
-  };
-
-  const handleAdded = (result: IngestResponse) => {
-    setProcessing(false);
-    setDrawerOpen(false);
     setDeletedName(null);
-    setAdded(result);
+    onAddDocument(mode);
   };
 
   return (
     <div className="w-full">
       <WorkspaceHeader view="documents">
-        <Button ref={addButtonRef} type="button" onClick={() => openDrawer()} className="h-9 shrink-0">
+        <Button type="button" onClick={() => openDrawer()} className="h-9 shrink-0">
           <Plus className="w-4 h-4" aria-hidden="true" /> Add document
         </Button>
       </WorkspaceHeader>
@@ -110,8 +100,6 @@ export function DocumentsView() {
       )}
       </div>
 
-      <AddDocumentDrawer open={drawerOpen} onOpenChange={setDrawerOpen} onSuccess={handleAdded}
-        processing={processing} onProcessingChange={setProcessing} returnFocusRef={addButtonRef} />
       <ConfirmDialog open={selectedForDelete !== null} onOpenChange={(open) => { if (!open) setSelectedForDelete(null); }}
         title="Delete document?" description={`Delete “${selectedForDelete?.name ?? "this document"}” and all of its indexed chunks? This cannot be undone.`}
         confirmLabel="Delete document" onConfirm={() => { if (selectedForDelete && !deleteMutation.isPending) deleteMutation.mutate(selectedForDelete.id); }}

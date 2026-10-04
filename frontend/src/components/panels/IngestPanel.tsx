@@ -132,7 +132,6 @@ export function IngestPanel({ onSuccess, onProcessingChange }: {
 
   return (
     <div className="p-4 space-y-4 flex flex-col h-full">
-      <div className="text-xs text-[--text-secondary] mb-1">Upload a document to automatically chunk and embed its contents.</div>
 
       {/* Mode toggle */}
       <div className="flex bg-base rounded-md p-0.5 border border-[--border-subtle] shrink-0">
@@ -183,7 +182,7 @@ export function IngestPanel({ onSuccess, onProcessingChange }: {
               onClick={() => { if (!mutation.isPending) fileInputRef.current?.click(); }}
               onKeyDown={(e) => { if (!mutation.isPending && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); fileInputRef.current?.click(); } }}
               role="button" tabIndex={mutation.isPending ? -1 : 0} aria-label="Choose a document file" aria-disabled={mutation.isPending}
-              className={`border border-dashed rounded-md flex-1 min-h-[180px] flex flex-col items-center justify-center gap-3 transition-colors cursor-pointer focus-visible:outline-none focus-visible:border-[--color-info] ${
+              className={`border border-dashed rounded-md h-[168px] shrink-0 flex flex-col items-center justify-center gap-3 transition-colors cursor-pointer focus-visible:outline-none focus-visible:border-[--color-info] ${
                 isDragOver
                   ? "border-success bg-success/5"
                   : "border-[--border-default] hover:border-[--border-strong]"
@@ -224,7 +223,7 @@ export function IngestPanel({ onSuccess, onProcessingChange }: {
                 className="field h-10 px-3 text-sm"
               />
             </div>
-            <div className="flex-1 flex flex-col min-h-[160px]">
+            <div className="flex-1 flex flex-col min-h-[220px]">
               <label htmlFor="document-content" className="text-xs text-[--text-secondary] block mb-1.5">
                 Document content
               </label>
