@@ -1,7 +1,7 @@
 {
-  "provenance": "Actual current authenticated Neuebit UI with authored sample API fixtures. Indexing cadence, streaming cadence, coordinates, scores and values are illustrative; no live backend measurements or public runtime API requests.",
-  "capturedAt": "2026-10-05T15:44:39.768Z",
-  "sourceFingerprint": "dacb580986983c839286e6cdc35bcb0313ccca1fdf825e9e0760834dd143c0a7",
+  "provenance": "Actual current authenticated NeueBit UI with authored sample API fixtures. Indexing cadence, streaming cadence, coordinates, scores and values are illustrative; no live backend measurements or public runtime API requests.",
+  "capturedAt": "2026-10-05T19:59:59.934Z",
+  "sourceFingerprint": "e7cd5a77982c009a5daf6b8c870e3b84192abd5d5628b527ff441b080dba1dde",
   "fingerprintAlgorithm": "sha256 of frontend/src excluding generated heroFilmTimings.ts, plus the three film scripts",
   "sequence": [
     "Documents",
@@ -15,7 +15,7 @@
   "assets": [
     {
       "file": "neuebit-desktop-light.mp4",
-      "bytes": 413581,
+      "bytes": 387946,
       "durationSeconds": 16,
       "width": 1280,
       "height": 722,
@@ -69,19 +69,19 @@
         },
         {
           "scene": "search",
-          "sourceStartSeconds": 4.166666666666667,
+          "sourceStartSeconds": 4.125,
           "sourceEndSeconds": 7,
           "outputStartSeconds": 4
         },
         {
           "scene": "chat",
-          "sourceStartSeconds": 7.166666666666667,
+          "sourceStartSeconds": 7.125,
           "sourceEndSeconds": 9.5,
           "outputStartSeconds": 7
         },
         {
           "scene": "sources",
-          "sourceStartSeconds": 10.25,
+          "sourceStartSeconds": 10.041666666666666,
           "sourceEndSeconds": 11.5,
           "outputStartSeconds": 9.5
         },
@@ -94,19 +94,19 @@
       ],
       "poster": {
         "file": "neuebit-desktop-light.webp",
-        "bytes": 72600,
+        "bytes": 72692,
         "width": 1280,
         "height": 722,
         "timeSeconds": 0
       },
       "validation": {
         "posterMatchesFirstFrame": true,
-        "loopMeanPixelError": 0.1971,
+        "loopMeanPixelError": 0.1849,
         "faststart": true,
         "nativeCaptureResolution": true,
-        "openingTextEdgeRetention": 1.0175,
+        "openingTextEdgeRetention": 1.0197,
         "decodedFrames": 384,
-        "minimumFrameLuma": 243.81
+        "minimumFrameLuma": 243.75
       },
       "capture": {
         "sidebarWidth": 256,
@@ -114,43 +114,43 @@
           {
             "name": "opening",
             "scene": "documents",
-            "capturedSeconds": 0.101,
+            "capturedSeconds": 0.087,
             "sidebarWidth": 256
           },
           {
             "name": "ready",
             "scene": "documents",
-            "capturedSeconds": 3.616,
+            "capturedSeconds": 2.004,
             "sidebarWidth": 256
           },
           {
             "name": "search-results",
             "scene": "search",
-            "capturedSeconds": 4.916,
+            "capturedSeconds": 4.81,
             "sidebarWidth": 256
           },
           {
             "name": "search-selected",
             "scene": "search",
-            "capturedSeconds": 5.107,
+            "capturedSeconds": 4.946,
             "sidebarWidth": 256
           },
           {
             "name": "streaming",
             "scene": "chat",
-            "capturedSeconds": 8.515,
+            "capturedSeconds": 8.351,
             "sidebarWidth": 256
           },
           {
             "name": "sources",
             "scene": "sources",
-            "capturedSeconds": 10.267,
+            "capturedSeconds": 10.062,
             "sidebarWidth": 256
           },
           {
             "name": "vectors",
             "scene": "vectors",
-            "capturedSeconds": 12.384,
+            "capturedSeconds": 12.381,
             "sidebarWidth": 256
           }
         ],
@@ -180,7 +180,7 @@
     },
     {
       "file": "neuebit-mobile-light.mp4",
-      "bytes": 253312,
+      "bytes": 245313,
       "durationSeconds": 16,
       "width": 390,
       "height": 722,
@@ -234,44 +234,44 @@
         },
         {
           "scene": "search",
-          "sourceStartSeconds": 4.166666666666667,
+          "sourceStartSeconds": 4.125,
           "sourceEndSeconds": 7,
           "outputStartSeconds": 4
         },
         {
           "scene": "chat",
-          "sourceStartSeconds": 7.166666666666667,
+          "sourceStartSeconds": 7.125,
           "sourceEndSeconds": 9.5,
           "outputStartSeconds": 7
         },
         {
           "scene": "sources",
-          "sourceStartSeconds": 10.5,
+          "sourceStartSeconds": 10.041666666666666,
           "sourceEndSeconds": 11.5,
           "outputStartSeconds": 9.5
         },
         {
           "scene": "vectors",
-          "sourceStartSeconds": 12.541666666666666,
+          "sourceStartSeconds": 12.291666666666666,
           "sourceEndSeconds": 14.5,
           "outputStartSeconds": 11.5
         }
       ],
       "poster": {
         "file": "neuebit-mobile-light.webp",
-        "bytes": 43644,
+        "bytes": 43664,
         "width": 390,
         "height": 722,
         "timeSeconds": 0
       },
       "validation": {
         "posterMatchesFirstFrame": true,
-        "loopMeanPixelError": 0.2278,
+        "loopMeanPixelError": 0.5193,
         "faststart": true,
         "nativeCaptureResolution": true,
-        "openingTextEdgeRetention": 1.0216,
+        "openingTextEdgeRetention": 1.0213,
         "decodedFrames": 384,
-        "minimumFrameLuma": 235.79
+        "minimumFrameLuma": 235.76
       },
       "capture": {
         "sidebarWidth": 56,
@@ -279,49 +279,49 @@
           {
             "name": "opening",
             "scene": "documents",
-            "capturedSeconds": 0.112,
+            "capturedSeconds": 0.106,
             "sidebarWidth": 56
           },
           {
             "name": "ready",
             "scene": "documents",
-            "capturedSeconds": 3.622,
+            "capturedSeconds": 3.584,
             "sidebarWidth": 56
           },
           {
             "name": "search-results",
             "scene": "search",
-            "capturedSeconds": 4.855,
+            "capturedSeconds": 4.899,
             "sidebarWidth": 56
           },
           {
             "name": "search-selected",
             "scene": "search",
-            "capturedSeconds": 5.022,
+            "capturedSeconds": 5.649,
             "sidebarWidth": 56
           },
           {
             "name": "streaming",
             "scene": "chat",
-            "capturedSeconds": 8.664,
+            "capturedSeconds": 8.349,
             "sidebarWidth": 56
           },
           {
             "name": "sources",
             "scene": "sources",
-            "capturedSeconds": 10.489,
+            "capturedSeconds": 10.066,
             "sidebarWidth": 56
           },
           {
             "name": "vectors",
             "scene": "vectors",
-            "capturedSeconds": 12.547,
+            "capturedSeconds": 12.277,
             "sidebarWidth": 56
           },
           {
             "name": "vector-graph",
             "scene": "vectors",
-            "capturedSeconds": 13.125,
+            "capturedSeconds": 13.062,
             "sidebarWidth": 56
           }
         ],
@@ -347,7 +347,7 @@
     },
     {
       "file": "neuebit-desktop-dark.mp4",
-      "bytes": 419860,
+      "bytes": 371639,
       "durationSeconds": 16,
       "width": 1280,
       "height": 722,
@@ -401,44 +401,44 @@
         },
         {
           "scene": "search",
-          "sourceStartSeconds": 4.166666666666667,
+          "sourceStartSeconds": 4.208333333333333,
           "sourceEndSeconds": 7,
           "outputStartSeconds": 4
         },
         {
           "scene": "chat",
-          "sourceStartSeconds": 7.166666666666667,
+          "sourceStartSeconds": 7.125,
           "sourceEndSeconds": 9.5,
           "outputStartSeconds": 7
         },
         {
           "scene": "sources",
-          "sourceStartSeconds": 10.208333333333334,
+          "sourceStartSeconds": 10.083333333333334,
           "sourceEndSeconds": 11.5,
           "outputStartSeconds": 9.5
         },
         {
           "scene": "vectors",
-          "sourceStartSeconds": 12.333333333333334,
+          "sourceStartSeconds": 12.375,
           "sourceEndSeconds": 14.5,
           "outputStartSeconds": 11.5
         }
       ],
       "poster": {
         "file": "neuebit-desktop-dark.webp",
-        "bytes": 70914,
+        "bytes": 70818,
         "width": 1280,
         "height": 722,
         "timeSeconds": 0
       },
       "validation": {
         "posterMatchesFirstFrame": true,
-        "loopMeanPixelError": 0.1934,
+        "loopMeanPixelError": 0.2054,
         "faststart": true,
         "nativeCaptureResolution": true,
-        "openingTextEdgeRetention": 1.0228,
+        "openingTextEdgeRetention": 1.0233,
         "decodedFrames": 384,
-        "minimumFrameLuma": 8.56
+        "minimumFrameLuma": 8.55
       },
       "capture": {
         "sidebarWidth": 256,
@@ -446,43 +446,43 @@
           {
             "name": "opening",
             "scene": "documents",
-            "capturedSeconds": 0.092,
+            "capturedSeconds": 0.09,
             "sidebarWidth": 256
           },
           {
             "name": "ready",
             "scene": "documents",
-            "capturedSeconds": 2.042,
+            "capturedSeconds": 2.019,
             "sidebarWidth": 256
           },
           {
             "name": "search-results",
             "scene": "search",
-            "capturedSeconds": 4.851,
+            "capturedSeconds": 4.932,
             "sidebarWidth": 256
           },
           {
             "name": "search-selected",
             "scene": "search",
-            "capturedSeconds": 4.997,
+            "capturedSeconds": 5.101,
             "sidebarWidth": 256
           },
           {
             "name": "streaming",
             "scene": "chat",
-            "capturedSeconds": 8.447,
+            "capturedSeconds": 8.342,
             "sidebarWidth": 256
           },
           {
             "name": "sources",
             "scene": "sources",
-            "capturedSeconds": 10.235,
+            "capturedSeconds": 10.091,
             "sidebarWidth": 256
           },
           {
             "name": "vectors",
             "scene": "vectors",
-            "capturedSeconds": 12.344,
+            "capturedSeconds": 12.368,
             "sidebarWidth": 256
           }
         ],
@@ -512,7 +512,7 @@
     },
     {
       "file": "neuebit-mobile-dark.mp4",
-      "bytes": 259915,
+      "bytes": 268052,
       "durationSeconds": 16,
       "width": 390,
       "height": 722,
@@ -572,38 +572,38 @@
         },
         {
           "scene": "chat",
-          "sourceStartSeconds": 7.166666666666667,
+          "sourceStartSeconds": 7.125,
           "sourceEndSeconds": 9.5,
           "outputStartSeconds": 7
         },
         {
           "scene": "sources",
-          "sourceStartSeconds": 10.083333333333334,
+          "sourceStartSeconds": 10,
           "sourceEndSeconds": 11.5,
           "outputStartSeconds": 9.5
         },
         {
           "scene": "vectors",
-          "sourceStartSeconds": 12.333333333333334,
+          "sourceStartSeconds": 12.375,
           "sourceEndSeconds": 14.5,
           "outputStartSeconds": 11.5
         }
       ],
       "poster": {
         "file": "neuebit-mobile-dark.webp",
-        "bytes": 41824,
+        "bytes": 41894,
         "width": 390,
         "height": 722,
         "timeSeconds": 0
       },
       "validation": {
         "posterMatchesFirstFrame": true,
-        "loopMeanPixelError": 0.262,
+        "loopMeanPixelError": 0.2345,
         "faststart": true,
         "nativeCaptureResolution": true,
-        "openingTextEdgeRetention": 1.0212,
+        "openingTextEdgeRetention": 1.0239,
         "decodedFrames": 384,
-        "minimumFrameLuma": 11.28
+        "minimumFrameLuma": 11.32
       },
       "capture": {
         "sidebarWidth": 56,
@@ -611,49 +611,49 @@
           {
             "name": "opening",
             "scene": "documents",
-            "capturedSeconds": 0.1,
+            "capturedSeconds": 0.099,
             "sidebarWidth": 56
           },
           {
             "name": "ready",
             "scene": "documents",
-            "capturedSeconds": 3.52,
+            "capturedSeconds": 2.016,
             "sidebarWidth": 56
           },
           {
             "name": "search-results",
             "scene": "search",
-            "capturedSeconds": 4.85,
+            "capturedSeconds": 4.827,
             "sidebarWidth": 56
           },
           {
             "name": "search-selected",
             "scene": "search",
-            "capturedSeconds": 5.046,
+            "capturedSeconds": 5.013,
             "sidebarWidth": 56
           },
           {
             "name": "streaming",
             "scene": "chat",
-            "capturedSeconds": 8.343,
+            "capturedSeconds": 8.337,
             "sidebarWidth": 56
           },
           {
             "name": "sources",
             "scene": "sources",
-            "capturedSeconds": 10.074,
+            "capturedSeconds": 10.012,
             "sidebarWidth": 56
           },
           {
             "name": "vectors",
             "scene": "vectors",
-            "capturedSeconds": 12.335,
+            "capturedSeconds": 12.395,
             "sidebarWidth": 56
           },
           {
             "name": "vector-graph",
             "scene": "vectors",
-            "capturedSeconds": 13.1,
+            "capturedSeconds": 13.111,
             "sidebarWidth": 56
           }
         ],
