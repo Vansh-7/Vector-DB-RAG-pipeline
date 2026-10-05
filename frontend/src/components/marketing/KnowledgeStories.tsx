@@ -58,7 +58,7 @@ function SourceStory({ reduced }: { reduced: boolean }) {
   return <div ref={root} className="job-interface job-answer-interface" data-story-phase={clock.phase} onPointerDownCapture={clock.cancel} onKeyDownCapture={clock.cancel}>
     <div className="job-interface-title"><span>Chat + Sources</span><span className="job-interface-detail">A saved answer</span></div>
     <p className="job-question" style={{ opacity: phase > 0 ? 1 : .25 }}>{prompt.question}</p>
-    <p className="job-answer" style={{ opacity: phase >= 2 ? 1 : .25 }}><span data-supported={show && selected === 0}>Neuebit embeds your question and finds related passages in your documents.<sup>1</sup></span>{" "}<span data-supported={show && selected === 1}>It reranks the matches and passes that context to the language model.<sup>2</sup></span></p>
+    <p className="job-answer" style={{ opacity: phase >= 2 ? 1 : .25 }}><span data-supported={show && selected === 0}>NeueBit embeds your question and finds related passages in your documents.<sup>1</sup></span>{" "}<span data-supported={show && selected === 1}>It reranks the matches and passes that context to the language model.<sup>2</sup></span></p>
     <button className="job-source-disclosure demo-button" type="button" aria-expanded={show} aria-controls={id} onClick={() => setOpened(!show)}><FileText size={14} aria-hidden="true" />2 sources</button>
     <div id={id} className="job-source-detail" style={{ visibility: show ? "visible" : "hidden" }}>
       <div className="job-source-controls" aria-label="Inspect an example source">{prompt.sourceIds.map((sourceId, index) => <button key={sourceId} type="button" aria-pressed={selected === index} onClick={() => setSelected(index)}><FileText size={14} aria-hidden="true" />Source {index + 1}</button>)}</div>
@@ -98,7 +98,7 @@ export default function KnowledgeStories() {
       </m.article>
     </section>
     <section className="capability-discovery marketing-container" aria-labelledby="discovery-heading">
-      <h2 id="discovery-heading">See what Neuebit can do</h2>
+      <h2 id="discovery-heading">See what NeueBit can do</h2>
       <div className="capability-discovery-links">{links.map(({ motif, capability, label, title, target }) => <a key={label} data-capability={capability} href={`#${target}`} onClick={() => document.getElementById(target)?.focus({ preventScroll: true })}>
         <CapabilityIllustration motif={motif} />
         <span className="capability-discovery-title">{title[0]}{" "}<span className="capability-discovery-title-tail">{title[1]}{" "}<ArrowRight size={19} aria-hidden="true" /></span></span>

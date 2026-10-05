@@ -12,7 +12,7 @@ export const demoDocuments = [
 ];
 
 const passages: [string, Category, string][] = [
-  ["architecture", "TECH", "Neuebit is an AI knowledge workspace backed by a custom vector database. Chat, Documents, Search, and Vector Lab share the same underlying knowledge."],
+  ["architecture", "TECH", "NeueBit is an AI knowledge workspace backed by a custom vector database. Chat, Documents, Search, and Vector Lab share the same underlying knowledge."],
   ["architecture", "TECH", "PostgreSQL stores users, document metadata, conversations, and messages. The vector engine handles retrieval separately."],
   ["architecture", "TECH", "The shared vector index contains ownership metadata. Retrieval filters candidates to the authenticated user and searchable documents before returning context."],
   ["architecture", "TECH", "A stored session is verified before the authenticated workspace opens. Document and conversation access is checked against the current user."],
@@ -44,9 +44,9 @@ export const demoChunks: DemoChunk[] = passages.map(([documentId, category, text
 }));
 
 export const demoPrompts = [
-  { id: "retrieval", question: "How does retrieval work?", answer: "Neuebit embeds your question and finds related passages in your documents. It filters the context to your knowledge, reranks the matches, and passes that context to the language model. You can inspect the sources alongside the answer.", sourceIds: ["sample-16", "sample-18"], query: [0.96, 0.15, 0.22] },
+  { id: "retrieval", question: "How does retrieval work?", answer: "NeueBit embeds your question and finds related passages in your documents. It filters the context to your knowledge, reranks the matches, and passes that context to the language model. You can inspect the sources alongside the answer.", sourceIds: ["sample-16", "sample-18"], query: [0.96, 0.15, 0.22] },
   { id: "isolation", question: "How is tenant isolation enforced?", answer: "The vector index is shared, but retrieved candidates are filtered by the current user's ownership and searchable documents before they become answer context. Document and conversation access also belongs to the authenticated user.", sourceIds: ["sample-3", "sample-17"], query: [0.18, 0.98, 0.1] },
-  { id: "hnsw", question: "Why use HNSW?", answer: "HNSW explores a layered graph of nearby vectors to find approximate neighbors without scanning every item. Neuebit also implements KD-tree and Exact search, and exposes the engine in Vector Lab for inspection.", sourceIds: ["sample-7", "sample-8"], query: [0.2, 0.15, 0.96] },
+  { id: "hnsw", question: "Why use HNSW?", answer: "HNSW explores a layered graph of nearby vectors to find approximate neighbors without scanning every item. NeueBit also implements KD-tree and Exact search, and exposes the engine in Vector Lab for inspection.", sourceIds: ["sample-7", "sample-8"], query: [0.2, 0.15, 0.96] },
 ] as const;
 
 export function cosineDistance(chunk: DemoChunk, query: readonly number[] = demoPrompts[0].query) {

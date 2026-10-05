@@ -5,7 +5,7 @@ test("the required narrative has distinct sections and no repeated product tabs"
   await page.emulateMedia({ reducedMotion: "reduce" }); const { calls, scripts } = await stubApi(page);
   await page.goto("/"); await expect(page.locator("#architecture")).toBeAttached();
   const sequence = await page.locator("main > section, main > .marketing-engineering > section, .landing-close > section").evaluateAll((nodes) => nodes.map((node) => node.getAttribute("aria-labelledby") || node.getAttribute("aria-label")));
-  expect(sequence).toEqual(["hero-heading", "Neuebit capabilities", "knowledge-heading", "discovery-heading", "product-heading", "vector-reveal-heading", "architecture-heading", "final-cta-heading"]);
+  expect(sequence).toEqual(["hero-heading", "NeueBit capabilities", "knowledge-heading", "discovery-heading", "product-heading", "vector-reveal-heading", "architecture-heading", "final-cta-heading"]);
   await expect(page.locator(".marketing-hero").getByRole("tab")).toHaveCount(0);
   await expect(page.getByRole("tab")).toHaveCount(0);
   await expect(page.locator(".capability-discovery-links a")).toHaveCount(4);

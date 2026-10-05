@@ -48,7 +48,7 @@ export default function EngineeringSection() {
                 <h2 id="vector-reveal-heading">There’s an engine underneath.</h2>
               </m.div>
               <m.div className="vector-reveal-copy" {...reveal()}>
-                <p>Neuebit runs on a custom vector database. Vector Lab brings it into view: explore a two-dimensional projection, inspect individual passages, and examine the engine behind retrieval.</p>
+                <p>NeueBit runs on a custom vector database. Vector Lab brings it into view: explore a two-dimensional projection, inspect individual passages, and examine the engine behind retrieval.</p>
                 <div className="engineering-actions">
                   <a href="#architecture" className="marketing-text-link" onClick={() => document.getElementById("architecture")?.focus({ preventScroll: true })}>
                     See the architecture<ArrowRight size={16} aria-hidden="true" />
@@ -85,7 +85,7 @@ export default function EngineeringSection() {
         <section id="architecture" tabIndex={-1} className="architecture-section marketing-section" aria-labelledby="architecture-heading">
           <div className="marketing-container">
             <m.div className="architecture-heading" {...reveal()}>
-              <h2 id="architecture-heading">Follow one question through Neuebit.</h2>
+              <h2 id="architecture-heading">Follow one question through NeueBit.</h2>
               <p>From a question to a vector, from retrieved context to a grounded answer. Inspect the decisions along the way.</p>
             </m.div>
             <ArchitecturePipeline />
@@ -95,7 +95,7 @@ export default function EngineeringSection() {
             </div>
             <m.dl className="engineering-storage" {...reveal()} aria-label="Persistence behind the workspace">
               <div><dt>WAL + snapshots</dt><dd>Vector operations are logged before they change the index. On startup, a saved snapshot is loaded and the log is replayed.</dd></div>
-              <div><dt>PostgreSQL</dt><dd>Users, document metadata, and conversation history live in PostgreSQL. Vectors live in Neuebit’s custom index.</dd></div>
+              <div><dt>PostgreSQL</dt><dd>Users, document metadata, and conversation history live in PostgreSQL. Vectors live in NeueBit’s custom index.</dd></div>
             </m.dl>
           </div>
         </section>

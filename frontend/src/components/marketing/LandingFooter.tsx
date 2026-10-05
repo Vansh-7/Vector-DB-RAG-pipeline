@@ -40,7 +40,7 @@ export function LandingFooter({ accessTo, accessLabel }: { accessTo: string; acc
       <div className="marketing-container">
         <div className="marketing-footer-content">
           <div className="marketing-footer-brand">
-            <a href="#hero-heading" className="marketing-brand" aria-label="Neuebit, back to top" onClick={() => focus("hero-heading")}><BrandMark /><span>Neuebit</span></a>
+            <a href="#hero-heading" className="marketing-brand" aria-label="NeueBit, back to top" onClick={() => focus("hero-heading")}><BrandMark /><span>NeueBit</span></a>
             <p>Knowledge in context.<br />A vector engine underneath.</p>
           </div>
           <nav aria-label="Footer product navigation">
@@ -60,7 +60,7 @@ export function LandingFooter({ accessTo, accessLabel }: { accessTo: string; acc
             {status === "authenticated" && <button type="button" onClick={logout}>Log out</button>}
           </nav>
         </div>
-        <div className="marketing-footer-attribution"><span>© 2026 Neuebit</span><span>Built by Vansh Gupta</span></div>
+        <div className="marketing-footer-attribution"><span>© 2026 NeueBit</span><span>Built by Vansh Gupta</span></div>
       </div>
     </footer>
   );

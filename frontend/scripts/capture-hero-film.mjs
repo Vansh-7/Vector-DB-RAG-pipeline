@@ -236,7 +236,7 @@ try {
     }
   }
   if (await fingerprint() !== sourceFingerprint) throw new Error("Source changed during capture; rerun before publishing assets.");
-  const manifest = { provenance: "Actual current authenticated Neuebit UI with authored sample API fixtures. Indexing cadence, streaming cadence, coordinates, scores and values are illustrative; no live backend measurements or public runtime API requests.",
+  const manifest = { provenance: "Actual current authenticated NeueBit UI with authored sample API fixtures. Indexing cadence, streaming cadence, coordinates, scores and values are illustrative; no live backend measurements or public runtime API requests.",
     capturedAt: new Date().toISOString(), sourceFingerprint, fingerprintAlgorithm: "sha256 of frontend/src excluding generated heroFilmTimings.ts, plus the three film scripts",
     sequence: ["Documents", "Search", "Chat", "Sources", "Vector Lab", "Documents"],
     encoding: "Native-resolution PNG capture; lossless FFV1 intermediate; one H.264 encode, 24fps, CRF 20, slow preset, yuv420p, faststart, no audio; four-frame dissolves; exact opening composition held at loop end.", assets };

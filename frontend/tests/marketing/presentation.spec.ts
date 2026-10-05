@@ -136,7 +136,7 @@ test("architecture loops until direct interaction; selection stays stopped until
 test("landing and footer logout preserve appearance and use the existing session boundary", async ({page}) => {
   await appearance(page,"dark","dark"); await seedSession(page); const {calls}=await stubApi(page); await page.goto("/");
   const nav=page.getByRole("navigation",{name:"Public navigation"}), account=page.getByRole("navigation",{name:"Footer account navigation"});
-  await expect(nav.getByRole("button",{name:"Log out"})).toBeVisible(); await expect(account.getByRole("link",{name:"Open Neuebit"})).toHaveAttribute("href","/app");
+  await expect(nav.getByRole("button",{name:"Log out"})).toBeVisible(); await expect(account.getByRole("link",{name:"Open NeueBit"})).toHaveAttribute("href","/app");
   await account.getByRole("button",{name:"Log out"}).click(); await expect(nav.getByRole("link",{name:"Sign in",exact:true})).toBeVisible();
   await expect(account.getByRole("link",{name:"Get started"})).toHaveAttribute("href","/auth?mode=register");
   expect(await page.evaluate(()=>localStorage.getItem("neuebit-theme"))).toBe("dark"); expect(calls.map(call=>call.path)).toEqual(["/auth/me"]);

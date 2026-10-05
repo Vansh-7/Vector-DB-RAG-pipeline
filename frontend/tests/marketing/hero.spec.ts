@@ -68,19 +68,19 @@ test("changing to desktop closes the disclosure and preserves focus", async ({ p
   await page.getByRole("button", { name: "Open navigation" }).click();
   await page.getByRole("navigation").getByRole("link", { name: "Product", exact: true }).focus();
   await page.setViewportSize({ width: 1280, height: 900 });
-  await expect(page.getByRole("link", { name: "Neuebit home" })).toBeFocused();
+  await expect(page.getByRole("link", { name: "NeueBit home" })).toBeFocused();
   await page.setViewportSize({ width: 375, height: 900 });
   await expect(page.getByRole("button", { name: "Open navigation" })).toHaveAttribute("aria-expanded", "false");
 });
 
-test("authenticated navigation offers Open Neuebit and no sign-in link", async ({ page }) => {
+test("authenticated navigation offers Open NeueBit and no sign-in link", async ({ page }) => {
   await seedSession(page);
   await stubApi(page);
   await page.goto("/");
   const nav = page.getByRole("navigation", { name: "Public navigation" });
-  await expect(nav.getByRole("link", { name: "Open Neuebit" })).toHaveAttribute("href", "/app");
+  await expect(nav.getByRole("link", { name: "Open NeueBit" })).toHaveAttribute("href", "/app");
   await expect(nav.getByRole("link", { name: "Sign in", exact: true })).toHaveCount(0);
-  await nav.getByRole("link", { name: "Open Neuebit" }).click();
+  await nav.getByRole("link", { name: "Open NeueBit" }).click();
   await expectWorkspace(page);
 });
 
@@ -183,7 +183,7 @@ test("measure public JavaScript and keep marketing code off direct app entry", a
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   await expect(page.getByRole("heading", { name: /Less looking/ })).toHaveCount(1);
-  await expect(page.getByRole("heading", { name: "Follow one question through Neuebit." })).toHaveCount(1);
+  await expect(page.getByRole("heading", { name: "Follow one question through NeueBit." })).toHaveCount(1);
   const assets = await Promise.all([...new Set(scripts)].map(async (url) => {
     const response = await page.request.get(url);
     return { asset: new URL(url).pathname, gzipBytes: gzipSync(await response.body()).length };

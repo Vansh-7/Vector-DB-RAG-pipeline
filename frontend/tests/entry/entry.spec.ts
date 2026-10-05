@@ -8,7 +8,7 @@ test("public entry is usable without a session, product code, or product polling
   await page.clock.install();
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "Your knowledge, in context." })).toBeFocused();
-  await expect(page).toHaveTitle("NeueBit — Your knowledge, in context");
+  await expect(page).toHaveTitle("NeueBit - Your knowledge, in context");
   await expect(page.locator(".marketing-hero").getByRole("link", { name: "Get started" })).toHaveAttribute("href", "/auth?mode=register");
   await expect(page.getByRole("link", { name: "Sign in" })).toHaveAttribute("href", "/auth?mode=login");
   await page.clock.fastForward(30_000);
@@ -64,7 +64,7 @@ for (const path of ["/auth", "/auth?mode=login", "/auth?mode=unknown"]) {
     const { calls, scripts } = await stubApi(page);
     await page.goto(path);
     await expect(page.getByRole("heading", { name: "Welcome back" })).toBeFocused();
-    await expect(page).toHaveTitle("NeueBit — Sign in");
+    await expect(page).toHaveTitle("NeueBit - Sign in");
     await expect(page.getByLabel("Confirm password", { exact: true })).toHaveCount(0);
     expect(calls).toEqual([]);
     expectNoProductCode(scripts);
@@ -91,7 +91,7 @@ test("authenticated auth access opens the app after verification", async ({ page
   const { scripts } = await stubApi(page);
   await page.goto("/auth?mode=register");
   await expectWorkspace(page);
-  await expect(page).toHaveTitle("NeueBit — Workspace");
+  await expect(page).toHaveTitle("NeueBit - Workspace");
   expect(scripts.some((url) => /\/LandingPage-/.test(url))).toBe(false);
 });
 
@@ -203,7 +203,7 @@ test("create account registers, signs in, verifies, then opens the product", asy
   const { calls } = await stubApi(page);
   await page.goto("/auth?mode=register");
   await page.reload();
-  await expect(page).toHaveTitle("NeueBit — Create account");
+  await expect(page).toHaveTitle("NeueBit - Create account");
   await fillCredentials(page);
   await page.getByLabel("Confirm password", { exact: true }).fill("Neuebit-test-123!");
   await page.getByRole("button", { name: "Create account", exact: true }).click();
@@ -315,7 +315,7 @@ test("unknown paths show an accessible client 404 and return home", async ({ pag
   const { calls, scripts } = await stubApi(page);
   await page.goto("/does-not-exist");
   await expect(page.getByRole("heading", { name: "Page not found" })).toBeFocused();
-  await expect(page).toHaveTitle("NeueBit — Page not found");
+  await expect(page).toHaveTitle("NeueBit - Page not found");
   await page.getByRole("link", { name: "Return home" }).click();
   await expect(page.locator(".marketing-hero").getByRole("link", { name: "Get started" })).toBeVisible();
   expect(calls).toEqual([]);

@@ -1,5 +1,5 @@
 // Shared by the static Vite head and client route effects. No product imports.
-export const LANDING_TITLE = "NeueBit — Your knowledge, in context";
+export const LANDING_TITLE = "NeueBit - Your knowledge, in context";
 export const LANDING_DESCRIPTION = "Ask your documents, search by meaning, and trace answers to their sources. NeueBit is an AI knowledge workspace built on a custom vector engine.";
 export const SOCIAL_IMAGE_ALT = "NeueBit. Your knowledge, in context. An AI knowledge workspace with a custom vector engine.";
 

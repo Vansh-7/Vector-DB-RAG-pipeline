@@ -7,7 +7,7 @@ for (const theme of ["light", "dark"] as const) {
       await appearance(page, theme);
       await page.setViewportSize({ width, height: 1000 });
       await page.goto("/brand");
-      await expect(page).toHaveTitle("NeueBit — Brand");
+      await expect(page).toHaveTitle("NeueBit - Brand");
       await expect(page.getByRole("img", { name: "NeueBit on white", exact: true })).toHaveCount(1);
       await expect(page.getByRole("img", { name: "NeueBit on white", exact: true })).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
       await expect(page.getByRole("img", { name: "NeueBit on charcoal", exact: true })).toHaveCount(1);
@@ -56,6 +56,7 @@ test("standalone SVG, favicon, and React share the same contour and transparent 
   expect(favicon).toBe(raw);
   expect(raw).not.toMatch(/<(image|filter|rect|linearGradient|radialGradient)\b/);
   await page.goto("/brand");
+  await expect(page.locator('link[rel="icon"]')).toHaveAttribute("href", "/brand/neuebit-mark.svg");
   const path = page.locator(".brand-showcase__home path");
   await expect(path).toHaveAttribute("d", raw.match(/\bd="([^"]+)"/)![1]);
   await expect(path).toHaveAttribute("fill-rule", "evenodd");

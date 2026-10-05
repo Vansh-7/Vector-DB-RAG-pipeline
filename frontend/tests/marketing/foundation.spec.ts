@@ -55,7 +55,7 @@ test("public page scrolls with the document and public-to-app navigation isolate
   await expect(page.locator(".marketing-page")).toHaveCount(0);
   expect(await page.locator("body").evaluate((element) => getComputedStyle(element).backgroundColor)).toBe(productBody.background);
   await page.getByRole("button", { name: "Sign out", exact: true }).click();
-  await page.getByRole("link", { name: "Back to Neuebit" }).click();
+  await page.getByRole("link", { name: "Back to NeueBit" }).click();
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   expect(await page.locator("body").evaluate((element) => getComputedStyle(element).colorScheme)).toBe("light");
 });

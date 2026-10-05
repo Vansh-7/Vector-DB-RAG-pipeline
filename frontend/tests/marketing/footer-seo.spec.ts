@@ -82,7 +82,7 @@ test("footer navigation scrolls locally without changing local story state", asy
   }
   await footer.getByRole("link", { name: "Architecture" }).click();
   await expect(page.locator("#architecture")).toBeFocused();
-  await footer.getByRole("link", { name: "Neuebit, back to top" }).click();
+  await footer.getByRole("link", { name: "NeueBit, back to top" }).click();
   await expect(page.getByRole("heading", { level: 1 })).toBeFocused();
   await expect(page).toHaveURL(/\/#hero-heading$/);
   await expect(footer.getByRole("link", { name: "GitHub" })).toHaveAttribute("href", "https://github.com/Vansh-7/Vector-DB-RAG-pipeline");
@@ -100,8 +100,8 @@ test("closing CTA uses the existing register and authenticated app boundaries", 
   await expect(page.getByRole("heading", { name: "Create your account" })).toBeVisible();
   await seedSession(page);
   await page.goto("/");
-  await expect(closing.getByRole("link", { name: "Open Neuebit" })).toHaveAttribute("href", "/app");
-  await closing.getByRole("link", { name: "Open Neuebit" }).click();
+  await expect(closing.getByRole("link", { name: "Open NeueBit" })).toHaveAttribute("href", "/app");
+  await closing.getByRole("link", { name: "Open NeueBit" }).click();
   await expectWorkspace(page);
   expect(await page.locator("html").evaluate((element) => (element as HTMLElement).style.getPropertyValue("--marketing-header-height"))).toBe("");
 });
@@ -181,7 +181,7 @@ test("configured origin injects absolute canonical and social metadata into stat
     await expect(page.locator('meta[property="og:image:width"]')).toHaveAttribute("content", "1200");
     await expect(page.locator('meta[name="twitter:image"]')).toHaveAttribute("content", "https://neuebit.example/social/neuebit-og.png");
     await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute("content", "summary_large_image");
-    await expect(page.locator('meta[property="og:image:alt"]')).toHaveAttribute("content", /Neuebit.*custom vector engine/);
+    await expect(page.locator('meta[property="og:image:alt"]')).toHaveAttribute("content", /NeueBit.*custom vector engine/);
   } finally { await context.close(); }
   expect(publicSiteUrl(undefined)).toBeNull();
   expect(publicSiteUrl("https://neuebit.example/")).toBe("https://neuebit.example/");
@@ -196,24 +196,24 @@ test("metadata follows public, auth, private app, and missing-page navigation wi
   await expect(page).toHaveTitle(LANDING_TITLE);
   await expect(page.locator('meta[property="og:title"]')).toHaveCount(1);
   await page.getByRole("navigation", { name: "Public navigation" }).getByRole("link", { name: "Sign in" }).click();
-  await expect(page).toHaveTitle("Neuebit — Sign in");
-  await expect(page.locator('meta[name="description"]')).toHaveAttribute("content", "Sign in to your Neuebit knowledge workspace.");
+  await expect(page).toHaveTitle("NeueBit - Sign in");
+  await expect(page.locator('meta[name="description"]')).toHaveAttribute("content", "Sign in to your NeueBit knowledge workspace.");
   await expect(page.locator("[data-public-metadata]")).toHaveCount(0);
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", "noindex, nofollow");
   await page.goto("/auth?mode=register");
-  await expect(page).toHaveTitle("Neuebit — Create account");
-  await page.getByRole("link", { name: "Back to Neuebit" }).click();
+  await expect(page).toHaveTitle("NeueBit - Create account");
+  await page.getByRole("link", { name: "Back to NeueBit" }).click();
   await expect(page.locator('meta[property="og:title"]')).toHaveCount(1);
   await expect(page.locator('meta[name="description"]')).toHaveAttribute("content", LANDING_DESCRIPTION);
   await page.goto("/missing-page");
-  await expect(page).toHaveTitle("Neuebit — Page not found");
+  await expect(page).toHaveTitle("NeueBit - Page not found");
   await expect(page.locator("[data-public-metadata]")).toHaveCount(0);
   await seedSession(page);
   await page.goto("/app");
   await expectWorkspace(page);
-  await expect(page).toHaveTitle("Neuebit — Workspace");
+  await expect(page).toHaveTitle("NeueBit - Workspace");
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", "noindex, nofollow");
-  await expect(page.locator('meta[name="description"]')).toHaveAttribute("content", "Your private Neuebit knowledge workspace.");
+  await expect(page.locator('meta[name="description"]')).toHaveAttribute("content", "Your private NeueBit knowledge workspace.");
   await page.goto("/");
   await expect(page).toHaveTitle(LANDING_TITLE);
   await expect(page.locator('meta[property="og:title"]')).toHaveCount(1);

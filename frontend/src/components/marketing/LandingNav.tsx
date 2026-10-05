@@ -106,7 +106,7 @@ export function LandingNav({ hasSession, accessLabel }: {
       if (event.key === "Escape" && open) { event.preventDefault(); close(true); }
     }}>
       <nav aria-label="Public navigation" className="marketing-nav">
-        <Link to="/" className="marketing-brand" aria-label="Neuebit home"><BrandMark /><span>Neuebit</span></Link>
+        <Link to="/" className="marketing-brand" aria-label="NeueBit home"><BrandMark /><span>NeueBit</span></Link>
         <div ref={desktopNavigation} className="marketing-nav-desktop">
           <a className="marketing-nav-link" href="#product" onClick={() => productLink()}>Product</a>
           <a className="marketing-nav-link" href="#architecture" onClick={() => document.getElementById("architecture")?.focus({ preventScroll: true })}>How it works</a>

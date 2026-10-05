@@ -79,7 +79,7 @@ export function LandingHero({ accessTo, accessLabel }: {
               <a href={GITHUB_URL} className="marketing-button marketing-button--secondary">View on GitHub <ArrowUpRight size={16} aria-hidden="true" /></a>
             </m.div>
         </div>
-          <m.figure className="hero-product" data-hero-part="preview" aria-label="Neuebit product walkthrough"
+          <m.figure className="hero-product" data-hero-part="preview" aria-label="NeueBit product walkthrough"
             initial={reduceMotion ? false : { opacity: 0, scale: .99 }} animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: reduceMotion ? 0 : 1, delay: reduceMotion ? 0 : .2, ease }}>
             <HeroProductFilm reduced={!!reduceMotion} />

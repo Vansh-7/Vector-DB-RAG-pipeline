@@ -64,19 +64,19 @@ function FilmPlayback({ variant, mobile, reduced }: {
     data-presentation={reduced || failed ? "complete" : playing ? "playing" : "paused"} data-fallback={failed ? "error" : reduced ? "reduced-motion" : "none"}>
     <div className="film-screen">
       {failed ? <img className="film-video" src={`${asset}.webp`} width={mobile ? 390 : 1280} height={722}
-        alt="Neuebit workspace with illustrative documents" aria-describedby="hero-film-description" />
+        alt="NeueBit workspace with illustrative documents" aria-describedby="hero-film-description" />
         : <video ref={video} className="film-video" poster={`${asset}.webp`}
         src={reduced ? undefined : `${asset}.mp4`}
         width={mobile ? 390 : 1280} height={722}
         autoPlay={shouldPlay} muted loop playsInline preload={reduced ? "none" : "metadata"}
-        aria-label="Neuebit product film" aria-describedby="hero-film-description"
+        aria-label="NeueBit product film" aria-describedby="hero-film-description"
         onLoadedMetadata={() => syncScene(0)} onTimeUpdate={event => syncScene(event.currentTarget.currentTime)}
         onError={() => { setPlaying(false); setFailed(true); }}
         onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)}>
-        Explore Neuebit’s Documents, Search, Chat, sources and Vector Lab in the product stories below.
+        Explore NeueBit’s Documents, Search, Chat, sources and Vector Lab in the product stories below.
       </video>}
     </div>
     <FilmIllustrations reduced={reduced || failed} />
-    <p id="hero-film-description" className="sr-only">An actual Neuebit workspace recorded with illustrative sample documents: Documents, semantic search, Chat, two answer sources, and Vector Lab. Explore these features in the interactive sections below.</p>
+    <p id="hero-film-description" className="sr-only">An actual NeueBit workspace recorded with illustrative sample documents: Documents, semantic search, Chat, two answer sources, and Vector Lab. Explore these features in the interactive sections below.</p>
   </div>;
 }

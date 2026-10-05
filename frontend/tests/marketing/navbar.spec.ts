@@ -17,7 +17,7 @@ for (const width of [1440, 1920]) for (const theme of ["light", "dark"] as const
     const { calls } = await stubApi(page);
     await page.goto("/");
     const nav = page.getByRole("navigation", { name: "Public navigation" });
-    await expect(nav.getByRole("link", { name: "Open Neuebit", exact: true })).toBeVisible();
+    await expect(nav.getByRole("link", { name: "Open NeueBit", exact: true })).toBeVisible();
     const signedIn = await geometry(page);
     await nav.getByRole("button", { name: "Log out", exact: true }).click();
     await expect(nav.getByRole("link", { name: "Get started", exact: true })).toBeVisible();
@@ -106,12 +106,12 @@ test("the longest pending-session label fits the desktop lanes", async ({ page }
   await stubApi(page, { "/auth/me": async route => { await release.promise; await reply(route, USER); } });
   await page.goto("/");
   try {
-    await expect(page.locator(".marketing-nav-access").getByRole("link", { name: "Continue to Neuebit" })).toBeVisible();
+    await expect(page.locator(".marketing-nav-access").getByRole("link", { name: "Continue to NeueBit" })).toBeVisible();
     for (const width of [1057, 1100, 1280, 1440]) {
       await page.setViewportSize({ width, height: 900 });
       const state = await geometry(page);
       expect(state.links.right).toBeLessThan(state.actions.x);
     }
   } finally { release.resolve(); }
-  await expect(page.locator(".marketing-nav-access").getByRole("link", { name: "Open Neuebit" })).toBeVisible();
+  await expect(page.locator(".marketing-nav-access").getByRole("link", { name: "Open NeueBit" })).toBeVisible();
 });

@@ -13,7 +13,7 @@ const EngineeringSection = lazy(() => import("../components/marketing/Engineerin
 export default function LandingPage() {
   const status = useAuthStore((state) => state.status);
   const hasSession = status !== "unauthenticated";
-  const label = status === "authenticated" ? "Open Neuebit" : hasSession ? "Continue to Neuebit" : "Get started";
+  const label = status === "authenticated" ? "Open NeueBit" : hasSession ? "Continue to NeueBit" : "Get started";
 
   return (
     <div className="marketing-page">

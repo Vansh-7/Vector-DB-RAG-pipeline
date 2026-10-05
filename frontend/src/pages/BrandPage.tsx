@@ -42,7 +42,7 @@ export default function BrandPage() {
       <section className="brand-showcase__section" aria-labelledby="brand-in-use">
         <h2 id="brand-in-use">In the product</h2>
         <div className="brand-showcase__contexts">
-          <figure><div className="brand-showcase__browser-tab"><NeuebitBrand size={16} /><span>— Workspace</span></div><figcaption>Favicon · 16 px</figcaption></figure>
+          <figure><div className="brand-showcase__browser-tab"><NeuebitBrand size={16} /><span>- Workspace</span></div><figcaption>Favicon · 16 px</figcaption></figure>
           <figure><div className="brand-showcase__sidebar"><NeuebitBrand /></div><figcaption>Sidebar · 20 px</figcaption></figure>
           <figure><div className="brand-showcase__app-header"><NeuebitBrand /></div><figcaption>App header · 20 px</figcaption></figure>
         </div>

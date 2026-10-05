@@ -273,7 +273,7 @@ function TrustStory({ progress,release,complete,reduced }: { progress:MotionValu
         <m.header className="retrieval-zone-heading" style={{ opacity:answerHeading }}><span>03</span><h3 id="retrieval-answer-heading">A grounded answer</h3></m.header>
         <m.div ref={answer} className="retrieval-answer-object" style={{ opacity:answerSurface }}>
           <div className="retrieval-answer">
-            <m.p style={{ opacity:sentenceOne,y:sentenceOneY }}>Neuebit embeds the question and finds related passages.</m.p>
+            <m.p style={{ opacity:sentenceOne,y:sentenceOneY }}>NeueBit embeds the question and finds related passages.</m.p>
             <m.p style={{ opacity:sentenceTwo,y:sentenceTwoY }}>It filters the <span className="retrieval-grounded-phrase">context to your knowledge</span> and reranks the <span className="retrieval-cited-fragment">matches.<m.button type="button" className="retrieval-answer-citation" {...relationshipProps("citation")} style={{ opacity:citation }} disabled={!complete} aria-label="Trace citation 1 to its supporting passage" aria-describedby="retrieval-provenance-description" onClick={traceCitation}>[1]</m.button></span></m.p>
           </div>
           <m.div className="retrieval-source" style={{ opacity:sourceOpacity,y:sourceY }}>

@@ -17,7 +17,7 @@ export function EntryEffects() {
       : pathname === "/app" ? "Workspace"
       : pathname === "/auth" ? mode === "register" ? "Create account" : "Sign in"
       : "Page not found";
-    document.title = pathname === "/" ? LANDING_TITLE : `NeueBit — ${title}`;
+    document.title = pathname === "/" ? LANDING_TITLE : `NeueBit - ${title}`;
     document.querySelector('meta[name="description"]')?.setAttribute("content", pathname === "/" ? LANDING_DESCRIPTION
       : pathname === "/brand" ? "The NeueBit mark across themes, surfaces, and sizes."
       : pathname === "/auth" ? mode === "register" ? "Create your NeueBit knowledge workspace." : "Sign in to your NeueBit knowledge workspace."

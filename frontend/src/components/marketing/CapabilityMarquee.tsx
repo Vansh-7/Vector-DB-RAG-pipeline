@@ -10,7 +10,7 @@ const items = [
 
 export function CapabilityMarquee() {
   const [paused, setPaused] = useState(false);
-  return <section className={`capability-marquee${paused ? " capability-marquee--paused" : ""}`} aria-label="Neuebit capabilities">
+  return <section className={`capability-marquee${paused ? " capability-marquee--paused" : ""}`} aria-label="NeueBit capabilities">
     <div className="capability-marquee-window"><div className="capability-marquee-track">
       {[0, 1].map((copy) => <ul key={copy} aria-hidden={copy === 1 ? true : undefined}>{items.map(([label, Icon]) => <li key={label}><Icon size={16} aria-hidden="true" /><span>{label}</span></li>)}</ul>)}
     </div></div>
