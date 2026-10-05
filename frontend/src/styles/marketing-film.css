@@ -44,9 +44,32 @@
 .hero-headline-label { white-space: nowrap; }
 .hero-headline-phrase[data-active="false"] { pointer-events: none; user-select: none; }
 .hero-headline-context { flex-shrink: 0; }
-.marketing-hero .hero-product { margin-block-start: 3.5rem; }
-.film-screen { position: relative; aspect-ratio: 1280 / 722; background: var(--canvas); overflow: clip; }
-.film-video { position: absolute; inset: 0; display: block; inline-size: 100%; block-size: 100%; object-fit: cover; }
+.marketing-hero .hero-product { margin-block-start: 3.5rem; border: 0; border-radius: 0; background: transparent; overflow: visible; }
+.product-film { position: relative; isolation: isolate; }
+.film-screen {
+  position: relative; z-index: 1; aspect-ratio: 1280 / 722; background: var(--canvas); overflow: clip;
+  border: 1px solid var(--border-default); border-radius: 12px;
+  box-shadow: 0 30px 80px -24px rgba(24,24,24,.22), 0 4px 12px -4px rgba(24,24,24,.15);
+}
+.film-video { position: absolute; inset: 0; display: block; inline-size: 100%; block-size: 100%; object-fit: contain; }
+.film-illustrations { position: absolute; inset: 0; pointer-events: none; }
+.film-artwork { position: absolute; display: block; }
+.film-artwork img { display: block; inline-size: 100%; block-size: auto; object-fit: contain; }
+.film-observer {
+  z-index: 2; inline-size: clamp(136px, 14%, 184px);
+  inset-block-end: calc(100% - 5px); inset-inline-end: 1.25%;
+}
+.film-reader {
+  z-index: 0; inline-size: clamp(94px, 8.9%, 114px);
+  inset-block-end: 10%; inset-inline-start: -7.2%;
+}
+html[data-theme="dark"] .film-illustrations { display: none; }
+html[data-theme="dark"] .film-screen { border-color: var(--border-strong); box-shadow: 0 12px 36px -24px rgba(0,0,0,.22); }
+@media (max-width: 1359px) {
+  .film-reader { inline-size: 78px; inset-inline-start: -4%; }
+  .film-observer { inline-size: 13%; }
+}
+@media (max-width: 1199px) { .film-illustrations { display: none; } }
 html[data-theme="dark"] .marketing-hero .marketing-button--secondary { background: rgba(69,143,215,.18); }
 html[data-theme="dark"] .marketing-hero .marketing-button--secondary:hover { background: rgba(69,143,215,.24); }
 @media (max-width: 767px) {

@@ -1,5 +1,136 @@
-import { test, expect, deferred, seedSession, stubApi, fillCredentials, expectWorkspace, expectNoProductCode, SESSION_TOKEN, chooseAppTheme, signOutFromApp } from "../entry/fixtures";
+import { writeFile } from "node:fs/promises";
+import { test, expect, deferred, seedSession, stubApi, fillCredentials, expectWorkspace, expectNoProductCode, SESSION_TOKEN, chooseAppTheme, signOutFromApp, reply } from "../entry/fixtures";
 import { appearance, knowledgeApi } from "./fixtures";
+
+// Capture the same product states in both themes so palette changes can be
+// reviewed without conflating color with geometry or navigation changes.
+for (const theme of ["light", "dark"] as const) {
+  for (const width of theme === "light" ? [390, 1024, 1280, 1440] : [1280, 1440]) {
+    test(`${theme} authenticated surface hierarchy at ${width}px`, async ({ page }, testInfo) => {
+      await page.setViewportSize({ width, height: 900 });
+      await appearance(page, theme);
+      await page.emulateMedia({ reducedMotion: "reduce" });
+      await seedSession(page);
+      await knowledgeApi(page);
+      // Contract-shaped comparison fixtures verify surfaces, not performance.
+      await page.route("**/api/v1/benchmark*", (route) => reply(route, {
+        algorithms: [
+          { name: "hnsw", displayName: "HNSW Graph", latencyMs: .41, throughputQps: 2453, isActive: true },
+          { name: "kdtree", displayName: "KD-Tree", latencyMs: 1.25, throughputQps: 800, isActive: false },
+          { name: "exact", displayName: "Brute Force (Exact Match)", latencyMs: 2.5, throughputQps: 400, isActive: false },
+        ], timestamp: "2026-10-05T10:00:00Z",
+        topology: [{ level: 0, nodes: 34, edges: 1088 }, { level: 1, nodes: 4, edges: 12 }, { level: 2, nodes: 1, edges: 0 }],
+      }));
+      await page.goto("/app");
+      await expectWorkspace(page);
+      await page.evaluate(() => document.fonts.ready);
+      const sidebar = page.getByRole("complementary", { name: "Primary sidebar" });
+      if (theme === "light") {
+        await expect(page.locator(".authenticated-app")).toHaveCSS("background-color", "rgb(253, 253, 252)");
+        await expect(sidebar).toHaveCSS("background-color", "rgb(243, 242, 239)");
+        await expect(page.locator(".chat-composer")).toHaveCSS("background-color", "rgb(255, 255, 255)");
+        // Small metadata remains readable on chrome and filled controls.
+        const contrast = await sidebar.evaluate((element) => {
+          const style = getComputedStyle(element);
+          const luminance = (rgb: number[]) => rgb.map((channel) => {
+            const value = channel / 255;
+            return value <= .04045 ? value / 12.92 : ((value + .055) / 1.055) ** 2.4;
+          }).reduce((sum, value, index) => sum + value * [.2126, .7152, .0722][index], 0);
+          const text = style.getPropertyValue("--text-tertiary").trim().slice(1).match(/.{2}/g)!.map((channel) => parseInt(channel, 16));
+          const background = style.backgroundColor.match(/[\d.]+/g)!.map(Number);
+          return (luminance(background) + .05) / (luminance(text) + .05);
+        });
+        expect(contrast).toBeGreaterThanOrEqual(4.5);
+        const active = sidebar.getByRole("button", { name: "Chat", exact: true });
+        const inactive = sidebar.getByRole("button", { name: "Documents", exact: true });
+        const selected = await active.evaluate((element) => getComputedStyle(element).backgroundColor);
+        await inactive.hover();
+        const hover = await inactive.evaluate((element) => getComputedStyle(element).backgroundColor);
+        expect(hover).not.toBe(selected);
+        await active.hover();
+        await expect(active).toHaveCSS("background-color", selected);
+        await page.mouse.move(width - 1, 1);
+      }
+      const captures: Record<string, unknown> = {};
+      const capture = async (state: string) => {
+        expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+        captures[state] = await page.evaluate(() => {
+          const tokens = ["--canvas", "--surface", "--surface-elevated", "--surface-hover", "--surface-active",
+            "--text-primary", "--text-secondary", "--text-tertiary", "--text-placeholder", "--border-subtle",
+            "--border-default", "--border-strong", "--primary-action", "--primary-action-hover", "--primary-action-active",
+            "--color-tech", "--color-finance", "--color-food", "--color-sports", "--color-documents", "--color-mathematics",
+            "--color-success", "--color-info", "--color-warning", "--color-error"];
+          const app = getComputedStyle(document.querySelector(".authenticated-app")!);
+          const selectors = [".authenticated-app", ".primary-sidebar", ".sidebar-control", ".recent-chat-row", ".user-avatar",
+            ".account-menu", ".account-menu-row", ".chat-composer", ".context-pane", "[role=dialog]", ".field",
+            ".bg-panel", ".bg-elevated", ".lab-tab", ".technical-terminal"];
+          return { tokens: Object.fromEntries(tokens.map((token) => [token, app.getPropertyValue(token).trim()])),
+            elements: Object.fromEntries(selectors.map((selector) => [selector,
+              [...document.querySelectorAll<HTMLElement>(selector)].filter((element) => element.getClientRects().length).map((element) => {
+                const style = getComputedStyle(element); const box = element.getBoundingClientRect();
+                return { color: style.color, background: style.backgroundColor, border: style.borderTopColor,
+                  shadow: style.boxShadow, font: style.font, radius: style.borderRadius,
+                  box: [box.x, box.y, box.width, box.height].map((value) => Math.round(value * 100) / 100) };
+              })])) };
+        });
+        await page.screenshot({ path: testInfo.outputPath(`${state}.png`) });
+      };
+      await capture("chat-empty");
+      if (width < 768) await page.setViewportSize({ width: 1024, height: 900 });
+      await sidebar.getByRole("button", { name: "How does retrieval work?", exact: true }).click();
+      await page.setViewportSize({ width, height: 900 });
+      const chat = page.getByRole("region", { name: "Chat workspace" });
+      await expect(chat.getByRole("button", { name: "2 sources" })).toBeVisible();
+      await capture("chat-conversation");
+      await chat.getByRole("button", { name: "2 sources" }).click();
+      await expect(page.getByRole(width >= 1280 ? "complementary" : "dialog", { name: "Answer sources" })).toBeVisible();
+      await capture("source-pane");
+      await page.getByRole("button", { name: "Close answer sources" }).click();
+      const account = page.getByRole("button", { name: "Account menu", exact: true });
+      await account.click();
+      const menu = page.getByRole("menu", { name: "Account", exact: true });
+      await expect(menu).toHaveCSS("background-color", theme === "light" ? "rgb(255, 255, 255)" : "rgb(32, 32, 32)");
+      await expect(menu).toHaveCSS("box-shadow", "none");
+      await capture("account-menu");
+      await menu.getByRole("menuitem", { name: "Log out", exact: true }).click();
+      const dialog = page.getByRole("dialog", { name: "Log out of NeueBit?", exact: true });
+      await expect(dialog.getByRole("button", { name: "Cancel", exact: true })).toBeFocused();
+      await capture("confirmation");
+      await page.keyboard.press("Escape");
+      await expect(account).toBeFocused();
+      if (width >= 768) {
+        await sidebar.getByRole("button", { name: "Collapse navigation", exact: true }).click();
+        await expect(sidebar).toHaveCSS("width", "56px");
+        await capture("sidebar-collapsed");
+        await sidebar.getByRole("button", { name: "Expand navigation", exact: true }).click();
+      }
+      await sidebar.getByRole("button", { name: "Documents", exact: true }).click();
+      await expect(page.getByRole("button", { name: "Delete Product architecture.md", exact: true })).toBeVisible();
+      await capture("documents");
+      await page.getByRole("button", { name: "Add document", exact: true }).click();
+      await expect(page.getByRole(width >= 1280 ? "complementary" : "dialog", { name: "Add document", exact: true })).toBeVisible();
+      await capture("add-document");
+      await page.getByRole("button", { name: "Close add document" }).click();
+      await sidebar.getByRole("button", { name: "Search", exact: true }).click();
+      await page.getByRole("searchbox", { name: "Search your knowledge" }).fill("retrieval");
+      await page.getByRole("search").getByRole("button", { name: "Search", exact: true }).click();
+      await expect(page.getByRole("region", { name: "Search workspace" }).getByText("2 matches", { exact: true })).toBeVisible();
+      await capture("search");
+      await sidebar.getByRole("button", { name: "Vector Lab", exact: true }).click();
+      await expect(page.locator(".data-point")).toHaveCount(20);
+      await capture("vector-space");
+      const sections = page.getByRole("navigation", { name: "Vector Lab sections" });
+      for (const section of ["Engine", "Benchmarks", "Maintenance"]) {
+        await sections.getByRole("button", { name: section, exact: true }).click();
+        if (section === "Benchmarks") await expect(page.getByRole("article", { name: "HNSW", exact: true })).toBeVisible();
+        await capture(section.toLowerCase());
+      }
+      const surfacesPath = testInfo.outputPath("surfaces.json");
+      await writeFile(surfacesPath, JSON.stringify(captures, null, 2));
+      await testInfo.attach("product-surfaces", { path: surfacesPath, contentType: "application/json" });
+    });
+  }
+}
 
 for (const [os, stored, expected] of [
   ["light", undefined, "light"], ["dark", undefined, "dark"],

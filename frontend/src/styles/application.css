@@ -1,20 +1,39 @@
 /* Authenticated surfaces share geometry in both themes. Public pages keep their tokens. */
-:root[data-theme="light"] .authenticated-app {
-  --canvas: #faf9f6;
-  --surface: #f1f0ed;
-  --surface-elevated: #eeedea;
-  --surface-hover: #e9e8e4;
-  --surface-canvas-rgb: 250 249 246;
-  --surface-panel-rgb: 241 240 237;
-  --surface-elevated-rgb: 238 237 234;
-  --surface-hover-rgb: 233 232 228;
+:root[data-theme="light"] .authenticated-app,
+:root[data-theme="light"]:has(.authenticated-app) [role="dialog"] {
+  /* Paper canvas, soft chrome, white working surfaces. Dialog portals share the palette. */
+  --canvas: #fdfdfc;
+  --sidebar-surface: #f3f2ef;
+  --surface: #ffffff;
+  --surface-subtle: #f7f6f3;
+  /* Existing elevated utilities also serve filled inputs and user messages. */
+  --surface-elevated: #f3f2ef;
+  --surface-hover: #eeedea;
+  --surface-active: #e9e8e5;
+  --surface-canvas-rgb: 253 253 252;
+  --surface-panel-rgb: 255 255 255;
+  --surface-elevated-rgb: 243 242 239;
+  --surface-hover-rgb: 238 237 234;
+  --surface-active-rgb: 233 232 229;
+  --border-subtle: rgb(30 28 24 / .06);
+  --border-default: rgb(30 28 24 / .09);
+  --border-strong: rgb(30 28 24 / .14);
+  --popover-surface: #ffffff;
+  --popover-border: rgb(30 28 24 / .10);
+  --dialog-surface: var(--popover-surface);
+  --bg-panel: var(--surface);
+  --bg-elevated: var(--surface-elevated);
+  --bg-hover: var(--surface-hover);
+  --bg-active: var(--surface-active);
   --pane-surface: #ffffff;
   --composer-surface: #ffffff;
-  --composer-focus-surface: #fdfcf9;
+  --composer-focus-surface: #ffffff;
+  --sidebar-hover: rgb(28 27 24 / .025);
   --sidebar-active: rgb(28 27 24 / .045);
+  --text-primary: #272621;
   --text-secondary: #615e58;
-  --text-tertiary: #737069;
-  --text-placeholder: #74716b;
+  --text-tertiary: #6b6861;
+  --text-placeholder: #6f6c66;
   --primary-action: #2563c6;
   --primary-action-hover: #2057b0;
   --primary-action-active: #194994;
@@ -63,6 +82,12 @@
 .sidebar-nav-control[aria-current="page"], .recent-chat-row[aria-current="page"] { background: var(--sidebar-active); color: var(--text-primary); font-weight: 500; }
 .recent-chat-row { color: var(--text-tertiary); }
 .recent-chat-row:hover { background: var(--sidebar-active); color: var(--text-primary); }
+:root[data-theme="light"] .authenticated-app .primary-sidebar { background: var(--sidebar-surface); }
+:root[data-theme="light"] .authenticated-app .sidebar-control:hover,
+:root[data-theme="light"] .authenticated-app .recent-chat-row:hover { background: var(--sidebar-hover); }
+:root[data-theme="light"] .authenticated-app .sidebar-nav-control[aria-current="page"]:hover,
+:root[data-theme="light"] .authenticated-app .recent-chat-row[aria-current="page"]:hover { background: var(--sidebar-active); }
+:root[data-theme="light"] .authenticated-app .recent-chats-heading { color: var(--text-secondary); font-weight: 600; letter-spacing: .015em; }
 .sidebar-footer { padding: 10px; }
 .account-control { position: relative; min-inline-size: 0; }
 .sidebar-account { inline-size: 100%; block-size: 36px; padding-inline: 4px; }

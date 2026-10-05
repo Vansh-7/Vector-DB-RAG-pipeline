@@ -12,7 +12,7 @@ export function RecentConversations({ chatBusy, onSelect }: { chatBusy: boolean;
   return (
     <div className="mx-2.5 mt-7 border-t border-[--border-subtle] pt-4 min-w-0">
       <div className="flex items-center justify-between px-2 mb-2">
-        <h2 className="text-2xs text-[--text-tertiary]">Recent chats</h2>
+        <h2 className="recent-chats-heading text-2xs text-[--text-tertiary]">Recent chats</h2>
         <button ref={refreshRef} type="button" onClick={() => void query.refetch()} title="Refresh chats" aria-label="Refresh chats" className="rounded p-1 text-[--text-tertiary] hover:text-[--text-primary] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[--color-info]"><RefreshCw className="w-3.5 h-3.5" /></button>
       </div>
       {query.isPending ? <div aria-label="Loading recent chats" className="px-2 py-3 text-xs text-[--text-secondary] flex items-center gap-2"><Loader2 className="w-3.5 h-3.5 animate-spin" /> Loading chats</div>

@@ -42,6 +42,18 @@ for (const theme of ["light", "dark"] as const) {
         const recent = sidebar.getByRole("button", { name: "How does retrieval work?", exact: true });
         await expect(recent).toHaveCSS("height", "32px");
         await expect(recent.locator("svg")).toHaveCount(0);
+        if (theme === "light") {
+          const heading = sidebar.getByRole("heading", { name: "Recent chats", exact: true });
+          await expect(heading).toHaveCSS("font-weight", "600");
+          const hierarchy = await heading.evaluate((element) => {
+            const row = element.closest(".primary-sidebar")!.querySelector(".recent-chat-row")!;
+            return { headingSize: parseFloat(getComputedStyle(element).fontSize), rowSize: parseFloat(getComputedStyle(row).fontSize),
+              headingLeft: element.getBoundingClientRect().x,
+              titleLeft: row.querySelector("span")!.getBoundingClientRect().x };
+          });
+          expect(hierarchy.headingSize).toBeLessThan(hierarchy.rowSize);
+          expect(hierarchy.headingLeft).toBe(hierarchy.titleLeft);
+        }
         await recent.click();
         await expect(recent).toHaveAttribute("aria-current", "page");
         await sidebar.getByRole("button", { name: "Collapse navigation" }).click();

@@ -1,21 +1,33 @@
 {
-  "provenance": "Screen recordings of the actual authenticated Neuebit frontend with shared authored sample API fixtures. No public runtime API requests. Sample coordinates and values are illustrative, not live backend measurements.",
-  "origin": "http://127.0.0.1:4176",
-  "capturedAt": "2026-10-03T16:32:35.464Z",
+  "provenance": "Actual current authenticated Neuebit UI with authored sample API fixtures. Indexing cadence, streaming cadence, coordinates, scores and values are illustrative; no live backend measurements or public runtime API requests.",
+  "capturedAt": "2026-10-05T15:44:39.768Z",
+  "sourceFingerprint": "dacb580986983c839286e6cdc35bcb0313ccca1fdf825e9e0760834dd143c0a7",
+  "fingerprintAlgorithm": "sha256 of frontend/src excluding generated heroFilmTimings.ts, plus the three film scripts",
   "sequence": [
     "Documents",
     "Search",
     "Chat",
     "Sources",
-    "Vector Lab"
+    "Vector Lab",
+    "Documents"
   ],
+  "encoding": "Native-resolution PNG capture; lossless FFV1 intermediate; one H.264 encode, 24fps, CRF 20, slow preset, yuv420p, faststart, no audio; four-frame dissolves; exact opening composition held at loop end.",
   "assets": [
     {
       "file": "neuebit-desktop-light.mp4",
-      "bytes": 192816,
-      "durationSeconds": 15.25,
+      "bytes": 413581,
+      "durationSeconds": 16,
       "width": 1280,
       "height": 722,
+      "fps": 24,
+      "codec": "h264",
+      "pixelFormat": "yuv420p",
+      "audioTracks": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 722
+      },
+      "theme": "light",
       "chapters": [
         {
           "scene": "documents",
@@ -25,36 +37,162 @@
         {
           "scene": "search",
           "word": "Search",
-          "start": 2.485
+          "start": 4
         },
         {
           "scene": "chat",
           "word": "Ask",
-          "start": 5.848
+          "start": 7
         },
         {
           "scene": "sources",
           "word": "Trace",
-          "start": 8.092
+          "start": 9.5
         },
         {
           "scene": "vectors",
           "word": "Inspect",
-          "start": 10.78
+          "start": 11.5
         },
         {
           "scene": "documents",
           "word": "Ask",
-          "start": 14.218
+          "start": 14.5
         }
-      ]
+      ],
+      "sourceSegments": [
+        {
+          "scene": "documents",
+          "sourceStartSeconds": 0,
+          "sourceEndSeconds": 4,
+          "outputStartSeconds": 0
+        },
+        {
+          "scene": "search",
+          "sourceStartSeconds": 4.166666666666667,
+          "sourceEndSeconds": 7,
+          "outputStartSeconds": 4
+        },
+        {
+          "scene": "chat",
+          "sourceStartSeconds": 7.166666666666667,
+          "sourceEndSeconds": 9.5,
+          "outputStartSeconds": 7
+        },
+        {
+          "scene": "sources",
+          "sourceStartSeconds": 10.25,
+          "sourceEndSeconds": 11.5,
+          "outputStartSeconds": 9.5
+        },
+        {
+          "scene": "vectors",
+          "sourceStartSeconds": 12.375,
+          "sourceEndSeconds": 14.5,
+          "outputStartSeconds": 11.5
+        }
+      ],
+      "poster": {
+        "file": "neuebit-desktop-light.webp",
+        "bytes": 72600,
+        "width": 1280,
+        "height": 722,
+        "timeSeconds": 0
+      },
+      "validation": {
+        "posterMatchesFirstFrame": true,
+        "loopMeanPixelError": 0.1971,
+        "faststart": true,
+        "nativeCaptureResolution": true,
+        "openingTextEdgeRetention": 1.0175,
+        "decodedFrames": 384,
+        "minimumFrameLuma": 243.81
+      },
+      "capture": {
+        "sidebarWidth": 256,
+        "checkpoints": [
+          {
+            "name": "opening",
+            "scene": "documents",
+            "capturedSeconds": 0.101,
+            "sidebarWidth": 256
+          },
+          {
+            "name": "ready",
+            "scene": "documents",
+            "capturedSeconds": 3.616,
+            "sidebarWidth": 256
+          },
+          {
+            "name": "search-results",
+            "scene": "search",
+            "capturedSeconds": 4.916,
+            "sidebarWidth": 256
+          },
+          {
+            "name": "search-selected",
+            "scene": "search",
+            "capturedSeconds": 5.107,
+            "sidebarWidth": 256
+          },
+          {
+            "name": "streaming",
+            "scene": "chat",
+            "capturedSeconds": 8.515,
+            "sidebarWidth": 256
+          },
+          {
+            "name": "sources",
+            "scene": "sources",
+            "capturedSeconds": 10.267,
+            "sidebarWidth": 256
+          },
+          {
+            "name": "vectors",
+            "scene": "vectors",
+            "capturedSeconds": 12.384,
+            "sidebarWidth": 256
+          }
+        ],
+        "streamedChunks": 37,
+        "selectedSource": "sample-16",
+        "documentId": 3,
+        "score": 0.9,
+        "originatingQuestion": "How does retrieval work?",
+        "queryProjection": [
+          40,
+          50
+        ],
+        "sourcePreservedWithEmptyProjectionResults": true,
+        "deviceScaleFactor": 1,
+        "appearance": {
+          "theme": "light",
+          "sidebarSurface": "rgb(243, 242, 239)",
+          "workspaceCanvas": "#fdfdfc",
+          "avatarIndex": "4"
+        },
+        "recentChats": [
+          "How does retrieval work?",
+          "How is tenant isolation enforced?",
+          "Why use HNSW?"
+        ]
+      }
     },
     {
       "file": "neuebit-mobile-light.mp4",
-      "bytes": 174025,
-      "durationSeconds": 15.39,
+      "bytes": 253312,
+      "durationSeconds": 16,
       "width": 390,
       "height": 722,
+      "fps": 24,
+      "codec": "h264",
+      "pixelFormat": "yuv420p",
+      "audioTracks": 0,
+      "viewport": {
+        "width": 390,
+        "height": 722
+      },
+      "theme": "light",
       "chapters": [
         {
           "scene": "documents",
@@ -64,36 +202,164 @@
         {
           "scene": "search",
           "word": "Search",
-          "start": 2.487
+          "start": 4
         },
         {
           "scene": "chat",
           "word": "Ask",
-          "start": 5.935
+          "start": 7
         },
         {
           "scene": "sources",
           "word": "Trace",
-          "start": 8.205
+          "start": 9.5
         },
         {
           "scene": "vectors",
           "word": "Inspect",
-          "start": 10.904
+          "start": 11.5
         },
         {
           "scene": "documents",
           "word": "Ask",
-          "start": 14.352
+          "start": 14.5
         }
-      ]
+      ],
+      "sourceSegments": [
+        {
+          "scene": "documents",
+          "sourceStartSeconds": 0,
+          "sourceEndSeconds": 4,
+          "outputStartSeconds": 0
+        },
+        {
+          "scene": "search",
+          "sourceStartSeconds": 4.166666666666667,
+          "sourceEndSeconds": 7,
+          "outputStartSeconds": 4
+        },
+        {
+          "scene": "chat",
+          "sourceStartSeconds": 7.166666666666667,
+          "sourceEndSeconds": 9.5,
+          "outputStartSeconds": 7
+        },
+        {
+          "scene": "sources",
+          "sourceStartSeconds": 10.5,
+          "sourceEndSeconds": 11.5,
+          "outputStartSeconds": 9.5
+        },
+        {
+          "scene": "vectors",
+          "sourceStartSeconds": 12.541666666666666,
+          "sourceEndSeconds": 14.5,
+          "outputStartSeconds": 11.5
+        }
+      ],
+      "poster": {
+        "file": "neuebit-mobile-light.webp",
+        "bytes": 43644,
+        "width": 390,
+        "height": 722,
+        "timeSeconds": 0
+      },
+      "validation": {
+        "posterMatchesFirstFrame": true,
+        "loopMeanPixelError": 0.2278,
+        "faststart": true,
+        "nativeCaptureResolution": true,
+        "openingTextEdgeRetention": 1.0216,
+        "decodedFrames": 384,
+        "minimumFrameLuma": 235.79
+      },
+      "capture": {
+        "sidebarWidth": 56,
+        "checkpoints": [
+          {
+            "name": "opening",
+            "scene": "documents",
+            "capturedSeconds": 0.112,
+            "sidebarWidth": 56
+          },
+          {
+            "name": "ready",
+            "scene": "documents",
+            "capturedSeconds": 3.622,
+            "sidebarWidth": 56
+          },
+          {
+            "name": "search-results",
+            "scene": "search",
+            "capturedSeconds": 4.855,
+            "sidebarWidth": 56
+          },
+          {
+            "name": "search-selected",
+            "scene": "search",
+            "capturedSeconds": 5.022,
+            "sidebarWidth": 56
+          },
+          {
+            "name": "streaming",
+            "scene": "chat",
+            "capturedSeconds": 8.664,
+            "sidebarWidth": 56
+          },
+          {
+            "name": "sources",
+            "scene": "sources",
+            "capturedSeconds": 10.489,
+            "sidebarWidth": 56
+          },
+          {
+            "name": "vectors",
+            "scene": "vectors",
+            "capturedSeconds": 12.547,
+            "sidebarWidth": 56
+          },
+          {
+            "name": "vector-graph",
+            "scene": "vectors",
+            "capturedSeconds": 13.125,
+            "sidebarWidth": 56
+          }
+        ],
+        "streamedChunks": 37,
+        "selectedSource": "sample-16",
+        "documentId": 3,
+        "score": 0.9,
+        "originatingQuestion": "How does retrieval work?",
+        "queryProjection": [
+          40,
+          50
+        ],
+        "sourcePreservedWithEmptyProjectionResults": true,
+        "deviceScaleFactor": 1,
+        "appearance": {
+          "theme": "light",
+          "sidebarSurface": "rgb(243, 242, 239)",
+          "workspaceCanvas": "#fdfdfc",
+          "avatarIndex": "4"
+        },
+        "recentChats": []
+      }
     },
     {
       "file": "neuebit-desktop-dark.mp4",
-      "bytes": 203451,
-      "durationSeconds": 15.23,
+      "bytes": 419860,
+      "durationSeconds": 16,
       "width": 1280,
       "height": 722,
+      "fps": 24,
+      "codec": "h264",
+      "pixelFormat": "yuv420p",
+      "audioTracks": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 722
+      },
+      "theme": "dark",
       "chapters": [
         {
           "scene": "documents",
@@ -103,36 +369,162 @@
         {
           "scene": "search",
           "word": "Search",
-          "start": 2.481
+          "start": 4
         },
         {
           "scene": "chat",
           "word": "Ask",
-          "start": 5.841
+          "start": 7
         },
         {
           "scene": "sources",
           "word": "Trace",
-          "start": 8.094
+          "start": 9.5
         },
         {
           "scene": "vectors",
           "word": "Inspect",
-          "start": 10.783
+          "start": 11.5
         },
         {
           "scene": "documents",
           "word": "Ask",
-          "start": 14.212
+          "start": 14.5
         }
-      ]
+      ],
+      "sourceSegments": [
+        {
+          "scene": "documents",
+          "sourceStartSeconds": 0,
+          "sourceEndSeconds": 4,
+          "outputStartSeconds": 0
+        },
+        {
+          "scene": "search",
+          "sourceStartSeconds": 4.166666666666667,
+          "sourceEndSeconds": 7,
+          "outputStartSeconds": 4
+        },
+        {
+          "scene": "chat",
+          "sourceStartSeconds": 7.166666666666667,
+          "sourceEndSeconds": 9.5,
+          "outputStartSeconds": 7
+        },
+        {
+          "scene": "sources",
+          "sourceStartSeconds": 10.208333333333334,
+          "sourceEndSeconds": 11.5,
+          "outputStartSeconds": 9.5
+        },
+        {
+          "scene": "vectors",
+          "sourceStartSeconds": 12.333333333333334,
+          "sourceEndSeconds": 14.5,
+          "outputStartSeconds": 11.5
+        }
+      ],
+      "poster": {
+        "file": "neuebit-desktop-dark.webp",
+        "bytes": 70914,
+        "width": 1280,
+        "height": 722,
+        "timeSeconds": 0
+      },
+      "validation": {
+        "posterMatchesFirstFrame": true,
+        "loopMeanPixelError": 0.1934,
+        "faststart": true,
+        "nativeCaptureResolution": true,
+        "openingTextEdgeRetention": 1.0228,
+        "decodedFrames": 384,
+        "minimumFrameLuma": 8.56
+      },
+      "capture": {
+        "sidebarWidth": 256,
+        "checkpoints": [
+          {
+            "name": "opening",
+            "scene": "documents",
+            "capturedSeconds": 0.092,
+            "sidebarWidth": 256
+          },
+          {
+            "name": "ready",
+            "scene": "documents",
+            "capturedSeconds": 2.042,
+            "sidebarWidth": 256
+          },
+          {
+            "name": "search-results",
+            "scene": "search",
+            "capturedSeconds": 4.851,
+            "sidebarWidth": 256
+          },
+          {
+            "name": "search-selected",
+            "scene": "search",
+            "capturedSeconds": 4.997,
+            "sidebarWidth": 256
+          },
+          {
+            "name": "streaming",
+            "scene": "chat",
+            "capturedSeconds": 8.447,
+            "sidebarWidth": 256
+          },
+          {
+            "name": "sources",
+            "scene": "sources",
+            "capturedSeconds": 10.235,
+            "sidebarWidth": 256
+          },
+          {
+            "name": "vectors",
+            "scene": "vectors",
+            "capturedSeconds": 12.344,
+            "sidebarWidth": 256
+          }
+        ],
+        "streamedChunks": 37,
+        "selectedSource": "sample-16",
+        "documentId": 3,
+        "score": 0.9,
+        "originatingQuestion": "How does retrieval work?",
+        "queryProjection": [
+          40,
+          50
+        ],
+        "sourcePreservedWithEmptyProjectionResults": true,
+        "deviceScaleFactor": 1,
+        "appearance": {
+          "theme": "dark",
+          "sidebarSurface": "rgb(24, 24, 24)",
+          "workspaceCanvas": "rgb(20 20 20)",
+          "avatarIndex": "4"
+        },
+        "recentChats": [
+          "How does retrieval work?",
+          "How is tenant isolation enforced?",
+          "Why use HNSW?"
+        ]
+      }
     },
     {
       "file": "neuebit-mobile-dark.mp4",
-      "bytes": 177344,
-      "durationSeconds": 15.21,
+      "bytes": 259915,
+      "durationSeconds": 16,
       "width": 390,
       "height": 722,
+      "fps": 24,
+      "codec": "h264",
+      "pixelFormat": "yuv420p",
+      "audioTracks": 0,
+      "viewport": {
+        "width": 390,
+        "height": 722
+      },
+      "theme": "dark",
       "chapters": [
         {
           "scene": "documents",
@@ -142,30 +534,148 @@
         {
           "scene": "search",
           "word": "Search",
-          "start": 2.478
+          "start": 4
         },
         {
           "scene": "chat",
           "word": "Ask",
-          "start": 5.86
+          "start": 7
         },
         {
           "scene": "sources",
           "word": "Trace",
-          "start": 8.111
+          "start": 9.5
         },
         {
           "scene": "vectors",
           "word": "Inspect",
-          "start": 10.773
+          "start": 11.5
         },
         {
           "scene": "documents",
           "word": "Ask",
-          "start": 14.188
+          "start": 14.5
         }
-      ]
+      ],
+      "sourceSegments": [
+        {
+          "scene": "documents",
+          "sourceStartSeconds": 0,
+          "sourceEndSeconds": 4,
+          "outputStartSeconds": 0
+        },
+        {
+          "scene": "search",
+          "sourceStartSeconds": 4.125,
+          "sourceEndSeconds": 7,
+          "outputStartSeconds": 4
+        },
+        {
+          "scene": "chat",
+          "sourceStartSeconds": 7.166666666666667,
+          "sourceEndSeconds": 9.5,
+          "outputStartSeconds": 7
+        },
+        {
+          "scene": "sources",
+          "sourceStartSeconds": 10.083333333333334,
+          "sourceEndSeconds": 11.5,
+          "outputStartSeconds": 9.5
+        },
+        {
+          "scene": "vectors",
+          "sourceStartSeconds": 12.333333333333334,
+          "sourceEndSeconds": 14.5,
+          "outputStartSeconds": 11.5
+        }
+      ],
+      "poster": {
+        "file": "neuebit-mobile-dark.webp",
+        "bytes": 41824,
+        "width": 390,
+        "height": 722,
+        "timeSeconds": 0
+      },
+      "validation": {
+        "posterMatchesFirstFrame": true,
+        "loopMeanPixelError": 0.262,
+        "faststart": true,
+        "nativeCaptureResolution": true,
+        "openingTextEdgeRetention": 1.0212,
+        "decodedFrames": 384,
+        "minimumFrameLuma": 11.28
+      },
+      "capture": {
+        "sidebarWidth": 56,
+        "checkpoints": [
+          {
+            "name": "opening",
+            "scene": "documents",
+            "capturedSeconds": 0.1,
+            "sidebarWidth": 56
+          },
+          {
+            "name": "ready",
+            "scene": "documents",
+            "capturedSeconds": 3.52,
+            "sidebarWidth": 56
+          },
+          {
+            "name": "search-results",
+            "scene": "search",
+            "capturedSeconds": 4.85,
+            "sidebarWidth": 56
+          },
+          {
+            "name": "search-selected",
+            "scene": "search",
+            "capturedSeconds": 5.046,
+            "sidebarWidth": 56
+          },
+          {
+            "name": "streaming",
+            "scene": "chat",
+            "capturedSeconds": 8.343,
+            "sidebarWidth": 56
+          },
+          {
+            "name": "sources",
+            "scene": "sources",
+            "capturedSeconds": 10.074,
+            "sidebarWidth": 56
+          },
+          {
+            "name": "vectors",
+            "scene": "vectors",
+            "capturedSeconds": 12.335,
+            "sidebarWidth": 56
+          },
+          {
+            "name": "vector-graph",
+            "scene": "vectors",
+            "capturedSeconds": 13.1,
+            "sidebarWidth": 56
+          }
+        ],
+        "streamedChunks": 37,
+        "selectedSource": "sample-16",
+        "documentId": 3,
+        "score": 0.9,
+        "originatingQuestion": "How does retrieval work?",
+        "queryProjection": [
+          40,
+          50
+        ],
+        "sourcePreservedWithEmptyProjectionResults": true,
+        "deviceScaleFactor": 1,
+        "appearance": {
+          "theme": "dark",
+          "sidebarSurface": "rgb(24, 24, 24)",
+          "workspaceCanvas": "rgb(20 20 20)",
+          "avatarIndex": "4"
+        },
+        "recentChats": []
+      }
     }
-  ],
-  "encoding": "H.264, 24fps, CRF 26, faststart, no audio. Actual UI returned to Documents before the loop boundary."
+  ]
 }

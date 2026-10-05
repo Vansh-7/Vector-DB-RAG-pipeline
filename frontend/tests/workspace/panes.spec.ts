@@ -22,7 +22,7 @@ for (const theme of ["light", "dark"] as const) {
       await trigger.click();
       const pane = page.getByRole(width >= 1280 ? "complementary" : "dialog", { name: "Answer sources" });
       await expect(pane).toBeVisible();
-      await expect(pane.getByRole("heading", { name: "Answer sources", exact: true })).toHaveCSS("color", theme === "light" ? "rgb(25, 25, 25)" : "rgb(242, 242, 242)");
+      await expect(pane.getByRole("heading", { name: "Answer sources", exact: true })).toHaveCSS("color", theme === "light" ? "rgb(39, 38, 33)" : "rgb(242, 242, 242)");
       await expect(pane).toHaveCSS("box-shadow", "none");
       const paneBox = (await pane.boundingBox())!;
       if (width >= 1280) {

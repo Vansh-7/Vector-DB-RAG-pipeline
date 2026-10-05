@@ -54,7 +54,7 @@ for (const theme of ["light", "dark"] as const) {
         };
       }));
       const canvasRgb = await page.locator(".authenticated-app").evaluate((element) => getComputedStyle(element).backgroundColor);
-      expect(canvasRgb).toBe(theme === "dark" ? "rgb(20, 20, 20)" : "rgb(250, 249, 246)");
+      expect(canvasRgb).toBe(theme === "dark" ? "rgb(20, 20, 20)" : "rgb(253, 253, 252)");
       for (const [index, card] of cardPresentation.entries()) {
         expect(card.background).not.toBe(canvasRgb);
         expect(card.shadow).toBe("none");
