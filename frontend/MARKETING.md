@@ -66,7 +66,7 @@ Production remains React → S3 → CloudFront on `deploy/v1`. This branch docum
 
 No production origin is chosen. `VITE_PUBLIC_SITE_URL` accepts an HTTPS origin only. Once set, Vite writes static canonical/OG/Twitter URLs into `dist/index.html`. Without it, previews are noindex and omit guessed canonical/social URLs. `EntryEffects` maintains route-specific titles and removes public metadata on auth/app/404. The shared static HTML requires deployment response headers for non-JavaScript crawlers on private routes.
 
-The geometric NeueBit monogram uses black on light surfaces and white on dark surfaces. Its raw SVG is `public/brand/neuebit-mark.svg`; app components use the theme-aware `NeuebitLogo`. Geist fonts remain unchanged. Regenerate the SVG favicon, 180×180 touch icon and 1200×630 authored OG image using `node scripts/create-brand-assets.mjs`. Previously captured product WebPs remain available as historical assets but are not loaded by this reset; the primary public visuals are real interactive local markup/SVG, not fabricated screenshots.
+The geometric NeueBit monogram uses black on light surfaces and white on dark surfaces. Its raw SVG is `public/brand/neuebit-mark.svg`; app components use the theme-aware `NeuebitLogo`. Geist fonts remain unchanged. Regenerate the SVG favicon, 180×180 touch icon and 1200×630 authored OG image using `node scripts/create-brand-assets.mjs`. Superseded story and engineering WebP captures are no longer shipped; their source capture scripts are retained as engineering evidence. The current product film and matching posters remain in `public/product/film/`, alongside the interactive local markup/SVG.
 
 ## Verification and review
 
