@@ -30,7 +30,7 @@ The incoming section normally owns the gap. Film perimeter bounds, discovery-to-
 
 [marketing.css](../../styles/marketing.css) owns the hero/navigation and knowledge/discovery composition; [marketing-film.css](../../styles/marketing-film.css) owns the approved media frame and illustration layering. [marketing-tour.css](../../styles/marketing-tour.css), [marketing-engineering.css](../../styles/marketing-engineering.css), [marketing-narrative.css](../../styles/marketing-narrative.css) and [marketing-footer.css](../../styles/marketing-footer.css) own their respective chapter/presentation boundaries.
 
-Capability accents use the existing `--capability-*-ink/soft/mark` roles and theme overrides. Primary conversion actions use the high-contrast neutral action treatment. The GitHub secondary action uses the existing soft-blue treatment.. Use the geometric N and NeueBit wordmark; internal component/asset names retain their established casing.
+Capability accents use the existing `--capability-*-ink/soft/mark` roles and theme overrides. Primary conversion actions use the high-contrast neutral action treatment. The GitHub secondary action uses the existing soft-blue treatment. Use the geometric N and NeueBit wordmark; internal component/asset names retain their established casing.
 
 The observer sits above/right of the frame; the reader sits behind its opaque left edge. Preserve the exact PNGs, sizing and layers. CSS hides both in dark mode and below 1200px. Illustrations remain outside captured film pixels.
 

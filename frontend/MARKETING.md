@@ -16,7 +16,7 @@ The current landing presents a knowledge workspace, explains traceable retrieval
 | 8 | Final CTA | “Ready to work with your knowledge?”; account and GitHub actions |
 | 9 | Footer | Brand, local product/project anchors, account access and attribution |
 
-Navigation and discovery/footer links scroll to real sections without remotely changing their examples. Product reach `#product`, Vector Lab reaches `#vector-lab`, and How it works reaches `#architecture`. `#product-story` remains a compatibility anchor. Account actions use the real auth/app boundary: Get started for visitors, Open NeueBit for verified sessions, Continue to NeueBit while a stored session awaits verification.
+Navigation and discovery/footer links scroll to real sections without remotely changing their examples. Product reaches `#product`, Vector Lab reaches `#vector-lab`, and How it works reaches `#architecture`. `#product-story` remains a compatibility anchor. Account actions use the real auth/app boundary: Get started for visitors, Open NeueBit for verified sessions, Continue to NeueBit while a stored session awaits verification.
 
 ## Local examples and authenticity
 
@@ -69,7 +69,7 @@ The retained `capture-product-story.mjs`, `capture-vector-lab.mjs` and `capture-
 
 ## Visual, responsive and accessibility contract
 
-Global semantic colors own light/dark appearance. Marketing composition tokens own the shared grid, responsive spacing and radii. Light uses white/neutral fields; dark uses graphite/charcoal. Capability accents remain blue, coral, green and violet with readable theme-specific ink. Primary conversion actions use the high-contrast neutral action treatment.The GitHub secondary action uses the existing soft-blue treatment. The technical chapter uses the current quiet gradient/grid handoff.
+Global semantic colors own light/dark appearance. Marketing composition tokens own the shared grid, responsive spacing and radii. Light uses white/neutral fields; dark uses graphite/charcoal. Capability accents remain blue, coral, green and violet with readable theme-specific ink. Primary conversion actions use the high-contrast neutral action treatment. The GitHub secondary action uses the existing soft-blue treatment. The technical chapter uses the current quiet gradient/grid handoff.
 
 Geist Sans carries editorial text; Geist Mono carries vector/engine/technical values. Preserve the centered hero, film frame/shadow/illustration layers, knowledge windows, discovery drawings and technical layout. Section rhythm uses continuation, section and chapter tiers with specific outer-boundary exceptions, rather than identical gaps.
 
