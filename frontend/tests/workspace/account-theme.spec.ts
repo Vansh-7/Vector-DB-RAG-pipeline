@@ -127,6 +127,7 @@ for (const theme of ["light", "dark"] as const) {
     let userId = USER.id;
     await page.route("**/api/v1/auth/me", (route) => reply(route, { ...USER, id: userId }));
     const portraits: string[] = [];
+    let portraitPalette = { paper: "", ink: "" };
     for (let index = 0; index < AVATAR_COUNT; index++) {
       userId = Array.from({ length: 64 }, (_, value) => value + 1).find((id) => getAvatarIndex(id) === index)!;
       await page.goto("/app");
@@ -138,11 +139,28 @@ for (const theme of ["light", "dark"] as const) {
       await expect(avatar).toHaveCSS("height", "28px");
       await expect(avatar).toHaveCSS("box-shadow", "none");
       await expect(avatar.locator("svg")).toHaveAttribute("aria-hidden", "true");
+      portraitPalette = await avatar.evaluate((element) => {
+        const style = getComputedStyle(element);
+        return { paper: style.backgroundColor, ink: style.color };
+      });
+      // Hair and facial details stay darker than the face in both themes.
+      expect(luminance(portraitPalette.ink)).toBeLessThan(luminance(portraitPalette.paper));
+      expect(contrast(portraitPalette.ink, portraitPalette.paper)).toBeGreaterThanOrEqual(7);
+      if (theme === "dark") {
+        for (const color of Object.values(portraitPalette)) {
+          const values = channels(color);
+          expect(Math.max(...values) - Math.min(...values)).toBeLessThanOrEqual(1);
+        }
+        // A softened gray field keeps the tiny portrait legible without a pure-white tile.
+        expect(luminance(portraitPalette.paper)).toBeLessThan(luminance("rgb(242, 242, 242)"));
+      }
       const svg = await avatar.locator("svg").evaluate((element) => element.outerHTML);
       portraits.push(svg);
       await trigger.click();
       const menuAvatar = page.getByRole("menu", { name: "Account", exact: true }).locator(".user-avatar");
       await expect(menuAvatar).toHaveAttribute("data-avatar-index", String(index));
+      await expect(menuAvatar).toHaveCSS("background-color", portraitPalette.paper);
+      await expect(menuAvatar).toHaveCSS("color", portraitPalette.ink);
       expect(await menuAvatar.locator("svg").evaluate((element) => element.outerHTML)).toBe(svg);
       await page.keyboard.press("Escape"); await expect(trigger).toBeFocused();
       await page.reload();
@@ -163,13 +181,12 @@ for (const theme of ["light", "dark"] as const) {
     await trigger.click();
     await expect(page.getByRole("menu", { name: "Account", exact: true })).toHaveCSS("opacity", "1");
     await page.screenshot({ path: testInfo.outputPath(`avatars-expanded-${theme}.png`) });
-    // Inspect every original drawing at a larger scale in one local review artifact.
-    await page.evaluate(({ portraits, theme }) => {
-      const paper = theme === "light" ? "#f7f7f5" : "#202020";
-      const ink = theme === "light" ? "#191919" : "#f2f2f2";
-      document.body.innerHTML = `<main style="padding:48px;width:max-content;margin:auto;display:grid;grid-template-columns:repeat(4,160px);gap:24px;justify-content:center;color:${ink};--avatar-paper:${paper}">${portraits.map((portrait) => `<div style="width:160px;height:160px;background:${paper};border-radius:24px;overflow:hidden">${portrait.replace("<svg ", '<svg style="width:100%;height:100%" ')}</div>`).join("")}</main>`;
-      document.body.style.background = theme === "light" ? "#ffffff" : "#141414";
-    }, { portraits, theme });
+    // Review the actual rendered palette at portrait and account-control sizes.
+    await page.evaluate(({ portraits, palette }) => {
+      const canvas = getComputedStyle(document.querySelector(".authenticated-app")!).backgroundColor;
+      document.body.innerHTML = `<main style="padding:48px;width:max-content;margin:auto;display:grid;grid-template-columns:repeat(4,160px);gap:24px;justify-content:center;color:${palette.ink};--avatar-paper:${palette.paper}">${portraits.map((portrait) => `<div style="display:grid;gap:12px"><div style="width:160px;height:160px;background:${palette.paper};border-radius:24px;overflow:hidden">${portrait.replace("<svg ", '<svg style="width:100%;height:100%" ')}</div><div style="display:flex;align-items:center;gap:12px">${[28, 34].map((size) => `<div style="width:${size}px;height:${size}px;background:${palette.paper};border-radius:7px;overflow:hidden">${portrait.replace("<svg ", '<svg style="width:100%;height:100%" ')}</div>`).join("")}</div></div>`).join("")}</main>`;
+      document.body.style.background = canvas;
+    }, { portraits, palette: portraitPalette });
     await page.locator("main").screenshot({ path: testInfo.outputPath(`portrait-family-${theme}.png`) });
   });
 
