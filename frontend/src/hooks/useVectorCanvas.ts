@@ -119,6 +119,7 @@ export function useVectorCanvas(
       const target = event.target as Element;
       if (!target.classList || !target.classList.contains('data-point')) {
         setTooltip(null);
+        setHighlighted([]);
         if (!g.select('.active-ring').empty()) {
           const currentK = baseScaleRef.current || 1;
           g.selectAll('.active-ring')
@@ -134,7 +135,7 @@ export function useVectorCanvas(
       d3Svg.on('.zoom', null);
       d3Svg.on('.bg', null);
     };
-  }, []);
+  }, [setHighlighted]);
 
   useEffect(() => {
     const svg = svgRef.current;
@@ -180,6 +181,8 @@ export function useVectorCanvas(
       .attr('stroke-width', hitAreaStrokeW)
       .on('click', function (event: MouseEvent, d) {
         event.stopPropagation(); // prevent click.bg from firing
+        const distance = useCanvasStore.getState().highlightedScores[d.id];
+        setHighlighted([d.id], distance === undefined ? {} : { [d.id]: distance });
 
         // Bring clicked point to front
         d3.select(this).raise();
@@ -198,14 +201,13 @@ export function useVectorCanvas(
 
 
 
-        // Smoothly glow the clicked point
+        // Emphasize the selected point without a glow in either theme.
         d3.select(this)
           .interrupt()
           .transition()
           .duration(100)
           .ease(d3.easeCubicOut)
-          .attr('opacity', 1)
-          .attr('filter', 'url(#glow-bright)');
+          .attr('opacity', 1);
 
         // Append a new active ring
         pointsLayer.append('circle')
@@ -231,7 +233,7 @@ export function useVectorCanvas(
           x: event.clientX - (rect?.left ?? 0),
           y: event.clientY - (rect?.top ?? 0),
           payload: d.payload,
-          distance: highlightedScores[d.id],
+          distance,
         });
 
       });
@@ -244,8 +246,7 @@ export function useVectorCanvas(
       .duration(400)
       .ease(d3.easeCubicOut)
       .attr('r', 4 / (baseScaleRef.current || 30))
-      .attr('opacity', (d) => hasHighlights ? (highlightSet.has(d.id) ? 1 : 0.12) : 0.85)
-      .attr('filter', (d) => hasHighlights && highlightSet.has(d.id) ? 'url(#glow-bright)' : null);
+      .attr('opacity', (d) => hasHighlights ? (highlightSet.has(d.id) ? 1 : 0.12) : 0.85);
 
     circles
       .transition()
@@ -253,8 +254,7 @@ export function useVectorCanvas(
       .attr('cx', (d) => d.x)
       .attr('cy', (d) => d.y)
       .attr('fill', (d) => CATEGORY_COLORS[d.category])
-      .attr('opacity', (d) => hasHighlights ? (highlightSet.has(d.id) ? 1 : 0.12) : 0.85)
-      .attr('filter', (d) => hasHighlights && highlightSet.has(d.id) ? 'url(#glow-bright)' : null);
+      .attr('opacity', (d) => hasHighlights ? (highlightSet.has(d.id) ? 1 : 0.12) : 0.85);
   }, [visibleVectors, highlightedIds, highlightedScores, setHighlighted]);
 
   useEffect(() => {
@@ -285,7 +285,7 @@ export function useVectorCanvas(
         .attr('y1', queryPoint.y)
         .attr('x2', target.x)
         .attr('y2', target.y)
-        .attr('stroke', CATEGORY_COLORS[target.category as keyof typeof CATEGORY_COLORS] || '#a78bfa')
+        .attr('stroke', CATEGORY_COLORS[target.category as keyof typeof CATEGORY_COLORS] || 'var(--color-tech)')
         .attr('stroke-width', strokeW * 1.2)
         .attr('stroke-dasharray', `${dashLen},${dashLen * 2}`)
         .attr('opacity', lineOpacity);
@@ -307,10 +307,9 @@ export function useVectorCanvas(
       .append('path')
       .attr('class', 'query-star')
       .attr('d', pathData)
-      .attr('fill', '#f59e0b')
-      .attr('stroke', '#fef3c7')
-      .attr('stroke-width', strokeW / 2)
-      .attr('filter', 'url(#glow-bright)');
+      .attr('fill', 'var(--color-warning)')
+      .attr('stroke', 'var(--text-primary)')
+      .attr('stroke-width', strokeW / 2);
   }, [queryPoint, highlightedIds, highlightedScores, visibleVectors]);
 
   const resetZoom = useCallback(() => {

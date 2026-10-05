@@ -1,5 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
-import { Send, Mic, Settings, Trash2 } from 'lucide-react';
+import { ArrowUp, Mic, Plus, Square } from 'lucide-react';
 import { useVoiceInput } from '../../hooks/useVoiceInput';
 
 export type QueryStatus = 'READY' | 'PROCESSING' | 'ERROR';
@@ -8,7 +7,8 @@ interface AskAIComposerProps {
   input: string;
   setInput: (val: string) => void;
   onSubmit: () => void;
-  onClear?: () => void;
+  onCancel?: () => void;
+  onAddDocument: () => void;
   status: QueryStatus;
   isCentered: boolean;
 }
@@ -17,27 +17,17 @@ export function AskAIComposer({
   input,
   setInput,
   onSubmit,
-  onClear,
+  onCancel,
+  onAddDocument,
   status,
   isCentered,
 }: AskAIComposerProps) {
-  const [flash, setFlash] = useState(false);
-  const prevStatusRef = useRef<QueryStatus>(status);
 
   const { isRecording, isSupported, start, stop } = useVoiceInput((text) => {
     // Append transcribed text
     setInput(input ? `${input} ${text}` : text);
   });
 
-  // UX: Peak-End Rule — Flash when processing finishes successfully
-  useEffect(() => {
-    if (prevStatusRef.current === 'PROCESSING' && status === 'READY') {
-      setFlash(true);
-      const t = setTimeout(() => setFlash(false), 300); // 300ms total for fade
-      return () => clearTimeout(t);
-    }
-    prevStatusRef.current = status;
-  }, [status]);
 
   // UX: Jakob's Law — Enter to send, Shift+Enter for newline
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -61,19 +51,18 @@ export function AskAIComposer({
   // UX: Law of Common Region — All controls and status live in one grouped bounded box
   return (
     <div
-      className={`w-full transition-all duration-300 ease-out flex flex-col bg-[#111111] border border-[rgba(255,255,255,0.06)] rounded-[8px] focus-within:border-[rgba(255,255,255,0.18)] ${
-        isCentered ? 'max-w-[520px] mx-auto shadow-2xl' : 'max-w-full'
-      } ${flash ? 'ring-1 ring-[#3b82f6] border-[#3b82f6]' : ''}`}
+      className="chat-composer w-full flex flex-col"
     >
-      <div className="relative flex items-end p-2">
+      <div className="px-5 pt-4">
         <textarea
+          aria-label="Ask a question about your knowledge"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Search, summarize, or analyze vectors..."
+          placeholder="Ask a question about your documents…"
           rows={1}
-          className={`w-full resize-none bg-transparent border-0 outline-none text-[13px] text-[--text-primary] placeholder:text-[--text-tertiary] font-sans px-2 py-2 leading-relaxed transition-all ${
-            isCentered ? 'min-h-[80px]' : 'min-h-[44px]'
+          className={`w-full resize-none bg-transparent border-0 outline-none text-body text-[--text-primary] placeholder:text-[--text-placeholder] font-sans py-1 leading-relaxed ${
+            isCentered ? 'min-h-[88px]' : 'min-h-[44px]'
           } max-h-[200px]`}
           onInput={(e) => {
             const target = e.target as HTMLTextAreaElement;
@@ -82,75 +71,48 @@ export function AskAIComposer({
           }}
         />
 
-        {/* UX: Fitts's Law — Minimum 32px hit targets, grouped closely to text entry */}
-        <div className="flex items-center gap-1.5 px-2 pb-1.5 shrink-0">
+      </div>
+      <div className="flex items-center justify-between gap-3 px-4 pb-4 pt-2">
+        <div className="flex min-w-0 items-center gap-2">
+          <button type="button" className="icon-button" title="Add document to knowledge" aria-label="Add document to knowledge" onClick={onAddDocument}><Plus className="h-4 w-4" aria-hidden="true" /></button>
+          <span role="status" className={`text-xs ${status === 'ERROR' ? 'text-error' : 'text-[--text-tertiary]'}`}>{status === 'PROCESSING' ? 'Generating answer…' : status === 'ERROR' ? 'Try again' : 'Answers from your documents'}</span>
+        </div>
+        <div className="flex items-center gap-1.5 shrink-0">
           {isSupported && (
             <button
               type="button"
               onClick={handleMicClick}
-              className={`flex items-center justify-center w-8 h-8 rounded-[4px] transition-colors outline-none focus-visible:bg-[#1a1a1a] ${
+              aria-label={isRecording ? "Stop voice input" : "Start voice input"}
+              aria-pressed={isRecording}
+              className={`icon-button relative ${
                 isRecording
-                  ? 'text-[#ef4444] animate-pulse bg-[#ef4444]/10'
-                  : 'text-[--text-secondary] hover:text-[--text-primary] hover:bg-[#1a1a1a]'
+                  ? 'text-[--color-error] bg-error/10'
+                  : ''
               }`}
-              title="Voice Input"
+              title={isRecording ? "Stop voice input" : "Start voice input"}
             >
-              <Mic className="w-4 h-4" />
+              <Mic className="w-4 h-4" aria-hidden="true" />
+              {isRecording && <span aria-hidden="true" className="absolute right-1 top-1 h-1 w-1 rounded-full bg-error" />}
             </button>
           )}
 
           <button
             type="button"
-            onClick={() => {
-              if (input.trim() && status !== 'PROCESSING') onSubmit();
-            }}
-            disabled={status === 'PROCESSING' || !input.trim()}
-            className="flex items-center justify-center w-8 h-8 bg-white text-black rounded-[4px] hover:bg-[#e5e5e5] active:scale-[0.96] transition-all disabled:opacity-50 disabled:cursor-not-allowed outline-none focus-visible:ring-2 focus-visible:ring-white/50"
-            title="Send Message"
+            onClick={() => status === 'PROCESSING' ? onCancel?.() : input.trim() && onSubmit()}
+            disabled={status !== 'PROCESSING' && !input.trim()}
+            className="composer-send flex items-center justify-center w-8 h-8 bg-[--primary-action] text-[--primary-action-text] rounded-md hover:bg-[--primary-action-hover] active:bg-[--primary-action-active] transition-colors disabled:opacity-30 disabled:cursor-not-allowed outline-none focus-visible:ring-2 focus-visible:ring-[--color-info] focus-visible:ring-offset-2 focus-visible:ring-offset-[--bg-elevated]"
+            title={status === 'PROCESSING' ? 'Stop answer' : 'Send message'}
+            aria-label={status === 'PROCESSING' ? 'Stop answer' : 'Send message'}
           >
             {status === 'PROCESSING' ? (
-              <div className="w-3.5 h-3.5 border-[2px] border-black/20 border-t-black rounded-full animate-spin" />
+              <Square className="w-3.5 h-3.5 fill-current" aria-hidden="true" />
             ) : (
-              <Send className="w-4 h-4 ml-0.5" />
+              <ArrowUp className="w-4 h-4" aria-hidden="true" />
             )}
           </button>
         </div>
       </div>
 
-      {/* Footer Status Bar: Part of the same bordered region */}
-      <div className="flex items-center justify-between px-3 py-2 border-t border-[rgba(255,255,255,0.06)] bg-[#0a0a0a]/50 rounded-b-[8px]">
-        {/* UX: Hick's Law — Collapse complex config behind a single icon */}
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            className="text-[--text-tertiary] hover:text-[--text-secondary] transition-colors flex items-center gap-1.5"
-            title="Engine Configuration (See Sidebar)"
-          >
-            <Settings className="w-3.5 h-3.5" />
-          </button>
-
-          {onClear && !isCentered && (
-            <button
-              type="button"
-              onClick={onClear}
-              className="text-[#555] hover:text-[#ef4444] transition-colors flex items-center gap-1.5 text-[10px] uppercase tracking-widest font-mono"
-              title="Clear Conversation"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-              Clear
-            </button>
-          )}
-        </div>
-
-        {/* UX: Proximity — Status sits directly under composer right-aligned */}
-        <div className="flex items-center gap-4 font-mono text-[10px]">
-          <div className="uppercase font-bold tracking-widest flex items-center min-w-[70px] justify-end">
-            {status === 'READY' && <span className="text-[#22c55e]">[READY]</span>}
-            {status === 'PROCESSING' && <span className="text-[#f59e0b] animate-pulse">[PROCESSING]</span>}
-            {status === 'ERROR' && <span className="text-[#ef4444]">[ERROR]</span>}
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

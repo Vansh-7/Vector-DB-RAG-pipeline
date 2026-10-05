@@ -7,9 +7,11 @@ import { useCanvasStore } from '../../store/canvasStore';
 
 interface SourceCitationProps {
   sources: RAGSource[];
+  originatingQuery?: string | null;
+  onInspect?: (sources: RAGSource[], trigger: HTMLButtonElement, originatingQuery: string | null) => void;
 }
 
-export function SourceCitation({ sources }: SourceCitationProps) {
+export function SourceCitation({ sources, originatingQuery = null, onInspect }: SourceCitationProps) {
   const [expanded, setExpanded] = useState(false);
   const setHighlighted = useCanvasStore((s) => s.setHighlighted);
 
@@ -20,13 +22,21 @@ export function SourceCitation({ sources }: SourceCitationProps) {
 
   if (!sources || sources.length === 0) return null;
 
+  if (onInspect) return (
+    <button type="button" onClick={(event) => onInspect(sortedSources, event.currentTarget, originatingQuery)}
+      className="mt-4 inline-flex self-start items-center gap-1.5 rounded px-2 py-1.5 text-xs text-[--text-secondary] hover:bg-hover hover:text-[--text-primary] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--color-info]">
+      <ChevronRight className="w-3.5 h-3.5" aria-hidden="true" />
+      {sources.length} {sources.length === 1 ? "source" : "sources"}
+    </button>
+  );
+
   return (
-    <div className="mt-3 bg-[#111111] rounded-[6px] border border-[rgba(255,255,255,0.06)] overflow-hidden">
+    <div className="mt-3 bg-base rounded-[6px] border border-[--border-subtle] overflow-hidden">
       {/* UX: Fitts's Law — Full-width clickable row for the toggle target */}
       <button
         type="button"
         onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center justify-between px-3 py-2 text-xs font-medium text-[--text-secondary] hover:bg-[#161616] transition-colors outline-none focus-visible:bg-[#161616]"
+        className="w-full flex items-center justify-between px-3 py-2 text-xs font-medium text-[--text-secondary] hover:bg-hover transition-colors outline-none focus-visible:bg-hover"
       >
         <div className="flex items-center gap-2">
           {expanded ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
@@ -37,21 +47,21 @@ export function SourceCitation({ sources }: SourceCitationProps) {
       {/* UX: Miller's Law — Collapsed by default, expanded reveals readable chunks, not raw JSON */}
       <div
         className={`transition-all duration-200 ease-out overflow-hidden ${
-          expanded ? 'max-h-[800px] border-t border-[rgba(255,255,255,0.06)]' : 'max-h-0'
+          expanded ? 'max-h-[800px] border-t border-[--border-subtle]' : 'max-h-0'
         }`}
       >
         <div className="flex flex-col">
           {sortedSources.map((src, i) => {
             const isTopSource = i === 0;
-            const categoryColor = CATEGORY_COLORS[src.category as keyof typeof CATEGORY_COLORS] || '#888';
+            const categoryColor = CATEGORY_COLORS[src.category as keyof typeof CATEGORY_COLORS] || 'var(--text-secondary)';
             const categoryLabel = CATEGORY_LABELS[src.category as keyof typeof CATEGORY_LABELS] || src.category;
             
             return (
               <div
                 key={`${src.vectorId}-${i}`}
                 onClick={() => setHighlighted([src.vectorId], { [src.vectorId]: src.score })}
-                className={`group flex flex-col gap-2 p-3 border-b border-[rgba(255,255,255,0.04)] last:border-b-0 hover:bg-[#161616] cursor-pointer transition-colors ${
-                  isTopSource ? 'bg-[#141414]' : ''
+                className={`group flex flex-col gap-2 p-3 border-b border-[--border-subtle] last:border-b-0 hover:bg-hover cursor-pointer transition-colors ${
+                  isTopSource ? 'bg-elevated' : ''
                 }`}
               >
                 <div className="flex items-center justify-between">
@@ -64,7 +74,7 @@ export function SourceCitation({ sources }: SourceCitationProps) {
                     </span>
                     <span
                       className="text-[9px] font-medium uppercase tracking-wider px-1.5 py-[1px] rounded-[2px]"
-                      style={{ backgroundColor: `${categoryColor}15`, color: categoryColor }}
+                      style={{ backgroundColor: `color-mix(in srgb, ${categoryColor} 8%, transparent)`, color: categoryColor }}
                     >
                       {categoryLabel}
                     </span>
@@ -73,7 +83,7 @@ export function SourceCitation({ sources }: SourceCitationProps) {
                     className="font-mono text-[11px] font-semibold px-1.5 py-[1px] rounded-[2px]" 
                     style={{ 
                       color: getScoreColor(src.score),
-                      backgroundColor: isTopSource ? `${getScoreColor(src.score)}15` : 'transparent'
+                      backgroundColor: isTopSource ? `color-mix(in srgb, ${getScoreColor(src.score)} 8%, transparent)` : 'transparent'
                     }}
                   >
                     {src.score.toFixed(3)}

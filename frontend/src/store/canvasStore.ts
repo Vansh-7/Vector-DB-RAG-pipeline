@@ -1,45 +1,43 @@
 import { create } from 'zustand';
-import type { VectorMeta, VectorPoint2D } from '../types';
-
+export interface SourceQueryHandoff {
+  query: string;
+  status: 'pending' | 'ready' | 'unavailable';
+}
 interface CanvasState {
-  vectors: VectorPoint2D[];
   highlightedIds: string[];
   highlightedScores: Record<string, number>;
   queryPoint: { x: number; y: number } | null;
-  meta: VectorMeta | null;
-  pendingInserts: VectorPoint2D[];
-  setVectors: (vectors: VectorPoint2D[]) => void;
+  sourceQueryHandoff: SourceQueryHandoff | null;
   setHighlighted: (ids: string[], scores?: Record<string, number>) => void;
   setQueryPoint: (point: { x: number; y: number } | null) => void;
-  setMeta: (meta: VectorMeta) => void;
-  addPendingInsert: (vector: VectorPoint2D) => void;
-  clearPendingInserts: () => void;
+  beginSourceHandoff: (id: string, score: number, query: string | null) => void;
+  finishSourceHandoff: (handoff: SourceQueryHandoff, point: { x: number; y: number } | null) => void;
   clearAll: () => void;
 }
 
 export const useCanvasStore = create<CanvasState>()((set) => ({
-  vectors: [],
   highlightedIds: [],
   highlightedScores: {},
   queryPoint: null,
-  meta: null,
-  pendingInserts: [],
-  setVectors: (vectors) => set({ vectors }),
+  sourceQueryHandoff: null,
   setHighlighted: (ids, scores = {}) => set({ highlightedIds: ids, highlightedScores: scores }),
-  setQueryPoint: (point) => set({ queryPoint: point }),
-  setMeta: (meta) => set({ meta }),
-  addPendingInsert: (vector) =>
-    set((state) => ({
-      pendingInserts: [...state.pendingInserts, vector],
-      vectors: [...state.vectors, vector],
-    })),
-  clearPendingInserts: () => set({ pendingInserts: [] }),
+  setQueryPoint: (point) => set({ queryPoint: point, sourceQueryHandoff: null }),
+  beginSourceHandoff: (id, score, query) => set({
+    highlightedIds: [id],
+    highlightedScores: { [id]: score },
+    queryPoint: null,
+    sourceQueryHandoff: query?.trim() ? { query, status: 'pending' } : null,
+  }),
+  finishSourceHandoff: (handoff, point) => set((state) => {
+    // A reset or newer inspection makes an earlier response irrelevant.
+    if (state.sourceQueryHandoff !== handoff || handoff.status !== 'pending') return state;
+    return { queryPoint: point, sourceQueryHandoff: { ...handoff, status: point ? 'ready' : 'unavailable' } };
+  }),
   clearAll: () =>
     set({
-      vectors: [],
       highlightedIds: [],
+      highlightedScores: {},
       queryPoint: null,
-      pendingInserts: [],
-      meta: null,
+      sourceQueryHandoff: null,
     }),
 }));

@@ -10,11 +10,11 @@ export function LogEntry({ entry }: LogEntryProps) {
 
   return (
     <div className="flex gap-2 animate-log-slide-in leading-[18px]">
-      <span className="text-[#444] shrink-0">[{entry.timestamp}]</span>
+      <span className="text-[--text-tertiary] shrink-0">[{entry.timestamp}]</span>
       <span className="shrink-0 font-medium" style={{ color: levelColor }}>
         [{entry.level}]
       </span>
-      <span className="text-[#888]">{entry.message}</span>
+      <span className="min-w-0 break-words text-[--text-secondary]">{entry.message}</span>
     </div>
   );
 }

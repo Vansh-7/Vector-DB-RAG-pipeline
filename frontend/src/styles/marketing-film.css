@@ -1,0 +1,95 @@
+.marketing-title > .hero-headline-line {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: .18em;
+  margin-block-start: 0;
+  white-space: nowrap;
+}
+.hero-headline-slot {
+  display: inline-grid;
+  max-inline-size: 100%;
+  flex-shrink: 0;
+  font-size: .75em;
+  font-weight: 400;
+  line-height: 1.21;
+  letter-spacing: -.0277778em;
+}
+.hero-headline-highlight {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 12px;
+  max-inline-size: 100%;
+  padding: 8px 28px;
+  border-radius: 999px;
+  /* This editorial capsule retains black ink on a pale tint in both themes. */
+  color: #0B0B0B;
+  background: color-mix(in srgb, var(--capability-mark) 14%, #FFFFFF);
+  font: inherit;
+  letter-spacing: inherit;
+  transition: background-color 350ms ease;
+}
+.hero-headline-dot {
+  align-self: center;
+  flex: 0 0 .3em;
+  inline-size: .3em;
+  block-size: .3em;
+  border-radius: 50%;
+  background: var(--capability-mark);
+  transition: background-color 350ms ease;
+}
+/* A stable invisible slot reserves the longest phrase, while each visible
+   capsule hugs its own text and stays close to the static suffix. */
+.hero-headline-phrase { grid-area: 1 / 1; justify-self: end; min-inline-size: 0; text-align: start; }
+.hero-headline-label { white-space: nowrap; }
+.hero-headline-phrase[data-active="false"] { pointer-events: none; user-select: none; }
+.hero-headline-context { flex-shrink: 0; }
+.marketing-hero .hero-product { margin-block-start: var(--marketing-gap-continuation); border: 0; border-radius: 0; background: transparent; overflow: visible; }
+.product-film { position: relative; isolation: isolate; }
+.film-screen {
+  position: relative; z-index: 1; aspect-ratio: 1280 / 722; background: var(--canvas); overflow: clip;
+  border: 1px solid var(--border-default); border-radius: 12px;
+  box-shadow: 0 30px 80px -24px rgba(24,24,24,.22), 0 4px 12px -4px rgba(24,24,24,.15);
+}
+.film-video { position: absolute; inset: 0; display: block; inline-size: 100%; block-size: 100%; object-fit: contain; }
+.film-illustrations { position: absolute; inset: 0; pointer-events: none; }
+.film-artwork { position: absolute; display: block; }
+.film-artwork img { display: block; inline-size: 100%; block-size: auto; object-fit: contain; }
+.film-observer {
+  z-index: 2; inline-size: clamp(136px, 14%, 184px);
+  inset-block-end: calc(100% - 5px); inset-inline-end: 1.25%;
+}
+.film-reader {
+  z-index: 0; inline-size: clamp(94px, 8.9%, 114px);
+  inset-block-end: 10%; inset-inline-start: -7.2%;
+}
+html[data-theme="dark"] .film-illustrations { display: none; }
+html[data-theme="dark"] .film-screen { border-color: var(--border-strong); box-shadow: 0 12px 36px -24px rgba(0,0,0,.22); }
+@media (max-width: 1359px) {
+  .film-reader { inline-size: 78px; inset-inline-start: -4%; }
+  .film-observer { inline-size: 13%; }
+}
+@media (max-width: 1199px) { .film-illustrations { display: none; } }
+html[data-theme="dark"] .marketing-hero .marketing-button--secondary { background: rgba(69,143,215,.18); }
+html[data-theme="dark"] .marketing-hero .marketing-button--secondary:hover { background: rgba(69,143,215,.24); }
+@media (max-width: 767px) {
+  .film-screen { aspect-ratio: 390 / 722; }
+}
+@container hero-intro (max-width: 56rem) {
+  .marketing-title > .hero-headline-line { flex-direction: column; align-items: center; gap: .1em; }
+  .hero-headline-phrase { justify-self: center; }
+}
+@container hero-intro (min-width: 56rem) {
+  /* The inline phrase and suffix share this measure on smaller desktops. */
+  .marketing-hero .marketing-title { --hero-headline-measure: 8.8cqi; }
+}
+@container hero-intro (max-width: 20rem) {
+  /* Keep the complete phrase on one row at narrow/enlarged-text measures. */
+  .marketing-hero .marketing-title { line-height: 1.14; }
+  .hero-headline-highlight { padding-inline: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-headline-highlight, .hero-headline-dot { transition: none; }
+  .hero-headline-phrase { transform: none !important; }
+}
+.marketing-intro { container: hero-intro / inline-size; }

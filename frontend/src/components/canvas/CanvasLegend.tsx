@@ -7,14 +7,17 @@ interface CanvasLegendProps {
 
 export function CanvasLegend({ hiddenCategories, onToggle }: CanvasLegendProps) {
   return (
-    <div className="absolute top-16 left-4 flex flex-wrap max-w-full items-center gap-3 z-10 pointer-events-auto bg-[#111] border border-[rgba(255,255,255,0.06)] rounded-[6px] py-1.5 px-2 shadow-sm">
+    <div className="absolute top-16 left-4 flex max-w-[calc(100%-2rem)] flex-wrap items-center gap-x-3 gap-y-2 z-10 pointer-events-auto rounded-md bg-panel/95 py-2 px-2.5">
       {CATEGORY_ORDER.map((category) => {
         const isHidden = hiddenCategories.has(category);
         return (
           <button
             key={category}
+            type="button"
             onClick={() => onToggle(category)}
-            className="flex items-center gap-1.5 text-[11px] font-mono cursor-pointer transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-[#555] rounded-sm"
+            aria-label={`${isHidden ? "Show" : "Hide"} ${CATEGORY_LABELS[category]} vectors`}
+            aria-pressed={!isHidden}
+            className="flex items-center gap-1.5 text-xs cursor-pointer transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-[--color-info] rounded-sm"
             style={{ opacity: isHidden ? 0.3 : 0.8 }}
             title={`Toggle ${CATEGORY_LABELS[category]}`}
           >
@@ -25,7 +28,7 @@ export function CanvasLegend({ hiddenCategories, onToggle }: CanvasLegendProps) 
                 opacity: isHidden ? 0.3 : 1,
               }}
             />
-            <span className="text-[#888] tracking-widest uppercase">{CATEGORY_LABELS[category]}</span>
+            <span className="text-[--text-secondary]">{CATEGORY_LABELS[category]}</span>
           </button>
         );
       })}

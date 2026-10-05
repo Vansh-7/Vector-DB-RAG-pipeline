@@ -8,18 +8,21 @@ function cn(...inputs: ClassValue[]) {
 }
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "outline" | "danger";
+  variant?: "primary" | "neutral" | "outline" | "ghost" | "danger" | "danger-solid";
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = "primary", disabled, children, ...props }, ref) => {
     const baseStyles =
-      "flex items-center justify-center gap-2 text-sm font-medium rounded-[4px] px-3 py-1.5 transition-all duration-150 active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100 disabled:hover:scale-100";
+      "inline-flex min-h-9 items-center justify-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--color-info] focus-visible:ring-offset-2 focus-visible:ring-offset-[--bg-base] disabled:opacity-40 disabled:cursor-not-allowed";
 
     const variants = {
-      primary: "bg-[#e5e5e5] text-black hover:bg-white hover:scale-[1.01]",
-      outline: "border border-[rgba(255,255,255,0.15)] text-[#f4f4f4] hover:bg-[rgba(255,255,255,0.05)] text-xs",
-      danger: "border border-[#ef4444] text-[#ef4444] hover:bg-[#ef4444]/10 text-xs",
+      primary: "bg-[--primary-action] text-[--primary-action-text] hover:bg-[--primary-action-hover] active:bg-[--primary-action-active]",
+      neutral: "bg-[--neutral-action] text-[--neutral-action-text] hover:bg-[--neutral-action-hover] active:bg-[--neutral-action-active]",
+      outline: "border border-[--border-default] bg-elevated text-[--text-primary] hover:bg-hover hover:border-[--border-strong]",
+      ghost: "text-[--text-secondary] hover:bg-hover hover:text-[--text-primary]",
+      danger: "border border-error/30 bg-error/5 text-error hover:bg-error/10 hover:border-error/50",
+      "danger-solid": "bg-[--danger-action] text-[--danger-action-text] hover:bg-[--danger-action-hover] active:bg-[--danger-action-active]",
     };
 
     return (

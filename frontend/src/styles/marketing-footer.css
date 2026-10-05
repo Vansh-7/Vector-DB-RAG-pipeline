@@ -1,0 +1,37 @@
+.landing-close { display: flex; flex-direction: column; min-block-size: calc(100svh - var(--marketing-header-height,5rem)); background: var(--canvas); }
+/* Center the CTA in the available space above the footer divider. */
+.landing-close .marketing-final-cta { flex: 1; display: flex; flex-direction: column; justify-content: center; background: var(--canvas); text-align: center; padding-block: var(--marketing-gap-continuation); }
+.marketing-final-cta h2 { margin: 0 auto; max-inline-size: 22ch; font-size: clamp(3rem,3.62vw,3.5rem); line-height: 1.04; letter-spacing: -.035em; font-weight: 600; text-wrap: balance; }
+.marketing-final-cta p { max-inline-size: 40ch; margin: 1.125rem auto 0; font-size: 1.25rem; line-height: 1.5; color: var(--text-secondary); }
+.marketing-closing-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: .75rem; margin-block-start: 1.5rem; }
+.marketing-closing-actions .marketing-button { min-block-size: 2.75rem; padding: .5rem 1rem; border-radius: 6px; font-size: 1rem; line-height: 1.2; font-weight: 600; }
+.marketing-footer { border-block-start: 1px solid var(--border-subtle); padding-block: 2.5rem 2rem; background: var(--canvas); }
+.marketing-footer-content { display: grid; grid-template-columns: minmax(0, 2fr) repeat(3, minmax(0, 1fr)); gap: 2rem; }
+.marketing-footer-brand { min-inline-size: 0; }
+.marketing-footer-brand p { color: var(--text-secondary); font-size: .875rem; line-height: 1.7; margin-block-start: 1rem; max-inline-size: 30ch; }
+.marketing-footer nav { display: flex; flex-direction: column; align-items: flex-start; min-inline-size: 0; }
+.marketing-footer h2 { font-size: .8125rem; font-weight: 500; line-height: 1.6; color: var(--text-secondary); margin-block-end: .625rem; }
+.marketing-footer nav a { display: inline-flex; align-items: center; gap: .5rem; min-block-size: 44px; max-inline-size: 100%; font-size: .875rem; color: var(--text-primary); text-decoration: none; border-radius: 3px; }
+.marketing-footer nav a:hover { text-decoration: underline; text-underline-offset: 4px; text-decoration-color: var(--border-strong); }
+.marketing-footer-attribution { font-size: .75rem; color: var(--text-secondary); margin-block-start: 2.25rem; }
+.marketing-footer-attribution { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .5rem 1.5rem; }
+.marketing-footer nav button { color: var(--text-primary); font: .875rem var(--marketing-font-sans); background: transparent; padding: 0; min-block-size: 44px; min-inline-size: 44px; cursor: pointer; }
+.marketing-footer nav a { min-inline-size: 44px; }
+.marketing-footer nav button:hover { text-decoration: underline; text-underline-offset: 4px; }
+.marketing-footer .marketing-container { container-type: inline-size; }
+@container (max-width: 38rem) {
+  .marketing-footer-content { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .marketing-footer-brand { grid-column: 1 / -1; margin-block-end: .5rem; }
+}
+@container (max-width: 16rem) {
+  .marketing-footer-content { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 599px) {
+  .landing-close { min-block-size: 0; }
+  .landing-close .marketing-final-cta { padding-block: calc(var(--marketing-gap-continuation) - var(--marketing-space-4)); }
+  .marketing-final-cta h2 { font-size: 2.5rem; }
+  .marketing-final-cta p { font-size: 1.125rem; }
+  .marketing-closing-actions { display: grid; grid-template-columns: minmax(0, 1fr); }
+  .marketing-closing-actions .marketing-button { inline-size: 100%; }
+  .marketing-footer { padding-block: 2.5rem 2rem; }
+}

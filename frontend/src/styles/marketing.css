@@ -1,0 +1,378 @@
+.marketing-page {
+  /* Capability accents decorate small states. Global tokens own surfaces and actions. */
+  --capability-chat-ink: #216847;
+  --capability-chat-soft: #EAF8F1;
+  --capability-chat-mark: #35B779;
+  --capability-documents-ink: #286698;
+  --capability-documents-soft: #EAF2FF;
+  --capability-documents-mark: #4C8DFF;
+  --capability-search-ink: #9C4B36;
+  --capability-search-soft: #FFF0EB;
+  --capability-search-mark: #F06A4F;
+  --capability-vectors-ink: #6D4C9E;
+  --capability-vectors-soft: #F1EDFF;
+  --capability-vectors-mark: #8B6FE8;
+  --capability-technical-ink: #856318;
+  --capability-technical-soft: #FFF6D9;
+  --capability-technical-mark: #E8B84A;
+  min-block-size: 100dvh;
+  background: var(--canvas);
+  color: var(--text-primary);
+  font-family: var(--marketing-font-sans);
+  font-size: var(--marketing-type-body);
+  line-height: 1.6;
+  overflow-wrap: break-word;
+}
+
+html[data-theme="dark"] .marketing-page {
+  --capability-chat-ink: #91B5A0;
+  --capability-chat-soft: rgba(126, 171, 149, .1);
+  --capability-chat-mark: #729C84;
+  --capability-documents-ink: #99B7D1;
+  --capability-documents-soft: rgba(137, 168, 195, .1);
+  --capability-documents-mark: #7896B0;
+  --capability-search-ink: #D2A194;
+  --capability-search-soft: rgba(193, 142, 124, .1);
+  --capability-search-mark: #B18A7C;
+  --capability-vectors-ink: #B8A3D0;
+  --capability-vectors-soft: rgba(156, 132, 182, .12);
+  --capability-vectors-mark: #9882B2;
+  --capability-technical-ink: #D2BD84;
+  --capability-technical-soft: rgba(232,184,74,.09);
+  --capability-technical-mark: #B39A61;
+}
+
+.marketing-page [data-capability="chat"] { --capability-ink: var(--capability-chat-ink); --capability-soft: var(--capability-chat-soft); --capability-mark: var(--capability-chat-mark); }
+.marketing-page [data-capability="documents"] { --capability-ink: var(--capability-documents-ink); --capability-soft: var(--capability-documents-soft); --capability-mark: var(--capability-documents-mark); }
+.marketing-page [data-capability="search"] { --capability-ink: var(--capability-search-ink); --capability-soft: var(--capability-search-soft); --capability-mark: var(--capability-search-mark); }
+.marketing-page [data-capability="vectors"] { --capability-ink: var(--capability-vectors-ink); --capability-soft: var(--capability-vectors-soft); --capability-mark: var(--capability-vectors-mark); }
+.marketing-page [data-capability="technical"] { --capability-ink: var(--capability-technical-ink); --capability-soft: var(--capability-technical-soft); --capability-mark: var(--capability-technical-mark); }
+
+.marketing-container {
+  inline-size: 100%;
+  max-inline-size: var(--marketing-container-width);
+  margin-inline: auto;
+  padding-inline: var(--marketing-gutter);
+}
+
+.marketing-section {
+  padding-block: var(--marketing-gap-section) 0;
+}
+
+.marketing-story-loading { min-block-size: 58rem; }
+.marketing-engineering-loading { min-block-size: 80rem; }
+
+.marketing-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--marketing-space-2);
+  min-block-size: 2.75rem;
+  color: inherit;
+  font-size: 1.125rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  text-decoration: none;
+}
+
+.marketing-brand img {
+  inline-size: 1.75rem;
+  block-size: 1.75rem;
+  filter: var(--brand-mark-filter);
+}
+
+.marketing-intro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-inline-size: 100%;
+  margin-inline: auto;
+  text-align: center;
+}
+
+.marketing-title {
+  inline-size: 100%;
+  min-inline-size: 0;
+  max-inline-size: 100%;
+  margin: 0;
+  /* Keep the longest phrase inside its measure when text is enlarged. */
+  --hero-headline-measure: 14cqi;
+  font-size: min(clamp(2.625rem, calc(11.25vw - 25.5px), 6rem), var(--hero-headline-measure));
+  font-weight: 700;
+  line-height: clamp(3rem, calc(10.8333vw - 17px), 6.25rem);
+  letter-spacing: clamp(-0.2875rem, calc(2.375px - 0.645833vw), -0.09375rem);
+  text-wrap: balance;
+}
+.marketing-title > span { display: block; }
+
+.marketing-lead {
+  max-inline-size: min(100%, 42.5rem);
+  margin: .75rem 0 0;
+  color: var(--text-secondary);
+  font-size: 1.25rem;
+  font-weight: 400;
+  line-height: 1.4;
+  text-wrap: pretty;
+}
+
+.marketing-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--marketing-space-3);
+  margin-block-start: 1.25rem;
+}
+.marketing-hero .marketing-actions .marketing-button {
+  min-block-size: 2.75rem;
+  padding: .5rem 1rem;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+
+.marketing-button {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: var(--marketing-space-2);
+  min-block-size: 2.75rem;
+  max-inline-size: 100%;
+  padding: 0.625rem var(--marketing-space-6);
+  border: 1px solid transparent;
+  border-radius: var(--marketing-radius-button);
+  font-size: var(--marketing-type-body);
+  font-weight: 500;
+  line-height: 1.4;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color var(--marketing-motion-fast) var(--marketing-motion-ease),
+    border-color var(--marketing-motion-fast) var(--marketing-motion-ease),
+    color var(--marketing-motion-fast) var(--marketing-motion-ease);
+}
+
+.marketing-skip {
+  position: absolute;
+  z-index: 30;
+  inset-block-start: var(--marketing-space-3);
+  inset-inline-start: var(--marketing-gutter);
+  padding: var(--marketing-space-3) var(--marketing-space-4);
+  background: var(--primary-action);
+  color: var(--primary-action-text);
+  border-radius: var(--marketing-radius-button);
+  transform: translateY(-200%);
+}
+
+.marketing-skip:focus { transform: none; }
+
+.marketing-header {
+  container: public-nav / inline-size;
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 20;
+  background: var(--canvas);
+  border-block-end: 1px solid transparent;
+  transition: border-color var(--marketing-motion-fast) var(--marketing-motion-ease);
+}
+
+.marketing-header--scrolled { border-block-end-color: #E9E9E7; }
+html[data-theme="dark"] .marketing-header--scrolled { border-block-end-color: var(--border-subtle); }
+.marketing-header--menu-open { max-block-size: 100dvh; overflow-y: auto; overscroll-behavior: contain; }
+
+.marketing-nav {
+  /* Equal outer tracks center the links on the viewport, independent of actions. */
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content minmax(0, 1fr);
+  align-items: center;
+  column-gap: 1.5rem;
+  inline-size: 100%;
+  margin: 0;
+  padding: .75rem clamp(24px, 2.222vw, 32px);
+  min-block-size: 4.25rem;
+}
+
+.marketing-nav > .marketing-brand {
+  justify-self: start;
+  font-size: 1.0625rem;
+  gap: .5rem;
+}
+.marketing-nav > .marketing-brand img { inline-size: 1.875rem; block-size: 1.875rem; }
+
+.marketing-nav-desktop {
+  display: flex;
+  align-items: center;
+  justify-self: center;
+  gap: 1.75rem;
+  white-space: nowrap;
+}
+
+.marketing-nav-access {
+  display: flex;
+  align-items: center;
+  justify-self: end;
+  gap: 1.25rem;
+  font-size: .90625rem;
+  white-space: nowrap;
+}
+
+.marketing-nav .marketing-button {
+  min-block-size: 2.75rem;
+  padding: .5rem 1rem;
+  border-radius: .5rem;
+  font-size: .875rem;
+  font-weight: 500;
+}
+
+.marketing-nav-link {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 2.75rem;
+  padding-inline: .5rem;
+  margin-inline: -.5rem;
+  color: var(--text-primary);
+  font-size: .90625rem;
+  text-decoration: none;
+  border-radius: 6px;
+}
+
+.marketing-nav-link,
+.marketing-nav .theme-toggle {
+  transition: background-color var(--marketing-motion-fast) var(--marketing-motion-ease), color var(--marketing-motion-fast) var(--marketing-motion-ease);
+}
+
+.marketing-nav-link:is(:hover, :focus-visible),
+.marketing-nav .theme-toggle:focus-visible {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+.marketing-menu-toggle, .marketing-nav-mobile, .marketing-nav-mobile-access { display: none; }
+
+.marketing-hero {
+  padding-block: clamp(2.5rem, 4.5vw, 4rem) var(--marketing-gap-continuation);
+}
+
+.marketing-page .theme-toggle svg { animation: marketing-theme-icon 180ms var(--marketing-motion-ease) both; }
+
+.marketing-text-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--marketing-space-2);
+  min-block-size: 2.75rem;
+  color: var(--text-primary);
+  text-decoration: underline;
+  text-decoration-color: var(--border-strong);
+  text-underline-offset: 4px;
+}
+
+.marketing-text-link svg,
+.marketing-button svg { transition: transform var(--marketing-motion-fast) var(--marketing-motion-ease); }
+
+@media (hover: hover) {
+  .marketing-text-link:hover svg,
+  .marketing-button:hover svg { transform: translateX(3px); }
+}
+
+.marketing-button--primary {
+  background: var(--primary-action);
+  color: var(--primary-action-text);
+}
+
+.marketing-button--primary:hover {
+  background: var(--primary-action-hover);
+}
+
+.marketing-button--primary:active {
+  background: var(--primary-action-active);
+}
+
+.marketing-button--secondary {
+  border-color: var(--border-default);
+  color: var(--text-primary);
+}
+
+.marketing-button--secondary:hover {
+  background: var(--surface-subtle);
+  border-color: var(--border-strong);
+}
+
+.marketing-page :is(a, button, input, select, textarea):focus-visible {
+  outline: 2px solid var(--text-primary);
+  outline-offset: 4px;
+}
+
+.marketing-page [tabindex="-1"]:focus {
+  outline: none;
+}
+
+/* Root scroll padding tracks the actual sticky header, including enlarged text. */
+.marketing-page :is(.marketing-title, #product, #product-story, #vector-lab, #architecture) { scroll-margin-block-start: 1rem; }
+
+/* Collapse before longer session actions or enlarged text can collide with center links. */
+@container public-nav (max-width: 66rem) {
+  .marketing-nav { grid-template-columns: max-content minmax(0, 1fr); min-block-size: 4rem; gap: .5rem; padding: .625rem 1rem; }
+  .marketing-nav > .marketing-brand { gap: .375rem; font-size: 1rem; }
+  .marketing-nav > .marketing-brand img { inline-size: 24px; block-size: 24px; }
+  .marketing-nav-desktop, .marketing-nav-access { display: none; }
+  .marketing-nav-mobile-access { display: flex; align-items: center; justify-self: end; gap: .25rem; max-inline-size: 100%; min-inline-size: 0; }
+  .marketing-nav .marketing-header-cta { padding-inline: .75rem; min-inline-size: 0; flex: 1 1 auto; overflow-wrap: anywhere; }
+  .marketing-menu-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-inline-size: 44px;
+    min-block-size: 44px;
+    flex-shrink: 0;
+    border-radius: var(--marketing-radius-button);
+    color: var(--text-primary);
+    cursor: pointer;
+  }
+  .marketing-menu-toggle:hover { background: var(--surface-subtle); }
+  .marketing-nav-mobile:not([hidden]) {
+    display: grid;
+    grid-column: 1 / -1;
+    inline-size: 100%;
+    gap: var(--marketing-space-2);
+    padding-block-end: var(--marketing-space-3);
+    max-block-size: calc(100dvh - 5rem);
+    overflow-y: auto;
+    animation: marketing-menu-in 180ms var(--marketing-motion-ease) both;
+  }
+  .marketing-nav-mobile .marketing-button { margin-block-start: var(--marketing-space-2); }
+}
+
+@media (max-width: 767px) {
+  .marketing-hero > .marketing-container { padding-inline: 1rem; }
+  .marketing-intro { display: flex; }
+  .marketing-title {
+    max-inline-size: 100%;
+    margin-inline: auto;
+  }
+  .marketing-actions { display: grid; inline-size: 100%; grid-template-columns: minmax(0, 1fr); gap: .75rem; }
+  .marketing-hero .marketing-actions .marketing-button { inline-size: 100%; min-inline-size: 0; }
+}
+
+@keyframes marketing-menu-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes marketing-theme-icon {
+  from { opacity: .25; transform: rotate(-12deg); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marketing-header { transition: none; }
+  .marketing-nav-mobile { animation: none !important; }
+  .marketing-hero [data-hero-part] { opacity: 1 !important; transform: none !important; }
+  .marketing-text-link:hover svg, .marketing-button:hover svg { transform: none; }
+  .marketing-page .theme-toggle svg { animation: none; }
+}
+
+@media (forced-colors: active) {
+  .marketing-button {
+    border-color: ButtonText;
+  }
+}

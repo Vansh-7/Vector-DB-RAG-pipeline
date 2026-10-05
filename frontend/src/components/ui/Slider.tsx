@@ -6,9 +6,10 @@ interface SliderProps {
   min: number;
   max: number;
   step?: number;
+  ariaLabel?: string;
 }
 
-export function Slider({ value, onValueChange, min, max, step = 1 }: SliderProps) {
+export function Slider({ value, onValueChange, min, max, step = 1, ariaLabel }: SliderProps) {
   return (
     <SliderPrimitive.Root
       className="relative flex items-center select-none touch-none w-full h-5"
@@ -18,10 +19,10 @@ export function Slider({ value, onValueChange, min, max, step = 1 }: SliderProps
       max={max}
       step={step}
     >
-      <SliderPrimitive.Track className="relative grow rounded-full h-[3px] bg-[rgba(255,255,255,0.08)]">
-        <SliderPrimitive.Range className="absolute rounded-full h-full bg-white" />
+      <SliderPrimitive.Track className="relative grow rounded-full h-[3px] bg-[--surface-active]">
+        <SliderPrimitive.Range className="absolute rounded-full h-full bg-[--primary-action]" />
       </SliderPrimitive.Track>
-      <SliderPrimitive.Thumb className="block w-3.5 h-3.5 rounded-full bg-white border-2 border-[#0a0a0a] outline-none focus:ring-1 focus:ring-[rgba(255,255,255,0.3)] transition-colors cursor-pointer" />
+      <SliderPrimitive.Thumb aria-label={ariaLabel} className="block w-3.5 h-3.5 rounded-full bg-[--primary-action] border-2 border-[--bg-panel] outline-none focus-visible:ring-2 focus-visible:ring-[--color-info] transition-colors cursor-pointer" />
     </SliderPrimitive.Root>
   );
 }

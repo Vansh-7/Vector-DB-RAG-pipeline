@@ -11,22 +11,25 @@ interface SelectProps {
   onValueChange: (value: string) => void;
   options: SelectOption[];
   placeholder?: string;
+  ariaLabel?: string;
+  disabled?: boolean;
 }
 
-export function Select({ value, onValueChange, options, placeholder }: SelectProps) {
+export function Select({ value, onValueChange, options, placeholder, ariaLabel, disabled }: SelectProps) {
   return (
-    <SelectPrimitive.Root value={value} onValueChange={onValueChange}>
+    <SelectPrimitive.Root value={value} onValueChange={onValueChange} disabled={disabled}>
       <SelectPrimitive.Trigger
-        className="flex items-center justify-between w-full bg-[#161616] border border-[rgba(255,255,255,0.1)] rounded-[4px] px-3 py-2 text-sm text-[#f4f4f4] outline-none focus:border-[rgba(255,255,255,0.18)] transition-colors"
+        aria-label={ariaLabel}
+        className="field flex h-9 items-center justify-between gap-2"
       >
         <SelectPrimitive.Value placeholder={placeholder} />
         <SelectPrimitive.Icon>
-          <ChevronDown className="w-3.5 h-3.5 text-[#555]" />
+          <ChevronDown className="w-3.5 h-3.5 text-[--text-tertiary]" />
         </SelectPrimitive.Icon>
       </SelectPrimitive.Trigger>
       <SelectPrimitive.Portal>
         <SelectPrimitive.Content
-          className="bg-[#161616] border border-[rgba(255,255,255,0.1)] rounded-[4px] overflow-hidden z-50"
+          className="z-50 min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-md border border-[--border-strong] bg-elevated shadow-lg"
           position="popper"
           sideOffset={4}
         >
@@ -35,7 +38,7 @@ export function Select({ value, onValueChange, options, placeholder }: SelectPro
               <SelectPrimitive.Item
                 key={opt.value}
                 value={opt.value}
-                className="flex items-center px-3 py-1.5 text-sm text-[#f4f4f4] rounded-[3px] cursor-pointer outline-none data-[highlighted]:bg-[#222222] transition-colors"
+                className="flex min-h-8 cursor-pointer items-center rounded px-3 py-1.5 text-sm text-[--text-primary] outline-none transition-colors data-[highlighted]:bg-active"
               >
                 <SelectPrimitive.ItemText>{opt.label}</SelectPrimitive.ItemText>
               </SelectPrimitive.Item>

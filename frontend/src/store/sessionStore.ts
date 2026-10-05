@@ -1,30 +1,34 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { ChatMessage } from "../types";
 
-export type ActiveTab = "ask-ai" | "ingest" | "search" | "benchmarks";
+export type WorkspaceView = "chat" | "documents" | "search" | "vector-lab";
+export type LabView = "space" | "engine" | "benchmarks" | "maintenance";
+
+export const SIDEBAR_WIDTH = { min: 220, default: 256, max: 360 } as const;
+const clampSidebarWidth = (width: number) => Math.round(Math.min(SIDEBAR_WIDTH.max, Math.max(SIDEBAR_WIDTH.min, width)));
 
 interface SessionState {
-  isSidebarCollapsed: boolean;
+  activeView: WorkspaceView;
+  activeConversationId: number | null;
+  labView: LabView;
+  isNavigationCollapsed: boolean;
+  sidebarWidth: number;
+  setActiveView: (view: WorkspaceView) => void;
+  setActiveConversationId: (id: number | null) => void;
+  openVectorLab: (view?: LabView) => void;
+  setNavigationCollapsed: (collapsed: boolean) => void;
+  setSidebarWidth: (width: number) => void;
   isTerminalCollapsed: boolean;
   terminalHeight: number;
   setTerminalCollapsed: (collapsed: boolean) => void;
   setTerminalHeight: (height: number) => void;
-  setSidebarCollapsed: (collapsed: boolean) => void;
-  activeTab: ActiveTab;
-  chatHistory: ChatMessage[];
-  setActiveTab: (tab: ActiveTab) => void;
-  addMessage: (message: ChatMessage) => void;
-  updateMessage: (id: string, updates: Partial<ChatMessage>) => void;
-  clearChat: () => void;
+  resetForAuthChange: () => void;
 
   // Search Panel State
   searchInputValue: string;
   setSearchInputValue: (val: string) => void;
   searchQuery: string;
   setSearchQuery: (val: string) => void;
-  searchDismissedIds: string[];
-  setSearchDismissedIds: (ids: string[]) => void;
 
   // Ask AI Panel State
   askAiInput: string;
@@ -42,33 +46,40 @@ interface SessionState {
 export const useSessionStore = create<SessionState>()(
   persist(
     (set) => ({
-      activeTab: "search",
-      isSidebarCollapsed: false,
-      isTerminalCollapsed: false,
+      // Shell navigation is transient; opening the app always starts in Chat.
+      activeView: "chat",
+      activeConversationId: null,
+      labView: "space",
+      isNavigationCollapsed: false,
+      sidebarWidth: SIDEBAR_WIDTH.default,
+      setActiveView: (view) => set({ activeView: view }),
+      setActiveConversationId: (id) => set({ activeConversationId: id }),
+      openVectorLab: (view = "space") => set({ activeView: "vector-lab", labView: view }),
+      setNavigationCollapsed: (collapsed) => set({ isNavigationCollapsed: collapsed }),
+      setSidebarWidth: (width) => {
+        if (Number.isFinite(width)) set({ sidebarWidth: clampSidebarWidth(width) });
+      },
+      isTerminalCollapsed: true,
       terminalHeight: 220,
-      chatHistory: [],
-      setActiveTab: (tab) => set({ activeTab: tab }),
-      setSidebarCollapsed: (collapsed) => set({ isSidebarCollapsed: collapsed }),
       setTerminalCollapsed: (collapsed) => set({ isTerminalCollapsed: collapsed }),
       setTerminalHeight: (height) => set({ terminalHeight: height }),
-      addMessage: (message) =>
-        set((state) => ({
-          chatHistory: [...state.chatHistory, message],
-        })),
-      updateMessage: (id, updates) =>
-        set((state) => ({
-          chatHistory: state.chatHistory.map((msg) =>
-            msg.id === id ? { ...msg, ...updates } : msg
-          ),
-        })),
-      clearChat: () => set({ chatHistory: [] }),
+      resetForAuthChange: () => set({
+        activeView: "chat",
+        activeConversationId: null,
+        labView: "space",
+        isTerminalCollapsed: true,
+        searchInputValue: "",
+        searchQuery: "",
+        askAiInput: "",
+        ingestMode: "manual",
+        ingestTitle: "",
+        ingestDescription: "",
+      }),
 
       searchInputValue: "",
       setSearchInputValue: (val) => set({ searchInputValue: val }),
       searchQuery: "",
       setSearchQuery: (val) => set({ searchQuery: val }),
-      searchDismissedIds: [],
-      setSearchDismissedIds: (ids) => set({ searchDismissedIds: ids }),
 
       askAiInput: "",
       setAskAiInput: (val) => set({ askAiInput: val }),
@@ -82,20 +93,23 @@ export const useSessionStore = create<SessionState>()(
     }),
     {
       name: "vectordb-session-storage",
-      partialize: (state) => ({ 
-        activeTab: state.activeTab, 
-        isSidebarCollapsed: state.isSidebarCollapsed, 
-        isTerminalCollapsed: state.isTerminalCollapsed, 
+      partialize: (state) => ({
+        isNavigationCollapsed: state.isNavigationCollapsed,
+        sidebarWidth: state.sidebarWidth,
         terminalHeight: state.terminalHeight,
-        chatHistory: state.chatHistory,
-        searchInputValue: state.searchInputValue,
-        searchQuery: state.searchQuery,
-        searchDismissedIds: state.searchDismissedIds,
-        askAiInput: state.askAiInput,
-        ingestMode: state.ingestMode,
-        ingestTitle: state.ingestTitle,
-        ingestDescription: state.ingestDescription
       }),
+      // Only restore layout preferences from older storage; never hydrate user content.
+      merge: (persisted, current) => {
+        const saved = persisted as Partial<SessionState> | null;
+        return {
+          ...current,
+          isNavigationCollapsed: saved?.isNavigationCollapsed === true,
+          sidebarWidth: typeof saved?.sidebarWidth === "number" && Number.isFinite(saved.sidebarWidth)
+            ? clampSidebarWidth(saved.sidebarWidth) : current.sidebarWidth,
+          terminalHeight: typeof saved?.terminalHeight === "number" && Number.isFinite(saved.terminalHeight)
+            ? Math.min(520, Math.max(120, saved.terminalHeight)) : current.terminalHeight,
+        };
+      },
     }
   )
 );

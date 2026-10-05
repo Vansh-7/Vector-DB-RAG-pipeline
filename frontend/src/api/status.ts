@@ -1,8 +1,9 @@
 import { apiFetch } from './client';
+import type { Algorithm, DistanceMetric } from '../types/vector';
 
-interface DbStatusResponse {
-  engine: string;
-  metric: string;
+export interface DbStatusResponse {
+  engine: Algorithm;
+  metric: DistanceMetric;
   total_docs: number;
 }
 

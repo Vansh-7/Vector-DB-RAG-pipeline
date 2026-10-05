@@ -1,0 +1,11 @@
+.neuebit-logo {
+  display: inline-block;
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+
+.neuebit-logo__mark { fill: var(--nb-logo-mark, #000000); }
+.neuebit-logo--light .neuebit-logo__mark,
+.neuebit-logo--sage-surface .neuebit-logo__mark { fill: var(--nb-logo-on-light, #000000); }
+.neuebit-logo--dark .neuebit-logo__mark { fill: var(--nb-logo-on-dark, #ffffff); }
+.neuebit-logo--sage-surface { background-color: var(--nb-logo-surface-light, #ffffff); }

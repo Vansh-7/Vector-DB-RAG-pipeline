@@ -1,9 +1,11 @@
+import { getSessionSignal, useAuthStore } from "../store/authStore";
+
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
 // Ensure BASE_URL doesn't end with a slash to prevent double-slashes
 const cleanBaseUrl = BASE_URL.endsWith('/') ? BASE_URL.slice(0, -1) : BASE_URL;
 export const API = `${cleanBaseUrl}/api/v1`;
 
-class ApiError extends Error {
+export class ApiError extends Error {
   status: number;
   detail: string;
 
@@ -15,34 +17,48 @@ class ApiError extends Error {
   }
 }
 
-function parseErrorDetail(err: any, defaultMsg: string): string {
-  if (!err?.detail) return defaultMsg;
-  if (typeof err.detail === 'string') return err.detail;
-  if (Array.isArray(err.detail)) {
-    return err.detail.map((e: any) => `${e.loc?.join('.')} - ${e.msg}`).join(', ');
+function parseErrorDetail(err: unknown, defaultMsg: string): string {
+  if (!err || typeof err !== "object" || !("detail" in err)) return defaultMsg;
+  const detail = err.detail;
+  if (typeof detail === "string") return detail;
+  if (Array.isArray(detail)) {
+    return detail.map((e) => `${e.loc?.join(".")} - ${e.msg}`).join(", ");
   }
-  return JSON.stringify(err.detail);
+  return JSON.stringify(detail);
 }
 
-export async function apiFetch<T>(
+export async function apiRequest(
   path: string,
   options?: RequestInit
-): Promise<T> {
-  // Prevent double slashes by cleaning the path
+): Promise<Response> {
   const cleanPath = path.startsWith('/') ? path : `/${path}`;
+  const token = useAuthStore.getState().accessToken;
+  const headers = new Headers(options?.headers);
+  if (token && !headers.has("Authorization")) headers.set("Authorization", `Bearer ${token}`);
+  if (options?.body && !(options.body instanceof FormData) && !headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/json");
+  }
+  const requestToken = headers.get("Authorization")?.replace(/^Bearer\s+/i, "") ?? null;
+  const signal = token && requestToken === token
+    ? options?.signal ? AbortSignal.any([options.signal, getSessionSignal()]) : getSessionSignal()
+    : options?.signal;
 
   const res = await fetch(`${API}${cleanPath}`, {
-    headers: { "Content-Type": "application/json", ...options?.headers },
     ...options,
+    headers,
+    signal,
   });
+  if (res.status === 401 && requestToken && useAuthStore.getState().accessToken === requestToken) {
+    useAuthStore.getState().expireSession();
+  }
+  return res;
+}
+
+export async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
+  const res = await apiRequest(path, options);
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: res.statusText }));
     throw new ApiError(res.status, parseErrorDetail(err, "API error"));
   }
   return res.json() as Promise<T>;
-}
-
-export function getStreamUrl(path: string): string {
-  const cleanPath = path.startsWith('/') ? path : `/${path}`;
-  return `${API}${cleanPath}`;
 }

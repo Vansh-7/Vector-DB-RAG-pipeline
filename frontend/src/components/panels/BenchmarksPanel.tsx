@@ -1,173 +1,135 @@
+import { useState, type CSSProperties, type FormEvent } from "react";
+import { Activity, ArrowUpRight, Loader2, Search } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { getLatencyColor, formatNumber } from "../../lib/utils";
 import { getBenchmarks } from "../../api/benchmark";
+import { getStatus } from "../../api/status";
+import { useAuthStore } from "../../store/authStore";
 import { useSessionStore } from "../../store/sessionStore";
-import { Layers } from "lucide-react";
+import { formatNumber } from "../../lib/utils";
+import { Button } from "../ui/Button";
+import type { AlgorithmBenchmark } from "../../types/benchmark";
+
+function algorithmLabel(algorithm: AlgorithmBenchmark) {
+  const labels: Record<string, string> = { hnsw: "HNSW", kdtree: "KD-tree", exact: "Exact search" };
+  return labels[algorithm.name] ?? algorithm.displayName;
+}
+
+function algorithmAccent(name: string): CSSProperties {
+  const channels: Record<string, string> = {
+    hnsw: "--color-tech-rgb", kdtree: "--color-finance-rgb", exact: "--color-info-rgb",
+  };
+  const channel = channels[name] ?? "--color-info-rgb";
+  return {
+    "--benchmark-accent": `rgb(var(${channel}) / .65)`,
+    "--benchmark-accent-soft": `rgb(var(${channel}) / .08)`,
+  } as CSSProperties;
+}
 
 export function BenchmarksPanel() {
-  
-  const searchQuery = useSessionStore((s) => s.searchQuery);
-
-  const { data, isLoading } = useQuery({
-    queryKey: ["benchmarks", searchQuery],
-    queryFn: () => getBenchmarks(searchQuery),
+  const userId = useAuthStore((s) => s.user?.id);
+  const setActiveView = useSessionStore((s) => s.setActiveView);
+  const openVectorLab = useSessionStore((s) => s.openVectorLab);
+  const [draftQuery, setDraftQuery] = useState("");
+  const [benchmarkQuery, setBenchmarkQuery] = useState("");
+  const { data: status } = useQuery({ queryKey: ["dbStatus"], queryFn: getStatus, retry: false });
+  const { data, isPending, isFetching, isError, error, refetch } = useQuery({
+    queryKey: ["benchmarks", userId, benchmarkQuery, status?.engine, status?.metric],
+    queryFn: () => getBenchmarks(benchmarkQuery || undefined),
+    enabled: userId !== undefined,
+    retry: false,
+    staleTime: 30_000,
   });
+  const algorithms = data?.algorithms ?? [];
+  const maxThroughput = Math.max(0, ...algorithms.map((algorithm) => algorithm.throughputQps));
+  const active = algorithms.find((algorithm) => algorithm.isActive);
+  const noVectors = !!data && algorithms.every((algorithm) => algorithm.latencyMs === 0 && algorithm.throughputQps === 0);
 
-  const benchmarks = data?.algorithms || [];
-  const maxQps = Math.max(...benchmarks.map((b) => b.throughputQps), 1);
-  const isHnswActive = benchmarks.find((b) => b.isActive)?.name === 'hnsw';
+  const submit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (isFetching) return;
+    const next = draftQuery.trim();
+    if (next === benchmarkQuery) void refetch();
+    else setBenchmarkQuery(next);
+  };
 
   return (
-    <div className="p-4 space-y-6">
-      {isLoading && !data ? (
-        <div className="space-y-4">
-          <div className="flex flex-col gap-1">
-            <div className="text-2xs font-medium tracking-widest text-[#555] uppercase">
-              Algorithm Telemetry
-            </div>
-            <div className="text-xs text-[#888] leading-relaxed">
-              Compare index latency and maximum QPS (Queries Per Second).
-            </div>
-          </div>
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-md font-semibold">Compare search algorithms</h2>
+        <p className="mt-1 text-xs leading-relaxed text-[--text-secondary]">Run the same query through HNSW, KD-tree, and exact search.</p>
+      </div>
 
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="space-y-2">
-              <div className="flex justify-between">
-                <div className="h-4 w-24 bg-[#161616] rounded animate-pulse" />
-                <div className="flex gap-4">
-                  <div className="h-4 w-20 bg-[#161616] rounded animate-pulse" />
-                  <div className="h-4 w-20 bg-[#161616] rounded animate-pulse" />
-                </div>
-              </div>
-              <div className="w-full h-1 rounded-full bg-[#161616] animate-pulse" />
-            </div>
-          ))}
-          <div className="w-full h-px bg-[rgba(255,255,255,0.06)] my-6" />
-          <div className="space-y-4">
-            <div className="h-4 w-40 bg-[#161616] rounded animate-pulse" />
-            <div className="h-20 w-full bg-[#161616] rounded animate-pulse" />
-            <div className="h-20 w-full bg-[#161616] rounded animate-pulse" />
+      <form onSubmit={submit} className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-end">
+        <div className="min-w-0 flex-1">
+          <label htmlFor="benchmark-query" className="text-xs text-[--text-secondary]">Test query</label>
+          <p id="benchmark-query-help" className="mt-1 text-2xs text-[--text-secondary]">Enter a query, or leave blank to use one of your indexed vectors.</p>
+          <div className="relative mt-2"><Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[--text-tertiary]" aria-hidden="true" />
+            <input id="benchmark-query" aria-describedby="benchmark-query-help" value={draftQuery} onChange={(event) => setDraftQuery(event.target.value)} placeholder="e.g. How does retrieval work?"
+              className="field h-10 w-full min-w-0 pl-10 pr-3 text-sm" />
           </div>
         </div>
-      ) : (
-        <>
-          <div className="space-y-4">
-            <div className="flex flex-col gap-1">
-              <div className="text-2xs font-medium tracking-widest text-[#555] uppercase">
-                Algorithm Telemetry
-              </div>
-              <div className="text-xs text-[#888] leading-relaxed">
-                Compare index latency and maximum QPS (Queries Per Second).
-              </div>
-            </div>
+        <Button type="submit" disabled={isFetching} className="h-10 shrink-0 sm:w-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--color-info]">
+          {isFetching ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" /> : <Activity className="h-3.5 w-3.5" aria-hidden="true" />}
+          {isFetching ? "Running…" : data ? "Run again" : "Run comparison"}
+        </Button>
+      </form>
+      <p className="!mt-3 text-2xs text-[--text-secondary]">5 searches per algorithm · up to 5,000 vectors · in memory</p>
 
-            {benchmarks.map((algo) => {
-              const barWidth = (algo.throughputQps / maxQps) * 100;
+      {isError && <div role="alert" className="rounded-md border border-error/20 bg-error/5 p-4">
+        <p className="text-sm font-medium">Benchmark could not be completed.</p><p className="mt-1 text-xs text-[--text-secondary] break-words">{error instanceof Error ? error.message : "Check the connection and try again."}</p>
+      </div>}
 
-              return (
-                <div key={algo.name} className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold text-[#f4f4f4]">
-                      {algo.displayName}
-                    </span>
-                    <div className="flex items-center gap-4">
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-2xs text-[#555] tracking-widest uppercase">
-                          Latency
-                        </span>
-                        <span
-                          className="font-mono text-xs"
-                          style={{ color: getLatencyColor(algo.latencyMs) }}
-                        >
-                          {algo.latencyMs.toFixed(1)}ms
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-2xs text-[#555] tracking-widest uppercase">
-                          Throughput
-                        </span>
-                        <span className="font-mono text-xs text-[#888]">
-                          {Math.round(algo.throughputQps)} QPS
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="w-full h-1.5 rounded-full bg-[rgba(255,255,255,0.06)] overflow-hidden">
-                    <div
-                      className="h-full rounded-full transition-all duration-500"
-                      style={{
-                        width: `${barWidth}%`,
-                        backgroundColor: algo.isActive ? "#3b82f6" : "#22c55e",
-                        boxShadow: algo.isActive ? "0 0 8px rgba(59,130,246,0.4)" : "none",
-                      }}
-                    />
-                  </div>
-                </div>
-              );
-            })}
+      {isPending && !isError && <div role="status" aria-label="Running comparison" className="grid gap-3 md:grid-cols-3">
+        {[1, 2, 3].map((index) => <div key={index} className="h-60 animate-pulse rounded-md border border-[--border-default] bg-[--composer-surface]" />)}
+      </div>}
+
+      {noVectors && <div className="px-6 py-10 text-center">
+        <h3 className="text-sm font-semibold">No searchable vectors to benchmark.</h3>
+        <p className="mt-2 text-xs text-[--text-secondary]">Add a document or inject a vector, then run the comparison.</p>
+        <button type="button" onClick={() => setActiveView("documents")} className="mt-5 inline-flex items-center gap-2 text-xs text-[--color-info] hover:text-[--text-primary] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[--color-info]">Open Documents</button>
+      </div>}
+
+      {data && !noVectors && <div className="space-y-6">
+        <p role="status" className="sr-only">{isFetching ? "Running comparison…" : isError ? "Showing previous comparison results." : "Comparison complete."}</p>
+        <div aria-label="Algorithm comparison results" className="grid min-w-0 gap-3 md:grid-cols-3">
+          {algorithms.map((algorithm) => (
+            <article key={algorithm.name} aria-label={algorithmLabel(algorithm)} style={algorithmAccent(algorithm.name)} className="min-w-0 rounded-md border border-[--border-default] bg-[--composer-surface] p-4 sm:p-5">
+              <div className="flex min-h-8 flex-wrap items-center justify-between gap-2">
+                <h3 className="flex items-center gap-2 text-sm font-medium"><span aria-hidden="true" className="h-3 w-0.5 rounded-full bg-[--benchmark-accent]" />{algorithmLabel(algorithm)}</h3>
+                {algorithm.isActive && <span className="rounded border border-[--border-default] bg-[--benchmark-accent-soft] px-1.5 py-0.5 text-2xs text-[--text-secondary]">Current index</span>}
+              </div>
+              <dl className="mt-3 space-y-4 border-t border-[--border-subtle] pt-4">
+                <div><dt className="text-xs text-[--text-secondary]">Avg. latency</dt><dd className="mt-1 font-mono text-[28px] leading-9 tabular-nums text-[--text-primary]">{algorithm.latencyMs.toFixed(2)}<span className="ml-1.5 text-xs text-[--text-secondary]">ms</span></dd></div>
+                <div><dt className="text-xs text-[--text-secondary]">Est. throughput</dt><dd className="mt-1 font-mono text-sm tabular-nums text-[--text-primary]">{formatNumber(Math.round(algorithm.throughputQps))}<span className="ml-1 text-xs text-[--text-secondary]">q/s</span></dd></div>
+              </dl>
+              <div aria-hidden="true" className="mt-4 h-1 overflow-hidden rounded-full bg-[--border-subtle]">
+                <div className="h-full rounded-full bg-[--benchmark-accent]" style={{ width: `${maxThroughput > 0 ? Math.max(0, algorithm.throughputQps) / maxThroughput * 100 : 0}%` }} />
+              </div>
+            </article>
+          ))}
+        </div>
+
+        <section aria-label="HNSW topology" className="border-t border-[--border-subtle] pt-5">
+          <h3 className="text-sm font-medium">HNSW topology</h3>
+          <p className="mt-1 text-xs text-[--text-secondary]">Structure of the benchmark index.</p>
+          {data.topology?.length ? <div className="mt-4 grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(220px, 100%), 1fr))" }}>
+            {[...data.topology].sort((a, b) => b.level - a.level).map((layer) => <article key={layer.level} aria-label={`HNSW layer L${layer.level}`} className="min-w-0 rounded-lg border border-[--border-default] bg-panel p-4 sm:p-5">
+              <div className="flex items-baseline justify-between gap-3">
+                <h4 className="text-xs font-medium">{layer.level === 0 ? "Base layer" : "Navigable layer"}</h4>
+                <span className="font-mono text-xs text-[--color-tech]">L{layer.level}</span>
+              </div>
+              <dl className="mt-4 grid grid-cols-2 gap-4">
+                <div><dt className="text-xs text-[--text-tertiary]">Nodes</dt><dd className="mt-1 font-mono text-sm tabular-nums text-[--text-primary]">{formatNumber(layer.nodes)}</dd></div>
+                <div><dt className="text-xs text-[--text-tertiary]">Edges</dt><dd className="mt-1 font-mono text-sm tabular-nums text-[--text-primary]">{formatNumber(layer.edges)}</dd></div>
+              </dl>
+            </article>)}
+          </div> : <p className="mt-4 text-xs text-[--text-secondary]">{active?.name === "hnsw" ? "No topology was produced for this comparison." : "Topology is returned when HNSW is the current index."}</p>}
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-x-5 gap-y-2">
+            {data.topology?.length ? <p className="text-2xs text-[--text-secondary]">Built for this comparison from your searchable vectors.</p> : <span />}
+            <Button type="button" variant="ghost" onClick={() => openVectorLab("space")} className="!h-8 !px-0 text-xs text-[--color-info]">Open Vector Space <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" /></Button>
           </div>
-
-          <div className="w-full h-px bg-[rgba(255,255,255,0.06)]" />
-
-          {/* HNSW Graph Layers Panel */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-2xs font-medium tracking-widest text-[#555] uppercase">
-                <Layers className="w-3.5 h-3.5" />
-                Index Topology
-              </div>
-              {isHnswActive ? (
-                <span className="text-[9px] uppercase tracking-wider text-[#3b82f6] bg-[#3b82f6]/10 px-1.5 py-0.5 rounded-[2px] font-medium border border-[#3b82f6]/20">Active</span>
-              ) : (
-                <span className="text-[9px] uppercase tracking-wider text-[#888] bg-white/5 px-1.5 py-0.5 rounded-[2px] font-medium border border-white/10">Inactive</span>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              {data?.topology && data?.topology.length > 0 ? (
-                data?.topology.map((layer) => (
-                  <div key={layer.level} className="flex flex-col gap-1 border border-[rgba(255,255,255,0.06)] rounded-[6px] p-3.5 bg-[#161616] hover:bg-[#1a1a1a] transition-colors">
-                    <div className="flex justify-between items-center">
-                      <span className="text-xs font-semibold text-[#f4f4f4]">
-                        {layer.level === 0 ? "Base Layer (L0)" : `Navigable Layer (L${layer.level})`}
-                      </span>
-                      <span className="text-[10px] font-mono text-[#888] bg-white/5 px-1.5 py-[1px] rounded-sm" title="Maximum Connections per Element">
-                        {layer.level === 0 ? "M0 = 32" : "M = 16"}
-                      </span>
-                    </div>
-                    <div className="flex gap-6 mt-1">
-                      <div className="flex flex-col gap-0.5">
-                        <span className="text-[9px] text-[#555] uppercase tracking-wider">Nodes</span>
-                        <span className="font-mono text-xs text-[#a78bfa]">{formatNumber(layer.nodes)}</span>
-                      </div>
-                      <div className="flex flex-col gap-0.5">
-                        <span className="text-[9px] text-[#555] uppercase tracking-wider">Edges</span>
-                        <span className="font-mono text-xs text-[#888]">{formatNumber(layer.edges)}</span>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="text-xs text-[#555] py-4 text-center border border-[rgba(255,255,255,0.02)] rounded-[6px]">
-                  No topology data available (Index might be empty or not HNSW)
-                </div>
-              )}
-
-              <div className="mt-4 flex items-start gap-2 p-3 rounded-[6px] bg-[#111] border border-[rgba(255,255,255,0.04)]">
-                <div className="w-1.5 h-1.5 rounded-full bg-[#f59e0b] mt-1 shrink-0" />
-                <div className="flex flex-col gap-1">
-                  <p className="text-[11px] text-[#777] leading-relaxed">
-                    Graph topography is derived dynamically from the active index memory state.
-                  </p>
-                  <p className="text-[11px] text-[#555] leading-relaxed">
-                    <strong>HNSW</strong> (Hierarchical Navigable Small World) uses multi-layered graphs for fast approximate search. <strong>L0</strong> contains all elements, while <strong>L1+</strong> are sparser expressways.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </>
-      )}
+        </section>
+      </div>}
     </div>
   );
 }

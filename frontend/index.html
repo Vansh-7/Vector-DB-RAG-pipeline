@@ -2,12 +2,33 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/svg+xml" href="/brand/neuebit-mark.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>VectorDB Console</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <title>NeueBit - Your knowledge, in context</title>
+    <meta name="description" content="Ask your documents, search by meaning, and trace answers to their sources. NeueBit is an AI knowledge workspace built on a custom vector engine." />
+    <meta name="theme-color" content="#FFFFFF" />
+    <!-- entry-robots -->
+    <!-- public-share-metadata -->
+    <script>
+      // Resolve appearance before CSS or React can paint. Storage is optional.
+      (() => {
+        let preference;
+        try { preference = localStorage.getItem('neuebit-theme'); } catch {}
+        const theme = preference === 'light' || preference === 'dark'
+          ? preference : matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        document.documentElement.dataset.theme = theme;
+        document.querySelector('meta[name="theme-color"]').content = theme === 'dark' ? '#141414' : '#FFFFFF';
+        // The static SPA shares one HTML entry. Keep non-public routes out of
+        // indexing before React runs; client route effects maintain this later.
+        if ((location.pathname.replace(/\/+$/, '') || '/') !== '/') {
+          document.querySelector('meta[name="robots"]').content = 'noindex, nofollow';
+          document.querySelectorAll('[data-public-metadata]').forEach((node) => node.remove());
+        }
+      })();
+    </script>
+    <link rel="preload" href="/fonts/geist-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/fonts/geist-mono-latin.woff2" as="font" type="font/woff2" crossorigin>
   </head>
   <body>
     <div id="root"></div>
