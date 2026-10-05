@@ -8,7 +8,8 @@ NeueBit is an AI knowledge workspace for documents, semantic search and question
 - **NEXT:** final `deploy/v1` integration, production inference verification, Docker production verification, AWS hosting, HTTPS/CORS, CloudWatch, CI/CD and final public smoke tests. CI/CD is not implemented; this branch does not establish a deployed production service.
 - **POST-V1:** Google auth/OAuth, password reset, email verification, MFA/SSO, refresh-token rotation, connectors, RAG evals, hybrid retrieval and enterprise features.
 
-The frontend quality boundary is separate from production deployment readiness. Backend auth ownership was corrected on `deploy/v1`; deployment integration remains owned by that branch.
+The frontend quality boundary is separate from production deployment readiness. Backend authentication implementation and enforcement are owned by deploy/v1;
+production deployment integration remains owned by that branch.
 
 ## Development
 
@@ -50,7 +51,8 @@ LandingPage, AuthGate and BrandPage have lazy route chunks. AppShell loads only 
 | --- | --- |
 | TanStack Query | Fetched server state: documents, conversations/messages, search results, vector samples, engine status and related caches |
 | Zustand | Auth/session state, transient navigation and canvas handoff state, terminal logs, and selected local UI preferences |
-| Backend/PostgreSQL | Durable documents, conversations and messages; the custom vector index holds searchable vectors |
+| Backend/PostgreSQL | Users, document metadata/ownership, conversations and messages |
+| Custom Vector DB   | Chunk text, embeddings, vector/index state and searchable vectors |
 
 Chat streams authenticated NDJSON responses and then reconciles persistent conversation data. Durable chat history is not stored in localStorage. Sidebar collapse/width and terminal height persist as layout preferences; top-K/category persist as local retrieval/injection preferences, not shared engine configuration. The terminal displays client API operation logs and does not use WebSockets.
 

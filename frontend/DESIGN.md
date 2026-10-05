@@ -22,9 +22,9 @@ Geist Sans owns product copy. Geist Mono owns technical numbers, vector IDs, sco
 
 The login/register boundary uses the current centered form, capped at 410px, with a 24px brand lockup, 26px heading and 28px brand-to-heading gap. Mobile uses natural document height and tighter spacing rather than clipping the form. Inputs and submit actions are 48px high; password visibility targets are 44px.
 
-Registration shows the five-rule password checklist, character count and confirm-password match feedback. The policy is 8–128 characters, uppercase ASCII, lowercase ASCII, number and special character; backend enforcement is authoritative. Login does not apply the registration checklist to an existing account. Each password field has independent visibility state. Mode switching resets sensitive fields and visibility.
+Registration shows the five-rule password checklist and confirm-password match feedback. The policy is 8–128 characters, uppercase ASCII, lowercase ASCII, number and special character; backend enforcement is authoritative. Login does not apply the registration checklist to an existing account. Each password field has independent visibility state. Mode switching resets sensitive fields and visibility.
 
-Keep loading, field errors and registration/login recovery feedback close to the form. The shared theme toggle and Return home remain available. Current auth is email/password only; Google auth and other OAuth flows are POST-V1. Session restoration, logout and 401 handling are documented in [README.md](README.md#routes-and-session-boundary).
+Keep loading, field errors and registration/login recovery feedback close to the form. The shared theme toggle and Back to NeueBit link remain available. Current auth is email/password only; Google auth and other OAuth flows are POST-V1. Session restoration, logout and 401 handling are documented in [README.md](README.md#routes-and-session-boundary).
 
 ## Shell, sidebar and account
 
