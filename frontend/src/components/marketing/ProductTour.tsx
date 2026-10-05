@@ -27,8 +27,8 @@ function SelectionLine({ progress, line, index, count }: { progress:MotionValue<
   return <m.rect className="retrieval-selection-line" x={line.x} y={line.y} height={line.height} rx="1.5" style={{ width }} />;
 }
 
-function PassageSelection({ progress }: { progress:MotionValue<number> }) {
-  const quote=useRef<HTMLQuoteElement>(null),text=useRef<HTMLSpanElement>(null);
+function PassageSelection({ progress, textRef }: { progress:MotionValue<number>; textRef:RefObject<HTMLSpanElement | null> }) {
+  const quote=useRef<HTMLQuoteElement>(null);
   const [lines,setLines]=useState<SelectionRect[]>([]);
   useLayoutEffect(()=>{
     let mounted=true;
@@ -36,7 +36,7 @@ function PassageSelection({ progress }: { progress:MotionValue<number> }) {
       if (!mounted) return;
       const origin=quote.current!.getBoundingClientRect();
       const range=document.createRange();
-      range.selectNodeContents(text.current!);
+      range.selectNodeContents(textRef.current!);
       // A font fallback can split punctuation into another rectangle on the same line.
       const next:SelectionRect[]=[];
       for (const rect of Array.from(range.getClientRects()).filter(rect=>rect.width>0)) {
@@ -55,38 +55,59 @@ function PassageSelection({ progress }: { progress:MotionValue<number> }) {
     measure();
     void document.fonts.ready.then(measure);
     return ()=>{ mounted=false;observer.disconnect(); };
-  },[]);
+  },[textRef]);
   return <blockquote ref={quote} className="retrieval-original-passage">
     <svg className="retrieval-selection" aria-hidden="true">{lines.map((line,index)=><SelectionLine key={index} progress={progress} line={line} index={index} count={lines.length} />)}</svg>
-    <span ref={text}>“{excerpt}”</span>
+    <span ref={textRef}>“{excerpt}”</span>
   </blockquote>;
 }
 
 function SemanticNode({ progress, x, y, index }: { progress: MotionValue<number>; x: number; y: number; index: number }) {
-  const nearby=index===0||index===4||index===6;
-  const opacity=useTransform(progress,[.34+index*.004,.43+index*.004,.56],[.16,nearby?.65:.45,nearby?.55:.27],{ease});
-  const xShift=useTransform(progress,[.38,.46,.56],[0,index%2===0?3:-2,0],{ease});
-  const yShift=useTransform(progress,[.38,.46,.56],[0,index%3===0?-2:2,0],{ease});
-  return <m.circle data-semantic-node="neighbor" cx={x} cy={y} r="3.5" fill="var(--text-secondary)" style={{ opacity,x:xShift,y:yShift }} />;
+  const opacity=useTransform(progress,[.36+index*.008,.46+index*.008],[.25,.65],{ease});
+  return <m.circle data-semantic-node="neighbor" cx={x} cy={y} r="4" fill="var(--text-secondary)" style={{ opacity }} />;
 }
 
 function SemanticField({ progress, fieldRef }: { progress: MotionValue<number>; fieldRef: RefObject<SVGSVGElement | null> }) {
-  const visible=useTransform(progress,[.30,.38],[.18,1],{ease});
+  const visible=useTransform(progress,[.30,.38],[.55,1],{ease});
   const query=useTransform(progress,[.30,.38],[0,1],{ease});
   const queryX=useTransform(query,[0,1],[-6,0]);
   const relationship=useTransform(progress,[.38,.48],[0,1],{ease});
   const selected=useTransform(progress,[.46,.56],[0,1],{ease});
   const context=useTransform(progress,[.54,.62],[0,1],{ease});
-  return <m.svg ref={fieldRef} className="retrieval-semantic-field" viewBox="0 0 320 136" fill="none" aria-hidden="true" style={{ opacity: visible }}>
-    <ellipse className="retrieval-semantic-region" cx="173" cy="60" rx="57" ry="35" fill="var(--capability-vectors-mark)" />
-    <m.path className="retrieval-neighborhood" d="M125 29L180 64L207 103M113 62L180 64L217 31M180 64L165 17" stroke="var(--capability-vectors-ink)" strokeWidth=".75" style={{ pathLength:relationship,opacity:relationship }} />
-    {[[125,29],[165,17],[217,31],[242,70],[207,103],[152,92],[113,62]].map(([x,y],index)=><SemanticNode key={x} progress={progress} x={x} y={y} index={index} />)}
-    <m.circle data-semantic-node="query" cx="38" cy="50" r="4.5" fill="var(--capability-vectors-mark)" style={{ opacity: query, x: queryX }} />
-    <m.path className="retrieval-query-connection" d="M43 50C91 50 123 64 173 64" stroke="var(--capability-vectors-ink)" strokeWidth="1.2" style={{ pathLength: relationship, opacity: relationship }} />
-    <m.circle className="retrieval-candidate-ring" cx="180" cy="64" r="11" stroke="var(--capability-search-mark)" strokeWidth="1.2" style={{ pathLength: selected, opacity: selected }} />
-    <m.circle data-semantic-node="selected" cx="180" cy="64" r="4.5" fill="var(--capability-search-mark)" style={{ opacity: selected }} />
-    <m.path className="retrieval-context-connection" d="M180 77C180 101 160 108 160 129" stroke="var(--capability-search-ink)" strokeWidth="1" style={{ pathLength: context, opacity: context }} />
+  return <m.svg ref={fieldRef} className="retrieval-semantic-field" viewBox="0 0 320 110" fill="none" aria-hidden="true" style={{ opacity: visible }}>
+    <m.ellipse className="retrieval-neighborhood" cx="214" cy="52" rx="72" ry="40" stroke="var(--border-default)" strokeWidth="1.1" style={{ pathLength:relationship,opacity:relationship }} />
+    {[[167,30],[212,20],[254,32],[276,52],[253,73],[173,72],[153,51]].map(([x,y],index)=><SemanticNode key={x} progress={progress} x={x} y={y} index={index} />)}
+    <m.circle data-semantic-node="query" cx="32" cy="51" r="6" fill="var(--capability-vectors-mark)" style={{ opacity: query, x: queryX }} />
+    <StoryConnector className="retrieval-query-connection" d="M44 51H133" progress={relationship} />
+    <m.circle className="retrieval-candidate-ring" cx="212" cy="52" r="12" fill="var(--capability-search-soft)" stroke="var(--capability-search-mark)" strokeWidth="1.2" style={{ pathLength: selected, opacity: selected }} />
+    <m.circle data-semantic-node="selected" cx="212" cy="52" r="5" fill="var(--capability-search-mark)" style={{ opacity: selected }} />
+    <StoryConnector className="retrieval-context-connection" d="M212 69V104" progress={context} />
   </m.svg>;
+}
+
+/** The arrow tip shares the path's scroll clock, including reverse scrolling. */
+function StoryConnector({ d, progress, opacity=progress, className }: { d:string; progress:MotionValue<number>; opacity?:MotionValue<number>; className:string }) {
+  const path=useRef<SVGPathElement>(null);
+  const [length,setLength]=useState(0);
+  useLayoutEffect(()=>{ setLength(d?path.current!.getTotalLength():0); },[d]);
+  const tip=useTransform(()=>{
+    if (!path.current || !length) return "translate(0px, 0px)";
+    const distance=progress.get()*length;
+    const point=path.current.getPointAtLength(distance);
+    const before=path.current.getPointAtLength(Math.max(0,distance-1));
+    const after=path.current.getPointAtLength(Math.min(length,distance+1));
+    const angle=Math.atan2(after.y-before.y,after.x-before.x)*180/Math.PI;
+    return `translate(${point.x}px, ${point.y}px) rotate(${angle}deg)`;
+  });
+  const tipOpacity=useTransform(()=>Math.min(1,progress.get()*25)*opacity.get());
+  return <g className={className}>
+    <m.path ref={path} d={d} fill="none" style={{ pathLength:progress,opacity }} />
+    <m.g className="retrieval-flow-arrow" style={{ transform:tip,originX:0,originY:0,transformBox:"view-box",opacity:tipOpacity }}><path d="M-5 -3L0 0L-5 3" fill="none" /></m.g>
+  </g>;
+}
+
+function MobileFlowArrow() {
+  return <svg className="retrieval-mobile-arrow" viewBox="0 0 24 28" fill="none" aria-hidden="true"><path d="M12 2V24M7 19L12 24L17 19" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" /></svg>;
 }
 
 type Anchors = {
@@ -118,20 +139,27 @@ function useStoryPaths(frame: RefObject<HTMLDivElement | null>, anchors: Anchors
         return { left:rect.left-origin.left,right:rect.right-origin.left,top:rect.top-origin.top-translationY,bottom:rect.bottom-origin.top-translationY,width:rect.width,height:rect.height };
       };
       const doc=box(document.current!),svg=box(field.current!),context=box(passage.current!),response=box(answer.current!);
-      const citation=box(source.current!),supporting=box(original.current!);
-      const scale=Math.min(svg.width/320,svg.height/136);
-      const queryX=svg.left+(svg.width-320*scale)/2+38*scale;
-      const queryY=svg.top+(svg.height-136*scale)/2+50*scale;
-      const fromX=doc.right+4,fromY=doc.top+doc.height*.48,toX=queryX-9;
-      const contextX=context.right+4,contextY=context.top+20,answerX=response.left-5,answerY=response.top+response.height*.5;
-      const sourceX=citation.left+citation.width/2,sourceY=citation.bottom+7;
-      const originalX=supporting.left+supporting.width/2,originalY=supporting.bottom+6;
-      const baseline=surface.querySelector<HTMLElement>(".retrieval-zones")!.offsetHeight+20;
-      const span=sourceX-originalX;
+      const citation=box(source.current!);
+      const originMarker=box(document.current!.querySelector(".retrieval-origin-number")!);
+      const scale=Math.min(svg.width/320,svg.height/110);
+      const queryX=svg.left+(svg.width-320*scale)/2+32*scale;
+      const queryY=svg.top+(svg.height-110*scale)/2+51*scale;
+      const fromX=doc.right+3,fromY=queryY,toX=queryX-10;
+      const contextX=context.right+3,contextY=context.top+context.height*.5;
+      const grounding=answer.current!.querySelector<HTMLSpanElement>(".retrieval-grounded-phrase")!;
+      const grounded=box(grounding);
+      const answerX=response.left-3,answerY=grounded.top+(grounding.getClientRects()[0]?.height??grounded.height)*.5;
+      const elbowX=(contextX+answerX)*.5,direction=answerY>=contextY?1:-1;
+      const elbowRadius=Math.max(0,Math.min(6,(answerX-contextX)*.25,Math.abs(answerY-contextY)*.5));
+      // Connect the matching citation markers from below, keeping the return clear of the forward flow.
+      const sourceX=citation.left+citation.width*.5,sourceY=citation.bottom+4;
+      const returnX=originMarker.left+originMarker.width*.5,returnY=originMarker.bottom+7;
+      const baseline=surface.querySelector<HTMLElement>(".retrieval-zones")!.offsetHeight+24;
+      const returnCorner=8;
       const next={
         incoming:"M"+fromX+" "+fromY+"C"+(fromX+16)+" "+fromY+" "+(toX-24)+" "+queryY+" "+toX+" "+queryY,
-        outgoing:"M"+contextX+" "+contextY+"C"+(contextX+14)+" "+contextY+" "+(answerX-14)+" "+answerY+" "+answerX+" "+answerY,
-        provenance:"M"+sourceX+" "+sourceY+"C"+sourceX+" "+(baseline+4)+" "+(sourceX-span*.2)+" "+(baseline+26)+" "+(sourceX-span*.48)+" "+(baseline+20)+"S"+(originalX-8)+" "+(baseline+2)+" "+originalX+" "+originalY,
+        outgoing:`M${contextX} ${contextY}H${elbowX-elbowRadius}Q${elbowX} ${contextY} ${elbowX} ${contextY+direction*elbowRadius}V${answerY-direction*elbowRadius}Q${elbowX} ${answerY} ${elbowX+elbowRadius} ${answerY}H${answerX}`,
+        provenance:`M${sourceX} ${sourceY}V${baseline-returnCorner}Q${sourceX} ${baseline} ${sourceX-returnCorner} ${baseline}H${returnX+returnCorner}Q${returnX} ${baseline} ${returnX} ${baseline-returnCorner}V${returnY}`,
       };
       setPaths(previous=>Object.keys(next).every(key=>next[key as keyof typeof next]===previous[key as keyof typeof previous])?previous:next);
     };
@@ -188,19 +216,20 @@ function TrustStory({ progress,release,complete,reduced }: { progress:MotionValu
   });
   const traceCitation=()=>setAnnouncement("Citation 1 supports the highlighted original passage in "+sourceName+".");
   const paths=useStoryPaths(frame,{document,original,field,passage,answer,source});
-  const documentOpacity=useTransform(progress,[0,.10],[.35,1],{ease});
+  const documentOpacity=useTransform(progress,[0,.10,.30,.84,.96],[.6,1,.72,.72,1],{ease});
   const documentY=useTransform(progress,[0,.10],[8,0],{ease});
   const sourceHighlight=useTransform(progress,[.03,.15],[0,1]);
   const originalMarker=useTransform(progress,[.14,.18],[0,1],{ease});
-  const retrievalHeading=useTransform(progress,[.18,.30],[.28,1],{ease});
-  const query=useTransform(progress,[.18,.30],[.15,1],{ease});
-  const queryY=useTransform(query,[.15,1],[8,0]);
-  const selectedContext=useTransform(progress,[.56,.70],[.12,1],{ease});
-  const selectedY=useTransform(selectedContext,[.12,1],[8,0]);
+  const retrievalHeading=useTransform(progress,[.18,.30],[.6,1],{ease});
+  const query=useTransform(progress,[.18,.30],[.6,1],{ease});
+  const queryY=useTransform(query,[.6,1],[8,0]);
+  const selectedContext=useTransform(progress,[.56,.70],[.55,1],{ease});
+  const selectedY=useTransform(selectedContext,[.55,1],[8,0]);
   const passageMarker=useTransform(progress,[.56,.59],[0,1],{ease});
   const passageLabel=useTransform(progress,[.585,.635],[0,1],{ease});
   const passageText=useTransform(progress,[.61,.70],[0,1],{ease});
-  const answerHeading=useTransform(progress,[.70,.78],[.28,1],{ease});
+  const answerHeading=useTransform(progress,[.70,.78],[.6,1],{ease});
+  const answerSurface=useTransform(progress,[.66,.78],[.55,1],{ease});
   const sentenceOne=useTransform(progress,[.70,.78],[.12,1],{ease});
   const sentenceTwo=useTransform(progress,[.77,.84],[.12,1],{ease});
   const sentenceOneY=useTransform(sentenceOne,[.12,1],[6,0]);
@@ -212,55 +241,61 @@ function TrustStory({ progress,release,complete,reduced }: { progress:MotionValu
   const outgoing=useTransform(progress,[.66,.78],[0,1],{ease});
   const provenance=useTransform(progress,[.90,.96],[0,1],{ease});
   const provenanceOpacity=useTransform(()=>provenance.get()*(1-.8*release.get()));
+  const payoff=useTransform(progress,[.935,.965],[0,1],{ease});
+  const payoffY=useTransform(payoff,[0,1],[4,0]);
   return <div ref={frame} className="retrieval-proof-strip" data-complete={complete} data-emphasis={emphasis??"none"} data-trace={complete?trace:"idle"}>
     <div className="retrieval-zones">
       <article className="retrieval-zone" data-zone="document" aria-labelledby="retrieval-document-heading">
         <header className="retrieval-zone-heading"><span>01</span><h3 id="retrieval-document-heading">Your document</h3></header>
         <m.div ref={document} className="retrieval-document" {...relationshipProps("document")} style={{ opacity:documentOpacity,y:documentY }} tabIndex={complete?0:-1} aria-label="Document and original supporting passage">
           <h4><DocumentMark /><span>{sourceName}</span></h4>
-          <PassageSelection progress={sourceHighlight} />
-          <p className="retrieval-original-label"><m.span ref={original} className="retrieval-citation-number retrieval-origin-number" style={{ opacity:originalMarker }}>[1]</m.span>Original passage</p>
+          <PassageSelection progress={sourceHighlight} textRef={original} />
+          <p className="retrieval-original-label"><m.span className="retrieval-citation-number retrieval-origin-number" style={{ opacity:originalMarker }}>[1]</m.span>Original passage</p>
         </m.div>
+        <MobileFlowArrow />
       </article>
       <article className="retrieval-zone" data-zone="retrieval" aria-labelledby="retrieval-context-heading">
         <m.header className="retrieval-zone-heading" style={{ opacity:retrievalHeading }}><span>02</span><h3 id="retrieval-context-heading">Find the right context</h3></m.header>
         <div className="retrieval-context">
-          <div className="retrieval-query-region" {...relationshipProps("retrieval")} tabIndex={complete?0:-1} aria-label="Question, semantic neighborhood, and selected candidate">
+          <div className="retrieval-query-region" {...relationshipProps("retrieval")} tabIndex={complete?0:-1} aria-label="Question searches candidate passages; one context passage is selected">
             <m.p className="retrieval-question" style={{ opacity:query,y:queryY }}>How does retrieval work?</m.p>
+            <div className="retrieval-semantic-labels"><span>Query</span><span>Candidate passages</span></div>
             <SemanticField progress={progress} fieldRef={field} />
           </div>
           <m.div ref={passage} className="retrieval-selected-passage" {...relationshipProps("passage")} style={{ opacity:selectedContext,y:selectedY }} tabIndex={complete?0:-1} aria-labelledby="retrieval-selected-heading">
             <h4 id="retrieval-selected-heading"><m.span className="retrieval-passage-marker" aria-hidden="true" style={{ opacity:passageMarker }} /><m.span style={{ opacity:passageLabel }}>Retrieved passage</m.span></h4>
-            <m.p style={{ opacity:passageText }}>Retrieval stays within your knowledge.</m.p>
+            <m.p style={{ opacity:passageText }}>“{excerpt}”</m.p>
           </m.div>
         </div>
+        <MobileFlowArrow />
       </article>
       <article className="retrieval-zone" data-zone="answer" aria-labelledby="retrieval-answer-heading">
         <m.header className="retrieval-zone-heading" style={{ opacity:answerHeading }}><span>03</span><h3 id="retrieval-answer-heading">A grounded answer</h3></m.header>
-        <div>
-          <div ref={answer} className="retrieval-answer">
+        <m.div ref={answer} className="retrieval-answer-object" style={{ opacity:answerSurface }}>
+          <div className="retrieval-answer">
             <m.p style={{ opacity:sentenceOne,y:sentenceOneY }}>Neuebit embeds the question and finds related passages.</m.p>
-            <m.p style={{ opacity:sentenceTwo,y:sentenceTwoY }}>It filters the <span className="retrieval-grounded-phrase">context to your knowledge</span> and reranks the matches.<m.button type="button" className="retrieval-answer-citation" {...relationshipProps("citation")} style={{ opacity:citation }} disabled={!complete} aria-label="Trace citation 1 to its supporting passage" aria-describedby="retrieval-provenance-description" onClick={traceCitation}>[1]</m.button></m.p>
+            <m.p style={{ opacity:sentenceTwo,y:sentenceTwoY }}>It filters the <span className="retrieval-grounded-phrase">context to your knowledge</span> and reranks the <span className="retrieval-cited-fragment">matches.<m.button type="button" className="retrieval-answer-citation" {...relationshipProps("citation")} style={{ opacity:citation }} disabled={!complete} aria-label="Trace citation 1 to its supporting passage" aria-describedby="retrieval-provenance-description" onClick={traceCitation}>[1]</m.button></span></m.p>
           </div>
           <m.div className="retrieval-source" style={{ opacity:sourceOpacity,y:sourceY }}>
             <p className="retrieval-source-label">Source</p>
             <button type="button" className="retrieval-source-identity" {...relationshipProps("source")} disabled={!complete} aria-label={"Trace source 1: "+sourceName} aria-describedby="retrieval-provenance-description" onClick={traceCitation}><span ref={source} className="retrieval-citation-number">[1]</span><span>{sourceName}</span></button>
           </m.div>
-        </div>
+        </m.div>
       </article>
     </div>
     <svg ref={connections} className="retrieval-connections" aria-hidden="true">
-      <m.path className="retrieval-document-connection" d={paths.incoming} style={{ pathLength:incoming,opacity:incoming }} />
-      <m.path className="retrieval-answer-connection" d={paths.outgoing} style={{ pathLength:outgoing,opacity:outgoing }} />
-      <m.path className="retrieval-provenance" d={paths.provenance} style={{ pathLength:provenance,opacity:provenanceOpacity }} />
+      <StoryConnector className="retrieval-document-connection" d={paths.incoming} progress={incoming} />
+      <StoryConnector className="retrieval-answer-connection" d={paths.outgoing} progress={outgoing} />
+      <StoryConnector className="retrieval-provenance" d={paths.provenance} progress={provenance} opacity={provenanceOpacity} />
       {complete&&trace==="tracing"&&!reduced&&<path key={traceRun} className="retrieval-provenance-tracer" d={paths.provenance} pathLength="1" onAnimationEnd={event=>{
         if (event.animationName!=="retrieval-provenance-trace") return;
         tracing.current=false;
         setTrace("arrived");
       }} />}
     </svg>
+    <m.p className="retrieval-payoff" style={{ opacity:payoff,y:payoffY }}>Every answer stays <span>traceable</span> to its source.</m.p>
     <span id="retrieval-provenance-description" className="retrieval-accessible-text">Trace citation 1 to its supporting passage.</span>
-    <span className="retrieval-accessible-text" role="status">{announcement}</span>
+    <span className="retrieval-accessible-text retrieval-status" role="status">{announcement}</span>
   </div>;
 }
 

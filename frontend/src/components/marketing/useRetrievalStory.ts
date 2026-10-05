@@ -35,11 +35,12 @@ export function useRetrievalStory(root: RefObject<HTMLElement | null>, reduced: 
       const theme = getComputedStyle(document.documentElement);
       const header = parseFloat(theme.getPropertyValue("--marketing-header-height")) || 69;
       const rem = parseFloat(theme.fontSize);
-      const sticky = Math.min(window.innerHeight - header, 48 * rem);
+      const sticky = window.innerHeight - header;
+      const padding = parseFloat(getComputedStyle(section).getPropertyValue("--retrieval-sticky-padding")) || 24;
       const contentHeight = heading.offsetHeight + parseFloat(getComputedStyle(heading).marginBottom) + canvas.offsetHeight;
       // Small screens, short viewports and enlarged text retain complete natural flow.
       const enabled = !reduced && window.innerWidth >= 1024 && canvas.clientWidth > 52 * rem
-        && contentHeight + 48 <= sticky;
+        && contentHeight + padding * 2 <= sticky;
       setLayout(previous => previous.enabled === enabled && previous.header === header && previous.sticky === sticky
         ? previous : { enabled, header, sticky });
     };
@@ -50,10 +51,12 @@ export function useRetrievalStory(root: RefObject<HTMLElement | null>, reduced: 
     observer.observe(document.documentElement);
     const appearance = new MutationObserver(measure);
     appearance.observe(document.documentElement, { attributes: true, attributeFilter: ["style"] });
+    window.addEventListener("resize", measure);
     measure();
     return () => {
       observer.disconnect();
       appearance.disconnect();
+      window.removeEventListener("resize", measure);
     };
   }, [root, reduced]);
 
