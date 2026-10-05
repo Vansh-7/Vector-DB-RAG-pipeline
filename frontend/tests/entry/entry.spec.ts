@@ -116,10 +116,11 @@ test("verification failure retains the token and retry recovers", async ({ page 
   let attempts = 0;
   const { calls, scripts } = await stubApi(page, { "/auth/me": (route) => {
     attempts++;
-    return attempts === 1 ? reply(route, { detail: "Temporarily unavailable" }, 503) : reply(route, USER);
+    return attempts === 1 ? reply(route, { detail: "Traceback: database connection secret" }, 503) : reply(route, USER);
   } });
   await page.goto("/app");
   await expect(page.getByRole("heading", { name: "Connection unavailable" })).toBeVisible();
+  await expect(page.getByRole("alert")).toHaveText("Unable to verify your session. Check your connection and retry.");
   expect(await page.evaluate((key) => localStorage.getItem(key), TOKEN_KEY)).toBe(SESSION_TOKEN);
   expect(calls.map((call) => call.path)).toEqual(["/auth/me"]);
   expectNoProductCode(scripts);
@@ -167,7 +168,7 @@ test("expired app session is cleared and explained at login", async ({ page }) =
 test("sign in, refresh, public return, and logout preserve the session boundary", async ({ page }) => {
   const { calls } = await stubApi(page);
   await page.goto("/");
-  await page.getByRole("link", { name: "Sign in" }).click();
+  await page.getByRole("navigation", { name: "Public navigation", exact: true }).getByRole("link", { name: "Sign in", exact: true }).click();
   await fillCredentials(page);
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await expectWorkspace(page);
@@ -204,7 +205,7 @@ test("create account registers, signs in, verifies, then opens the product", asy
   await page.reload();
   await expect(page).toHaveTitle("NeueBit — Create account");
   await fillCredentials(page);
-  await page.getByLabel("Confirm password", { exact: true }).fill("test-password-123");
+  await page.getByLabel("Confirm password", { exact: true }).fill("Neuebit-test-123!");
   await page.getByRole("button", { name: "Create account", exact: true }).click();
   await expectWorkspace(page);
   expect(calls.slice(0, 3).map((call) => [call.method, call.path])).toEqual([
@@ -218,11 +219,11 @@ test("registration success with failed auto-login recovers to login", async ({ p
   });
   await page.goto("/auth?mode=register");
   await fillCredentials(page);
-  await page.getByLabel("Confirm password", { exact: true }).fill("test-password-123");
+  await page.getByLabel("Confirm password", { exact: true }).fill("Neuebit-test-123!");
   await page.getByRole("button", { name: "Create account", exact: true }).click();
   await expect(page).toHaveURL(/\/auth\?mode=login$/);
   await expect(page.getByRole("status")).toHaveText("Account created. Sign in to continue.");
-  await expect(page.getByRole("alert")).toHaveText("Please sign in again");
+  await expect(page.getByRole("alert")).toHaveText("Unable to connect. Please try again in a moment.");
   await expect(page.getByLabel("Password", { exact: true })).toHaveValue("");
   await expect(page.getByLabel("Email", { exact: true })).toHaveValue(USER.email);
   expect(calls.map((call) => call.path)).toEqual(["/auth/register", "/auth/login"]);
@@ -234,17 +235,17 @@ test("mismatched registration passwords do not submit", async ({ page }) => {
   await fillCredentials(page);
   await page.getByLabel("Confirm password", { exact: true }).fill("different-password");
   await page.getByRole("button", { name: "Create account", exact: true }).click();
-  await expect(page.getByRole("alert")).toHaveText("Passwords do not match.");
+  await expect(page.locator("#auth-confirm-status")).toHaveText("Passwords do not match.");
   expect(calls).toEqual([]);
 });
 
 test("URL-driven form toggles clear secrets and preserve normal Back/Forward", async ({ page }) => {
   await stubApi(page);
   await page.goto("/");
-  await page.getByRole("link", { name: "Sign in" }).click();
+  await page.getByRole("navigation", { name: "Public navigation", exact: true }).getByRole("link", { name: "Sign in", exact: true }).click();
   await fillCredentials(page);
   await page.getByRole("button", { name: "Show password", exact: true }).click();
-  await page.getByRole("button", { name: "Create an account" }).click();
+  await page.getByRole("button", { name: "Create account", exact: true }).click();
   await expect(page).toHaveURL(/\/auth\?mode=register$/);
   await expect(page.getByLabel("Password", { exact: true })).toHaveValue("");
   await expect(page.getByLabel("Password", { exact: true })).toHaveAttribute("type", "password");
@@ -265,7 +266,7 @@ test("rejected credentials remain on login without exposing the product", async 
   await page.goto("/auth");
   await fillCredentials(page);
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
-  await expect(page.getByRole("alert")).toHaveText("Invalid credentials");
+  await expect(page.getByRole("alert")).toHaveText("Email or password is incorrect. Try again.");
   await expect(page.getByRole("button", { name: "Sign in", exact: true })).toBeEnabled();
   expect(calls.map((call) => call.path)).toEqual(["/auth/login"]);
   expect(await page.evaluate((key) => localStorage.getItem(key), TOKEN_KEY)).toBeNull();
@@ -282,7 +283,7 @@ for (const pendingPath of ["/auth/login", "/auth/register", "/auth/me"]) {
     } });
     await page.goto(pendingPath === "/auth/register" ? "/auth?mode=register" : "/auth?mode=login");
     await fillCredentials(page);
-    if (pendingPath === "/auth/register") await page.getByLabel("Confirm password", { exact: true }).fill("test-password-123");
+    if (pendingPath === "/auth/register") await page.getByLabel("Confirm password", { exact: true }).fill("Neuebit-test-123!");
     await page.getByRole("button", { name: pendingPath === "/auth/register" ? "Create account" : "Sign in", exact: true }).click();
     await expect.poll(() => calls.some((call) => call.path === pendingPath)).toBe(true);
     await page.getByRole("link", { name: "Back to NeueBit" }).click();
@@ -292,7 +293,7 @@ for (const pendingPath of ["/auth/login", "/auth/register", "/auth/me"]) {
     pending.resolve();
     // /me is actually aborted; login/register lack API cancellation but must be ignored.
     if (pendingPath !== "/auth/me") await completed;
-    await page.getByRole("link", { name: "Sign in" }).click();
+    await page.getByRole("navigation", { name: "Public navigation", exact: true }).getByRole("link", { name: "Sign in", exact: true }).click();
     await expect(page.getByRole("heading", { name: "Welcome back" })).toBeVisible();
     expect(await page.evaluate((key) => localStorage.getItem(key), TOKEN_KEY)).toBeNull();
     expect(calls.map((call) => call.path)).toEqual(pendingPath === "/auth/me" ? ["/auth/login", "/auth/me"] : [pendingPath]);

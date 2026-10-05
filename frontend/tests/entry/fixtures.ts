@@ -92,7 +92,7 @@ export async function stubApi(page: Page, overrides: Record<string, (route: Rout
 
 export async function fillCredentials(page: Page) {
   await page.getByLabel("Email", { exact: true }).fill(USER.email);
-  await page.getByLabel("Password", { exact: true }).fill("test-password-123");
+  await page.getByLabel("Password", { exact: true }).fill("Neuebit-test-123!");
 }
 
 export async function expectWorkspace(page: Page) {

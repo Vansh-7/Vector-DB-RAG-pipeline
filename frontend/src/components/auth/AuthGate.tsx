@@ -11,7 +11,6 @@ const AppShell = lazy(() => import("../layout/AppShell").then((module) => ({ def
 
 export function AuthGate({ intent }: { intent: "auth" | "app" }) {
   const status = useAuthStore((s) => s.status);
-  const error = useAuthStore((s) => s.error);
   const [confirmLogout, setConfirmLogout] = useState(false);
   const logoutRef = useRef<HTMLButtonElement>(null);
 
@@ -34,7 +33,7 @@ export function AuthGate({ intent }: { intent: "auth" | "app" }) {
         ) : (
           <>
             <h1 tabIndex={-1} className="text-lg font-semibold">Connection unavailable</h1>
-            <p role="alert" className="text-sm text-[--text-secondary] mt-3">{error}</p>
+            <p role="alert" className="text-sm text-[--text-secondary] mt-3">Unable to verify your session. Check your connection and retry.</p>
             <div className="flex justify-center gap-3 mt-6">
               <Button type="button" onClick={() => useAuthStore.getState().retryVerification()}>Retry</Button>
               <Button ref={logoutRef} type="button" variant="outline" onClick={() => setConfirmLogout(true)}>Log out</Button>
