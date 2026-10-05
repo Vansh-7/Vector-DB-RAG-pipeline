@@ -23,7 +23,7 @@ test("job stories give local feedback and discovery only navigates", async ({ pa
   await expect(chat.locator(".job-answer")).toHaveText(answer!);
   await expect(chat.locator('.job-answer [data-supported="true"]')).toContainText("reranks the matches");
   await expect(chat.locator(".job-source-excerpt")).toContainText("cross-encoder");
-  await expect(page.locator(".retrieval-canvas")).toHaveAttribute("data-retrieval-stage", "5");
+  await expect(page.locator(".retrieval-canvas")).toHaveAttribute("data-state", "complete");
   await page.locator(".capability-discovery-links").getByRole("link", { name: "Search by meaning" }).click();
   await expect(search).toBeFocused(); await expect(search.getByRole("button").nth(1)).toHaveAttribute("aria-pressed", "true");
   await expect(docs.getByRole("button", { name: /Vector search notes/ })).toHaveAttribute("aria-pressed", "true");

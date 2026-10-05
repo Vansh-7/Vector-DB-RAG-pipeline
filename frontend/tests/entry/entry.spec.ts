@@ -7,15 +7,13 @@ test("public entry is usable without a session, product code, or product polling
   const { calls, scripts } = await stubApi(page);
   await page.clock.install();
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: "Your knowledge, in context." })).toBeFocused();
+  await expect(page.locator("#hero-heading")).toBeFocused();
   await expect(page).toHaveTitle("NeueBit - Your knowledge, in context");
   await expect(page.locator(".marketing-hero").getByRole("link", { name: "Get started" })).toHaveAttribute("href", "/auth?mode=register");
-  await expect(page.getByRole("link", { name: "Sign in" })).toHaveAttribute("href", "/auth?mode=login");
+  await expect(page.getByRole("navigation", { name: "Public navigation" }).getByRole("link", { name: "Sign in", exact: true })).toHaveAttribute("href", "/auth?mode=login");
   await page.clock.fastForward(30_000);
   expect(calls).toEqual([]);
   expectNoProductCode(scripts);
-  await page.keyboard.press("Tab");
-  await expect(page.getByRole("button", { name: "Pause supporting phrases" })).toBeFocused();
   await page.keyboard.press("Tab");
   await expect(page.locator(".marketing-hero").getByRole("link", { name: "Get started" })).toBeFocused();
   await page.keyboard.press("Enter");
@@ -135,7 +133,7 @@ test("public entry remains available when session verification fails", async ({ 
     "/auth/me": (route) => reply(route, { detail: "Temporarily unavailable" }, 503),
   });
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: "Your knowledge, in context." })).toBeVisible();
+  await expect(page.locator("#hero-heading")).toBeVisible();
   await page.locator(".marketing-hero").getByRole("link", { name: "Continue to NeueBit" }).click();
   await expect(page.getByRole("heading", { name: "Connection unavailable" })).toBeVisible();
   await page.getByRole("link", { name: "Back to NeueBit" }).click();

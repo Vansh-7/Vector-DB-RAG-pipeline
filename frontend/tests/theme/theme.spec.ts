@@ -167,7 +167,7 @@ test("landing toggle is keyboard accessible, persists on refresh, and preserves 
   expectNoProductCode(scripts);
   await page.reload();
   await expect(page.getByRole("button", { name: "Switch to light theme" })).toBeVisible();
-  await page.getByRole("link", { name: "Sign in", exact: true }).click();
+  await page.getByRole("navigation", { name: "Public navigation" }).getByRole("link", { name: "Sign in", exact: true }).click();
   await expect(page.locator("html")).toHaveAttribute("data-page-surface", "product");
   await expect(page.locator("body")).toHaveCSS("background-color", "rgb(20, 20, 20)");
   await fillCredentials(page);
@@ -228,23 +228,25 @@ for (const theme of ["light", "dark"] as const) {
       await page.emulateMedia({ reducedMotion: "reduce" });
       const { calls, scripts } = await stubApi(page);
       await page.goto("/");
-      await expect(page.locator(".tour-layout")).toHaveAttribute("data-tour-layout", width === 1440 ? "stage" : "chapters");
-      if (width === 1440) await page.getByRole("tab", { name: /Ask \+ verify/ }).click();
-      await expect(page.locator(".demo-chat")).toHaveCSS("background-color", theme === "light" ? "rgb(255, 255, 255)" : "rgb(24, 24, 24)");
-      await page.getByRole("button", { name: "2 sources" }).click();
-      await expect(page.getByRole("complementary", { name: "Preview answer sources" })).toBeVisible();
+      const chat = page.locator("#knowledge-chat");
+      await expect(chat.locator(".job-interface")).toHaveCSS("background-color", theme === "light" ? "rgb(255, 255, 255)" : "rgb(24, 24, 24)");
+      await expect(chat.getByRole("button", { name: "2 sources" })).toHaveAttribute("aria-expanded", "true");
+      await chat.getByRole("button", { name: "Source 2", exact: true }).click();
+      await expect(chat.getByRole("button", { name: "Source 2", exact: true })).toHaveAttribute("aria-pressed", "true");
+      await expect(chat.locator(".job-source-excerpt")).toContainText("A cross-encoder reranks retrieved passages");
+      await expect(page.locator("#product")).toHaveAttribute("data-scroll-story", "false");
+      await expect(page.locator(".retrieval-canvas")).toHaveAttribute("data-state", "complete");
       await page.evaluate(() => { document.documentElement.style.fontSize = "200%"; });
-      await expect(page.locator(".tour-layout")).toHaveAttribute("data-tour-layout", "chapters");
+      await expect(page.locator("#product")).toHaveAttribute("data-scroll-story", "false");
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-      if (width < 768) {
-        await page.getByRole("button", { name: "Open navigation" }).click();
-        await expect(page.locator("#public-mobile-links").getByRole("link")).toHaveText(["Product", "How it works", "Vector Lab", "GitHub", "Sign in", "Get started"]);
-      }
+      await page.getByRole("button", { name: "Open navigation" }).click();
+      await expect(page.locator("#public-mobile-links").getByRole("link")).toHaveText(["Product", "How it works", "Vector Lab", "GitHub", "Sign in", "Get started"]);
       const toggle = page.getByRole("button", { name: `Switch to ${theme === "light" ? "dark" : "light"} theme` });
       expect((await toggle.boundingBox())!.height).toBeGreaterThanOrEqual(44);
       await toggle.focus(); await page.keyboard.press("Enter");
       await expect(page.locator("html")).toHaveAttribute("data-theme", theme === "light" ? "dark" : "light");
-      await expect(page.locator(".demo-chat")).toHaveCSS("background-color", theme === "light" ? "rgb(24, 24, 24)" : "rgb(255, 255, 255)");
+      await expect(chat.locator(".job-interface")).toHaveCSS("background-color", theme === "light" ? "rgb(24, 24, 24)" : "rgb(255, 255, 255)");
+      await expect(chat.getByRole("button", { name: "Source 2", exact: true })).toHaveAttribute("aria-pressed", "true");
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
       expect(calls).toEqual([]); expectNoProductCode(scripts);
     });

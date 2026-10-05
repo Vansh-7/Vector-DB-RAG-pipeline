@@ -57,7 +57,7 @@ for (const theme of ["light", "dark"] as const) {
         }
       }
     }
-    await expect(footer).toHaveCSS("background-color", theme === "light" ? "rgb(255, 255, 255)" : "rgb(8, 9, 10)");
+    await expect(footer).toHaveCSS("background-color", theme === "light" ? "rgb(255, 255, 255)" : "rgb(20, 20, 20)");
     await expect(footer).toContainText("Built by Vansh Gupta");
     expect(calls).toEqual([]);
     expectNoProductCode(scripts);

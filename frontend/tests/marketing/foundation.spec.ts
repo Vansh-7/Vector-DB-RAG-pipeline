@@ -1,5 +1,5 @@
 import {
-  test, expect, stubApi, fillCredentials, expectWorkspace, expectNoProductCode,
+  test, expect, stubApi, fillCredentials, expectWorkspace, expectNoProductCode, signOutFromApp,
 } from "../entry/fixtures";
 
 for (const width of [320, 375, 390, 430, 768, 1024, 1280, 1440]) {
@@ -54,7 +54,7 @@ test("public page scrolls with the document and public-to-app navigation isolate
   await expectWorkspace(page);
   await expect(page.locator(".marketing-page")).toHaveCount(0);
   expect(await page.locator("body").evaluate((element) => getComputedStyle(element).backgroundColor)).toBe(productBody.background);
-  await page.getByRole("button", { name: "Sign out", exact: true }).click();
+  await signOutFromApp(page);
   await page.getByRole("link", { name: "Back to NeueBit" }).click();
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   expect(await page.locator("body").evaluate((element) => getComputedStyle(element).colorScheme)).toBe("light");

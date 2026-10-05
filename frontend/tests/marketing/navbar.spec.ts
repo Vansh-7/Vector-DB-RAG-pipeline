@@ -5,7 +5,7 @@ async function geometry(page: import("@playwright/test").Page) {
     const box = (selector: string) => nav.querySelector(selector)!.getBoundingClientRect().toJSON();
     return { width: innerWidth, nav: nav.getBoundingClientRect().toJSON(), brand: box(".marketing-brand"),
       links: box(".marketing-nav-desktop"), actions: box(".marketing-nav-access"),
-      mark: box(".marketing-brand img"), primary: box(".marketing-nav-access .marketing-button") };
+      mark: box(".marketing-brand .brand-mark"), primary: box(".marketing-nav-access .marketing-button") };
   });
 }
 
@@ -33,8 +33,9 @@ for (const width of [1440, 1920]) for (const theme of ["light", "dark"] as const
       expect(width - state.actions.right).toBeLessThanOrEqual(32);
       expect(state.brand.right).toBeLessThan(state.links.x);
       expect(state.links.right).toBeLessThan(state.actions.x);
-      expect(state.mark.width).toBeGreaterThanOrEqual(28);
-      expect(state.mark.width).toBeLessThanOrEqual(32);
+      // BrandMark's current SVG contract is 22px; the retired image was 30px.
+      expect(state.mark.width).toBe(22);
+      expect(state.mark.height).toBe(22);
       expect(state.nav.height).toBeGreaterThanOrEqual(64);
       expect(state.nav.height).toBeLessThanOrEqual(72);
       expect(state.primary.height).toBeGreaterThanOrEqual(40);
