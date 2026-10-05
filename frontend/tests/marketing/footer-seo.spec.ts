@@ -20,8 +20,11 @@ for (const theme of ["light", "dark"] as const) for (const height of [900,960]) 
     await expect(footer).toHaveCSS("border-top-width","1px");
     await expect(footer.locator(".marketing-footer-content")).toHaveCSS("border-top-width","0px");
     const actions=(await close.locator(".marketing-closing-actions").boundingBox())!;
-    expect(edge.y-actions.y-actions.height).toBeGreaterThanOrEqual(48);
-    expect(edge.y-actions.y-actions.height).toBeLessThanOrEqual(64);
+    const cta=(await close.locator(".marketing-final-cta").boundingBox())!;
+    const heading=(await close.locator("#final-cta-heading").boundingBox())!;
+    const above=heading.y-cta.y, below=edge.y-actions.y-actions.height;
+    expect(below).toBeGreaterThanOrEqual(48);
+    expect(Math.abs(above-below)).toBeLessThanOrEqual(1);
     const utility=(await footer.locator(".marketing-footer-attribution").boundingBox())!;
     expect(utility.y+utility.height).toBeLessThan(height);
     await expect(close.locator(".footer-wordmark")).toHaveCount(0);

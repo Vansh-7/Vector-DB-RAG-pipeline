@@ -21,6 +21,15 @@ async function seek(page:Page,progress:number) {
   await page.waitForTimeout(100);
 }
 
+async function seekRelease(page:Page,progress:number) {
+  await page.locator("#product").evaluate((section,progress)=>{
+    const header=parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--marketing-header-height"));
+    const top=section.getBoundingClientRect().top+scrollY;
+    scrollTo({top:top+(section as HTMLElement).offsetHeight-innerHeight+progress*(innerHeight-header),behavior:"instant"});
+  },progress);
+  await page.waitForTimeout(150);
+}
+
 for (const theme of ["light","dark"] as const) for (const [width,height] of [[1920,1080],[1440,900],[1280,800],[1024,768],[768,1024],[430,932],[390,844],[320,740]]) {
   test(theme+" "+width+"px preserves three zones, readable geometry, and local citation behavior",async({page})=>{
     await page.setViewportSize({width,height});
@@ -125,6 +134,21 @@ test("selection, semantic context, and answer reveal in order and reverse with n
   await page.waitForTimeout(800);
   expect(await scene.evaluate(node=>[...node.querySelectorAll("[style]")].map(n=>n.getAttribute("style")))).toEqual(still);
   expect(await scene.evaluate(node=>node.getAnimations({subtree:true}).filter(animation=>animation.playState==="running").length)).toBe(0);
+});
+
+test("retrieval chapter fades into engineering and reverses without reduced-motion animation",async({page})=>{
+  await page.setViewportSize({width:1440,height:900});await openStory(page);
+  const shell=page.locator(".retrieval-story-shell");
+  await seekRelease(page,.05);await expect(shell).toHaveCSS("opacity","1");
+  await seekRelease(page,.72);
+  const fading=Number(await shell.evaluate(node=>getComputedStyle(node).opacity));
+  expect(fading).toBeGreaterThan(0);expect(fading).toBeLessThan(1);
+  await seekRelease(page,.98);expect(Number(await shell.evaluate(node=>getComputedStyle(node).opacity))).toBeLessThan(.05);
+  await seekRelease(page,.05);await expect(shell).toHaveCSS("opacity","1");
+
+  await page.emulateMedia({reducedMotion:"reduce"});await page.reload();await page.evaluate(()=>document.fonts.ready);
+  await expect(page.locator("#product")).toHaveAttribute("data-scroll-story","false");
+  await expect(page.locator(".retrieval-story-shell")).toHaveCSS("opacity","1");
 });
 
 test("arrow tips follow scroll progress, context feeds the answer, and provenance returns underneath to the original citation",async({page})=>{

@@ -1,5 +1,7 @@
-.product-tour { --retrieval-sticky-padding: 24px; position: relative; padding-block: 3.5rem var(--marketing-section-space); scroll-margin-block-start: var(--marketing-header-height,5rem); }
+/* Keep the story above the following chapter's overlapping background fade. */
+.product-tour { --retrieval-sticky-padding: 24px; position: relative; z-index: 1; margin-block-start: calc(clamp(var(--marketing-space-4), 2vw, var(--marketing-space-8)) + clamp(var(--marketing-space-6), 4vw, var(--marketing-space-12)) + 1.25rem); padding-block: var(--marketing-gap-continuation) 0; scroll-margin-block-start: var(--marketing-header-height,5rem); }
 html[data-theme="dark"] .product-tour { --capability-search-mark: #CA8475; --capability-search-ink: #DEA499; --capability-search-soft: #1C1719; }
+/* The entry gap separates the capability cards without changing the sticky scroll track. */
 .product-tour[data-scroll-story="true"] { block-size: 240svh; padding-block: 0; }
 .product-tour[data-scroll-story="true"] .retrieval-story-shell { position: sticky; inset-block-start: var(--marketing-header-height,5rem); block-size: calc(100svh - var(--marketing-header-height,5rem)); padding-block: var(--retrieval-sticky-padding); display: flex; flex-direction: column; justify-content: center; }
 .tour-legacy-anchor { position: absolute; inset-block-start: 0; }
@@ -121,7 +123,6 @@ html[data-theme="dark"] .product-tour { --capability-search-mark: #CA8475; --cap
   .retrieval-answer { padding-block-end: 1rem; }
 }
 @media (max-width: 767px) {
-  .product-tour { padding-block-start: 2rem; }
   .tour-heading h2 { font-size: 2.5rem; }
   .tour-heading > p { font-size: 1.125rem; }
   .retrieval-answer-citation { min-inline-size: 2.75rem; min-block-size: 2.75rem; vertical-align: baseline; }

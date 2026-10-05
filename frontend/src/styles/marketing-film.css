@@ -44,7 +44,7 @@
 .hero-headline-label { white-space: nowrap; }
 .hero-headline-phrase[data-active="false"] { pointer-events: none; user-select: none; }
 .hero-headline-context { flex-shrink: 0; }
-.marketing-hero .hero-product { margin-block-start: 3.5rem; border: 0; border-radius: 0; background: transparent; overflow: visible; }
+.marketing-hero .hero-product { margin-block-start: var(--marketing-gap-continuation); border: 0; border-radius: 0; background: transparent; overflow: visible; }
 .product-film { position: relative; isolation: isolate; }
 .film-screen {
   position: relative; z-index: 1; aspect-ratio: 1280 / 722; background: var(--canvas); overflow: clip;
@@ -73,7 +73,6 @@ html[data-theme="dark"] .film-screen { border-color: var(--border-strong); box-s
 html[data-theme="dark"] .marketing-hero .marketing-button--secondary { background: rgba(69,143,215,.18); }
 html[data-theme="dark"] .marketing-hero .marketing-button--secondary:hover { background: rgba(69,143,215,.24); }
 @media (max-width: 767px) {
-  .marketing-hero .hero-product { margin-block-start: 3rem; }
   .film-screen { aspect-ratio: 390 / 722; }
 }
 @container hero-intro (max-width: 56rem) {

@@ -304,6 +304,8 @@ export default function ProductTour() {
   const root=useRef<HTMLElement>(null);
   const {progress,release,complete,scrollDriven}=useRetrievalStory(root,reduced);
   const handoff=useTransform(release,[0,.6],[0,.3],{ease});
+  const storyOpacity=useTransform(release,[0,.24,.92],[1,1,0]);
+  const storyY=useTransform(release,[0,.24,.92],[0,0,-12],{ease});
   useEffect(()=>{
     if (!["#product","#product-story"].includes(location.hash)||window.scrollY!==0) return;
     root.current?.scrollIntoView({block:"start",behavior:"instant"});
@@ -312,12 +314,12 @@ export default function ProductTour() {
   return <LazyMotion features={domAnimation} strict>
     <section ref={root} id="product" className="product-tour" data-reduced={reduced} data-scroll-story={scrollDriven} tabIndex={-1} aria-labelledby="product-heading">
       <span id="product-story" className="tour-legacy-anchor" aria-hidden="true" />
-      <div className="retrieval-story-shell marketing-container">
+      <m.div className="retrieval-story-shell marketing-container" style={{ opacity:storyOpacity,y:storyY }}>
         <div className="tour-heading"><h2 id="product-heading">Less looking.<br />More understanding.</h2><p>Your documents become context. That context becomes an answer you can trace.</p></div>
         <div className="retrieval-canvas" data-retrieval-stage={complete?"5":"0"} data-state={complete?"complete":"revealing"}>
           <TrustStory progress={progress} release={release} complete={complete} reduced={reduced} />
         </div>
-      </div>
+      </m.div>
       <m.svg className="retrieval-handoff-grid marketing-container" aria-hidden="true" style={{ opacity:handoff }}>
         <defs><pattern id="retrieval-handoff-pattern" width="48" height="48" patternUnits="userSpaceOnUse"><path d="M48 0H0V48" fill="none" stroke="currentColor" strokeWidth=".75" /></pattern></defs>
         <rect width="100%" height="100%" fill="url(#retrieval-handoff-pattern)" />

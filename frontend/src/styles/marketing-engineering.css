@@ -1,7 +1,9 @@
 /* Technical composition follows the selected global theme, never forces dark. */
 .marketing-engineering { background: var(--surface-subtle); color: var(--text-primary); }
 .vector-reveal, .architecture-section { scroll-margin-block-start: 6rem; }
-.vector-reveal { padding-block: clamp(3rem, 6svh, 4.5rem) 0; }
+.vector-reveal { padding-block: var(--marketing-gap-chapter) 0; }
+/* The centered sticky shell already supplies part of the chapter break. */
+.product-tour[data-scroll-story="true"] + .marketing-engineering .vector-reveal { padding-block-start: var(--marketing-gap-continuation); }
 .vector-reveal-intro { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); align-items: end; align-items: last baseline; gap: 2rem 3rem; margin-block-end: 2rem; }
 .vector-reveal h2, .architecture-heading h2 { font-size: var(--marketing-type-heading); font-weight: 600; line-height: 1.08; letter-spacing: -.035em; text-wrap: balance; margin: 1.125rem 0 0; }
 .vector-reveal h2 { max-inline-size: 18ch; }
@@ -53,7 +55,7 @@
   .vector-reveal .demo-engine-controls .demo-button:hover { background: var(--surface-hover); }
   .vector-reveal .demo-engine-controls .demo-button[aria-pressed="true"]:hover { background: var(--capability-soft); }
 }
-.architecture-section { padding-block-start: clamp(5rem, 8vw, 7.5rem); }
+.architecture-section { padding-block: calc(var(--marketing-gap-section) - 1.25rem) var(--marketing-gap-continuation); }
 .architecture-heading { max-inline-size: 46rem; margin-block-end: 3rem; }
 .architecture-heading > p { margin-block-start: 1.25rem; font-size: var(--marketing-type-lead); }
 .engineering-storage { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3rem; margin-block-start: 3rem; border-block-start: 1px solid var(--border-default); padding-block-start: 2rem; }

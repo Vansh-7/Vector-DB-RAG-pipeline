@@ -56,7 +56,7 @@ html[data-theme="dark"] .marketing-page {
 }
 
 .marketing-section {
-  padding-block: var(--marketing-section-space);
+  padding-block: var(--marketing-gap-section) 0;
 }
 
 .marketing-story-loading { min-block-size: 58rem; }
@@ -250,7 +250,7 @@ html[data-theme="dark"] .marketing-header--scrolled { border-block-end-color: va
 .marketing-menu-toggle, .marketing-nav-mobile, .marketing-nav-mobile-access { display: none; }
 
 .marketing-hero {
-  padding-block: 6rem 3rem;
+  padding-block: clamp(2.5rem, 4.5vw, 4rem) var(--marketing-gap-continuation);
 }
 
 .marketing-page .theme-toggle svg { animation: marketing-theme-icon 180ms var(--marketing-motion-ease) both; }
@@ -343,7 +343,6 @@ html[data-theme="dark"] .marketing-header--scrolled { border-block-end-color: va
 }
 
 @media (max-width: 767px) {
-  .marketing-hero { padding-block: 3.5rem 4rem; }
   .marketing-hero > .marketing-container { padding-inline: 1rem; }
   .marketing-intro { display: flex; }
   .marketing-title {
