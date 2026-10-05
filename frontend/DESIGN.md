@@ -1,4 +1,4 @@
-# Neuebit visual system
+# NeueBit visual system
 
 These rules describe the authenticated product and auth layout in both appearance modes. The public landing has a separate [marketing composition](MARKETING.md), but all routes consume the global semantic colors in `src/styles/theme.css`. `data-theme` owns color; `data-page-surface` owns layout and scrolling only.
 
@@ -15,6 +15,8 @@ Tailwind's existing base/panel/elevated utilities resolve theme-aware RGB channe
 Appearance is the single `neuebit-theme` localStorage preference. `index.html` applies it or the OS preference before React; the lightweight React provider owns toggling afterward. It is independent of auth and product state and survives navigation, refresh, and logout.
 
 ## 3. Typography
+
+The shared geometric N mark uses black on light surfaces and white on dark surfaces. `--nb-logo-*` tokens live in the global theme. Use `NeuebitLogo` for new integrations; existing `BrandMark`/`BrandEmblem` wrappers use the same component. The default mark is transparent. See [brand usage](src/components/brand/README.md) and `/brand` for the asset, variants, accessibility, and size previews.
 
 Use locally hosted Geist Sans for product copy and Geist Mono for numbers, scores, distances, vector IDs, axes, timestamps, engine names, and terminal output. Fonts retain their OFL licenses.
 
@@ -38,7 +40,7 @@ Use a faintly framed Documents panel and individual Search/source rows where sel
 
 The sidebar is 232px expanded and 64px collapsed. Recent chats stay visible in the expanded sidebar across all four workspaces. Chat content/composer cap at 760px. Answer Sources and Add Document use one 380px ContextPane frame. It docks when its actual host is at least 1020px wide, retaining 640px for the task; narrower hosts use a focus-contained dialog, full width on mobile. Desktop panes use complementary semantics and never dim or shadow the workspace. One shell-owned ingestion component serves Documents and Chat's “Add document to knowledge” action. File choice survives pane dismissal, navigation, and docking changes; nothing becomes a per-message attachment.
 
-Authenticated-only tokens in `src/styles/application.css` layer warm canvas, neutral navigation, and white work surfaces in light mode; charcoal canvas, nav, and pane surfaces in dark mode. App primary actions use Neuebit blue and `--primary-action-text`. Public landing and auth tokens remain unchanged. Both app themes share all dimensions and layout rules. The Vector Lab inspector remains 240px on wide desktops. Lab actions belong beside its title, followed by four equal-width tabs and telemetry relevant to the chosen area; never invent LLM or persistence health. The collapsed terminal is 32px high.
+Authenticated-only tokens in `src/styles/application.css` layer warm canvas, neutral navigation, and white work surfaces in light mode; charcoal canvas, nav, and pane surfaces in dark mode. App primary actions use NeueBit blue and `--primary-action-text`. Public landing and auth tokens remain unchanged. Both app themes share all dimensions and layout rules. The Vector Lab inspector remains 240px on wide desktops. Lab actions belong beside its title, followed by four equal-width tabs and telemetry relevant to the chosen area; never invent LLM or persistence health. The collapsed terminal is 32px high.
 
 Use min-width: 0, bounded content, filename truncation with full-name reveal, wrapping excerpts, and scrollable inspectors. Preserve the desktop/laptop priority and avoid introducing routing or additional feature architecture.
 

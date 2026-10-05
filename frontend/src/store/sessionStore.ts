@@ -4,15 +4,20 @@ import { persist } from "zustand/middleware";
 export type WorkspaceView = "chat" | "documents" | "search" | "vector-lab";
 export type LabView = "space" | "engine" | "benchmarks" | "maintenance";
 
+export const SIDEBAR_WIDTH = { min: 220, default: 256, max: 360 } as const;
+const clampSidebarWidth = (width: number) => Math.round(Math.min(SIDEBAR_WIDTH.max, Math.max(SIDEBAR_WIDTH.min, width)));
+
 interface SessionState {
   activeView: WorkspaceView;
   activeConversationId: number | null;
   labView: LabView;
   isNavigationCollapsed: boolean;
+  sidebarWidth: number;
   setActiveView: (view: WorkspaceView) => void;
   setActiveConversationId: (id: number | null) => void;
   openVectorLab: (view?: LabView) => void;
   setNavigationCollapsed: (collapsed: boolean) => void;
+  setSidebarWidth: (width: number) => void;
   isTerminalCollapsed: boolean;
   terminalHeight: number;
   setTerminalCollapsed: (collapsed: boolean) => void;
@@ -46,10 +51,14 @@ export const useSessionStore = create<SessionState>()(
       activeConversationId: null,
       labView: "space",
       isNavigationCollapsed: false,
+      sidebarWidth: SIDEBAR_WIDTH.default,
       setActiveView: (view) => set({ activeView: view }),
       setActiveConversationId: (id) => set({ activeConversationId: id }),
       openVectorLab: (view = "space") => set({ activeView: "vector-lab", labView: view }),
       setNavigationCollapsed: (collapsed) => set({ isNavigationCollapsed: collapsed }),
+      setSidebarWidth: (width) => {
+        if (Number.isFinite(width)) set({ sidebarWidth: clampSidebarWidth(width) });
+      },
       isTerminalCollapsed: true,
       terminalHeight: 220,
       setTerminalCollapsed: (collapsed) => set({ isTerminalCollapsed: collapsed }),
@@ -86,6 +95,7 @@ export const useSessionStore = create<SessionState>()(
       name: "vectordb-session-storage",
       partialize: (state) => ({
         isNavigationCollapsed: state.isNavigationCollapsed,
+        sidebarWidth: state.sidebarWidth,
         terminalHeight: state.terminalHeight,
       }),
       // Only restore layout preferences from older storage; never hydrate user content.
@@ -94,6 +104,8 @@ export const useSessionStore = create<SessionState>()(
         return {
           ...current,
           isNavigationCollapsed: saved?.isNavigationCollapsed === true,
+          sidebarWidth: typeof saved?.sidebarWidth === "number" && Number.isFinite(saved.sidebarWidth)
+            ? clampSidebarWidth(saved.sidebarWidth) : current.sidebarWidth,
           terminalHeight: typeof saved?.terminalHeight === "number" && Number.isFinite(saved.terminalHeight)
             ? Math.min(520, Math.max(120, saved.terminalHeight)) : current.terminalHeight,
         };

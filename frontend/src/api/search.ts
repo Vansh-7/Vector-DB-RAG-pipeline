@@ -9,16 +9,27 @@ interface TextSearchPayload {
   query_2d: number[] | null;
 }
 
+function requestTextSearch(text: string, k: number, signal?: AbortSignal) {
+  return apiFetch<TextSearchPayload>('/search/text', {
+    method: 'POST',
+    body: JSON.stringify({ text, k }),
+    signal,
+  });
+}
+
+// Source inspection needs the question's projection, not a new set of citations.
+export async function projectTextQuery(query: string, k: number, signal?: AbortSignal): Promise<[number, number] | null> {
+  const { query_2d } = await requestTextSearch(query, k, signal);
+  return query_2d?.length === 2 && query_2d.every(Number.isFinite) ? [query_2d[0], query_2d[1]] : null;
+}
+
 export async function search(params: SearchParams): Promise<SearchResponse> {
   const addLog = useTerminalStore.getState().addLog;
   try {
     const start = performance.now();
     addLog({ timestamp: getCurrentTimestamp(), level: 'INFO', message: `Searching for: "${params.q}"` });
 
-    const response = await apiFetch<TextSearchPayload>('/search/text', {
-      method: 'POST',
-      body: JSON.stringify({ text: params.q, k: params.k ?? 5 })
-    });
+    const response = await requestTextSearch(params.q, params.k ?? 5);
 
     const latencyMs = performance.now() - start;
     const resultsArray = response.results ?? [];

@@ -1,52 +1,84 @@
 /* Technical composition follows the selected global theme, never forces dark. */
 .marketing-engineering { background: var(--surface-subtle); color: var(--text-primary); }
 .vector-reveal, .architecture-section { scroll-margin-block-start: 6rem; }
-.vector-reveal { padding-block-end: 0; }
-.vector-reveal-intro { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); align-items: end; gap: 2.5rem 4rem; margin-block-end: 3rem; }
-.engineering-eyebrow { display: inline-flex; align-items: center; gap: .625rem; color: var(--capability-ink); font-size: .875rem; font-weight: 500; }
-.engineering-eyebrow > span { inline-size: 6px; block-size: 6px; border-radius: 50%; background: var(--capability-mark); }
+.vector-reveal { padding-block: clamp(3rem, 6svh, 4.5rem) 0; }
+.vector-reveal-intro { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); align-items: end; align-items: last baseline; gap: 2rem 3rem; margin-block-end: 2rem; }
 .vector-reveal h2, .architecture-heading h2 { font-size: var(--marketing-type-heading); font-weight: 600; line-height: 1.08; letter-spacing: -.035em; text-wrap: balance; margin: 1.125rem 0 0; }
 .vector-reveal h2 { max-inline-size: 18ch; }
 .vector-reveal-copy > p, .architecture-heading > p { max-inline-size: 46ch; color: var(--text-secondary); line-height: 1.7; margin: 0; }
+.vector-reveal-copy > p { max-inline-size: 60ch; font-size: 1.125rem; line-height: 1.55; }
 .engineering-actions { display: flex; flex-wrap: wrap; gap: .25rem 1.5rem; margin-block-start: 1rem; }
+.vector-reveal .engineering-actions { align-items: baseline; }
 .engineering-actions a { color: var(--text-primary); font-size: .875rem; font-weight: 500; }
 .vector-reveal-stage { position: relative; }
 .engineering-grid { position: absolute; inset: -24px; inline-size: calc(100% + 48px); block-size: calc(100% + 48px); color: var(--border-default); pointer-events: none; }
 .vector-reveal-figure { position: relative; margin: 0; }
-.vector-reveal-image { background: var(--canvas); border: 1px solid var(--border-default); border-radius: var(--marketing-radius-preview); }
+.vector-reveal-image { background: var(--canvas); border: 1px solid var(--border-default); border-radius: 8px; }
 .engineering-transition { font-size: .9375rem; color: var(--text-secondary); margin-block-end: .75rem; }
 .vector-reveal-figure figcaption { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .375rem 1rem; padding-block: 1rem; color: var(--text-secondary); font-size: .75rem; line-height: 1.6; background: var(--surface-subtle); }
-.engineering-indexes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2rem; margin-block: 2rem 0; }
-.engineering-indexes > div { border-block-start: 1px solid var(--border-default); padding-block-start: 1.25rem; }
+.engineering-strategies { margin-block-start: 2rem; }
+.engineering-strategies > h3 { font-size: 1.125rem; font-weight: 500; letter-spacing: -.01em; line-height: 1.5; margin: 0; }
+.engineering-indexes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3rem; margin-block: 1.25rem 0; }
+.engineering-indexes > div { border-block-start: 1px solid var(--border-default); padding-block-start: 2rem; }
+.engineering-indexes > div[data-active="true"] { border-block-start-color: var(--capability-mark); }
 .engineering-indexes dt, .engineering-storage dt { font-family: var(--marketing-font-mono); font-size: .875rem; font-weight: 500; }
-.engineering-indexes dd, .engineering-storage dd { max-inline-size: 41ch; color: var(--text-secondary); margin: .75rem 0 0; font-size: .875rem; line-height: 1.7; }
+.engineering-indexes dd { max-inline-size: 53ch; margin: .75rem 0 0; color: var(--text-secondary); font-size: .875rem; line-height: 1.7; }
+.engineering-storage dd { max-inline-size: 41ch; color: var(--text-secondary); margin: .75rem 0 0; font-size: .875rem; line-height: 1.7; }
+
+/* Only the public technical window uses this denser, attached composition. */
+.vector-reveal .demo-vector-workspace { --demo-mathematics-marker: rgb(250 204 21); padding: 1.25rem 1.5rem; border-radius: inherit; }
+.vector-reveal .demo-view-heading { margin-block-end: 1.25rem; line-height: 1.3; }
+.vector-reveal .demo-view-heading > span { font-size: .875rem; }
+.vector-reveal .demo-vector-toolbar { display: grid; grid-template-columns: minmax(0, 1fr); justify-items: start; gap: .875rem; margin-block-end: 1.25rem; }
+.vector-reveal .demo-telemetry, .vector-reveal .demo-engine-controls { margin: 0; }
+.vector-reveal .demo-engine-controls { max-inline-size: 100%; gap: .5rem; }
+.vector-reveal .demo-engine-controls .demo-button { padding: .5rem .875rem; border-radius: 6px; font-size: .875rem; line-height: 1.3; }
+.vector-reveal .demo-engine-controls .demo-button[aria-pressed="true"] { border-color: var(--capability-mark); background: var(--capability-soft); }
+.vector-reveal .demo-telemetry { font-size: .8125rem; line-height: 1.5; gap: .375rem 1.25rem; }
+.vector-reveal .demo-telemetry > span { min-inline-size: 0; overflow-wrap: anywhere; }
+.vector-reveal .demo-telemetry b { margin-inline-start: .375rem; }
+.vector-reveal .demo-detail-layout, .vector-reveal .demo-vector-footer { grid-template-columns: minmax(0, 3fr) minmax(15rem, 1fr); gap: 1.25rem; }
+.vector-reveal .demo-detail-layout { align-items: stretch; }
+.vector-reveal .demo-vector-map { block-size: clamp(300px, calc(25svh + 105px), 360px); border-radius: 6px; }
+.vector-reveal .demo-inspector { padding: 1rem; border-radius: 6px; font-size: .9375rem; line-height: 1.55; }
+.vector-reveal .demo-inspector h4 { margin-block: .5rem; font-size: 1rem; }
+.vector-reveal .demo-inspector > p + p { margin-block-start: .75rem; }
+.vector-reveal .demo-metadata { margin-block-start: 1rem; gap: .5rem; font-size: .875rem; }
+.vector-reveal .demo-vector-footer { display: grid; margin-block-start: .875rem; }
+.vector-reveal .demo-vector-graph-controls { display: flex; flex-wrap: wrap; align-items: start; justify-content: space-between; gap: 1rem; min-inline-size: 0; }
+.vector-reveal .demo-vector-legend { margin: 0 0 0 auto; font-size: .8125rem; }
+.vector-reveal .demo-vector-select { order: -1; inline-size: min(100%, 24rem); font-size: .875rem; gap: .5rem; }
+.vector-reveal .demo-vector-select select { font-size: .9375rem; }
+@media (hover: hover) {
+  .vector-reveal .demo-engine-controls .demo-button:hover { background: var(--surface-hover); }
+  .vector-reveal .demo-engine-controls .demo-button[aria-pressed="true"]:hover { background: var(--capability-soft); }
+}
 .architecture-section { padding-block-start: clamp(5rem, 8vw, 7.5rem); }
 .architecture-heading { max-inline-size: 46rem; margin-block-end: 3rem; }
 .architecture-heading > p { margin-block-start: 1.25rem; font-size: var(--marketing-type-lead); }
-.architecture-pipeline { container-type: inline-size; }
-.architecture-lane + .architecture-lane { margin-block-start: 2.5rem; }
-.architecture-lane-label { display: flex; flex-wrap: wrap; align-items: baseline; gap: .5rem 1.5rem; margin-block-end: 1rem; }
-.architecture-lane-label h3 { font-family: var(--marketing-font-mono); font-size: .8125rem; color: var(--text-primary); font-weight: 500; }
-.architecture-lane-label p { font-size: .8125rem; color: var(--text-secondary); }
-.architecture-nodes { display: grid; gap: 0; list-style: none; padding: 0; margin: 0; }
-.architecture-step { position: relative; min-inline-size: 0; }
-.architecture-node { position: relative; border: 1px solid var(--border-default); background: var(--canvas); border-radius: 6px; padding: 1.25rem; }
-.architecture-node-index { display: block; color: var(--capability-ink, var(--text-tertiary)); font: .6875rem var(--marketing-font-mono); margin-block-end: .75rem; }
-.architecture-node h4 { color: var(--text-primary); font-size: .875rem; line-height: 1.5; font-weight: 500; }
-.architecture-node p { color: var(--text-secondary); font-size: .75rem; line-height: 1.6; margin-block-start: .375rem; }
-.architecture-connector { display: block; inline-size: 32px; block-size: 16px; margin: 1rem auto; color: var(--text-tertiary); transform: rotate(90deg); }
-.architecture-note { max-inline-size: 76ch; color: var(--text-secondary); font-size: .8125rem; line-height: 1.7; margin-block: 1.5rem 0; }
 .engineering-storage { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3rem; margin-block-start: 3rem; border-block-start: 1px solid var(--border-default); padding-block-start: 2rem; }
 .engineering-storage dd { max-inline-size: 53ch; }
 
-@container (min-width: 54rem) {
-  .architecture-nodes { grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 2rem; }
-  .architecture-node { min-block-size: 9rem; block-size: 100%; padding: 1rem; }
-  .architecture-connector { position: absolute; inset-inline-end: -1.875rem; inset-block-start: 50%; transform: translateY(-50%); margin: 0; inline-size: 28px; }
-}
 @media (max-width: 900px) {
   .vector-reveal-intro { grid-template-columns: minmax(0, 1fr); gap: 1.5rem; }
   .vector-reveal-copy > p { max-inline-size: 56ch; }
+}
+@container (max-width: 56rem) {
+  .vector-reveal .demo-detail-layout, .vector-reveal .demo-vector-footer { grid-template-columns: minmax(0, 1fr); }
+  .vector-reveal .demo-inspector { align-self: start; }
+}
+@container (max-width: 48rem) {
+  .vector-reveal .demo-vector-map { block-size: auto; aspect-ratio: 1.5; }
+}
+@container (max-width: 42rem) {
+  .vector-reveal .demo-vector-workspace { padding: 1.25rem 1rem; }
+  .vector-reveal .demo-vector-map { aspect-ratio: 1.15; }
+  .vector-reveal .demo-view-heading { display: grid; gap: .375rem; }
+  .vector-reveal .demo-vector-graph-controls { flex-direction: column; }
+  .vector-reveal .demo-vector-select { order: 0; }
+}
+@media (max-width: 767px) {
+  .engineering-indexes { grid-template-columns: minmax(0, 1fr); gap: 1.5rem; }
 }
 @media (max-width: 599px) {
   .vector-reveal-intro { margin-block-end: 2rem; }
@@ -54,7 +86,7 @@
   .vector-reveal-figure figcaption { display: grid; }
   .engineering-grid { inset: -12px; inline-size: calc(100% + 24px); block-size: calc(100% + 24px); }
   .engineering-indexes, .engineering-storage { grid-template-columns: minmax(0, 1fr); gap: 1.5rem; }
-  .engineering-indexes { margin-block-start: 1.5rem; }
+  .engineering-indexes { margin-block-start: 1.25rem; }
   .engineering-indexes dd { max-inline-size: 45ch; }
   .architecture-heading { margin-block-end: 2rem; }
 }

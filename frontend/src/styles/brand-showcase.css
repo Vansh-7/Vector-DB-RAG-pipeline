@@ -1,0 +1,41 @@
+.brand-showcase { max-inline-size: 1120px; margin-inline: auto; padding: 24px clamp(20px, 4vw, 48px) 48px; }
+.brand-showcase__header { display: flex; align-items: center; justify-content: space-between; margin-block-end: 48px; }
+.brand-showcase__home { display: inline-flex; align-items: center; gap: 10px; font-weight: 600; }
+.brand-showcase h1 { font-size: clamp(28px, 4vw, 44px); font-weight: 600; letter-spacing: -.035em; line-height: 1.15; }
+.brand-showcase h1:focus { outline: none; }
+.brand-showcase__intro { margin-block: 14px 32px; color: var(--text-secondary); line-height: 1.6; }
+.brand-showcase__presentations { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.brand-showcase__presentation { display: flex; min-block-size: 320px; flex-direction: column; align-items: center; justify-content: center; gap: 40px; }
+.brand-showcase__presentation--light { background: var(--nb-logo-surface-light); color: var(--nb-logo-on-light); }
+.brand-showcase__presentation--dark { background: var(--nb-logo-surface-dark); color: var(--nb-logo-on-dark); }
+.brand-showcase figcaption { font-size: 12px; line-height: 1.5; }
+.brand-showcase__section { margin-block-start: 40px; }
+.brand-showcase h2 { margin-block-end: 20px; font-size: 18px; font-weight: 500; letter-spacing: -.02em; }
+.brand-showcase__sizes { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; padding: 24px 16px; }
+.brand-showcase__sizes--light { background: #fff; color: var(--nb-logo-on-light); }
+.brand-showcase__sizes--dark { background: var(--nb-logo-surface-dark); color: var(--nb-logo-on-dark); }
+.brand-showcase__sizes figure { text-align: center; min-inline-size: 0; }
+.brand-showcase__size-mark { display: flex; align-items: center; justify-content: center; block-size: 140px; margin-block-end: 12px; }
+.brand-showcase__contexts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+.brand-showcase__contexts figure { min-inline-size: 0; }
+.brand-showcase__contexts figure > div { display: flex; align-items: center; gap: 8px; min-block-size: 64px; padding: 16px; background: var(--surface-elevated); }
+.brand-showcase__browser-tab { font-size: 12px; }
+.brand-showcase__sidebar { font-size: 14px; font-weight: 600; letter-spacing: -.02em; }
+.brand-showcase__app-header { font-weight: 600; }
+.brand-showcase__contexts figcaption { margin-block-start: 12px; color: var(--text-secondary); }
+.brand-showcase__lockup { margin-block-start: 32px; padding-block: 56px 24px; border-block: 1px solid var(--border-default); }
+.brand-showcase__lockup > div { display: flex; justify-content: center; align-items: center; gap: clamp(16px, 3vw, 32px); }
+.brand-showcase__lockup figcaption { margin-block-start: 40px; color: var(--text-secondary); text-align: center; }
+.brand-showcase__footer { display: flex; justify-content: space-between; flex-wrap: wrap; align-items: center; gap: 16px; margin-block-start: 24px; font-size: 13px; }
+.brand-showcase__footer a { display: inline-flex; align-items: center; min-block-size: 44px; text-decoration: underline; text-underline-offset: 4px; }
+.brand-showcase__footer span { color: var(--text-secondary); }
+.brand-showcase a:focus-visible { outline: 2px solid var(--text-primary); outline-offset: 4px; }
+@media (max-width: 760px) {
+  .brand-showcase__sizes { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .brand-showcase__contexts { grid-template-columns: 1fr; }
+}
+@media (max-width: 480px) {
+  .brand-showcase__presentations { grid-template-columns: 1fr; }
+  .brand-showcase__presentation { min-block-size: 280px; }
+  .brand-showcase__sizes { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

@@ -81,7 +81,7 @@ export function DocumentsView({ onAddDocument, added, onClearAdded }: {
             <FolderOpen className="w-5 h-5" aria-hidden="true" />
           </div>
           <h3 className="text-lg font-semibold tracking-tight">Add your first document</h3>
-          <p className="mt-2 max-w-sm text-sm leading-relaxed text-[--text-secondary]">Add a PDF, text file, or Markdown document. Neuebit uses it to answer questions and find related passages.</p>
+          <p className="mt-2 max-w-sm text-sm leading-relaxed text-[--text-secondary]">Add a PDF, text file, or Markdown document. NeueBit uses it to answer questions and find related passages.</p>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
             <Button type="button" onClick={() => openDrawer("file")}><Upload className="w-3.5 h-3.5" /> Upload file</Button>
             <Button type="button" variant="outline" onClick={() => openDrawer("manual")}><FilePlus2 className="w-3.5 h-3.5" /> Paste text</Button>

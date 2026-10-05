@@ -5,8 +5,8 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Neuebit — Your knowledge, in context</title>
-    <meta name="description" content="Ask your documents, search by meaning, and trace answers to their sources. Neuebit is an AI knowledge workspace built on a custom vector engine." />
+    <title>NeueBit — Your knowledge, in context</title>
+    <meta name="description" content="Ask your documents, search by meaning, and trace answers to their sources. NeueBit is an AI knowledge workspace built on a custom vector engine." />
     <meta name="theme-color" content="#FFFFFF" />
     <!-- entry-robots -->
     <!-- public-share-metadata -->
@@ -18,7 +18,7 @@
         const theme = preference === 'light' || preference === 'dark'
           ? preference : matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
         document.documentElement.dataset.theme = theme;
-        document.querySelector('meta[name="theme-color"]').content = theme === 'dark' ? '#08090A' : '#FFFFFF';
+        document.querySelector('meta[name="theme-color"]').content = theme === 'dark' ? '#141414' : '#FFFFFF';
         // The static SPA shares one HTML entry. Keep non-public routes out of
         // indexing before React runs; client route effects maintain this later.
         if ((location.pathname.replace(/\/+$/, '') || '/') !== '/') {

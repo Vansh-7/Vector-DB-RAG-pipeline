@@ -37,10 +37,12 @@ for (const width of [320, 375, 390, 430, 768, 1024, 1280, 1440]) {
 test("public page scrolls with the document and public-to-app navigation isolates themes", async ({ page }) => {
   await stubApi(page);
   await page.goto("/");
+  await expect(page.locator(".retrieval-canvas")).toBeAttached();
+  await page.mouse.move(100, 400);
   await page.mouse.wheel(0, 500);
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(100);
   expect(await page.locator("body").evaluate((element) => getComputedStyle(element).backgroundColor)).toBe("rgb(255, 255, 255)");
-  await page.getByRole("link", { name: "Sign in" }).click();
+  await page.getByRole("navigation", { name: "Public navigation" }).getByRole("link", { name: "Sign in", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Welcome back" })).toBeVisible();
   const productBody = await page.locator("body").evaluate((element) => {
     const styles = getComputedStyle(element);
@@ -52,10 +54,9 @@ test("public page scrolls with the document and public-to-app navigation isolate
   await expectWorkspace(page);
   await expect(page.locator(".marketing-page")).toHaveCount(0);
   expect(await page.locator("body").evaluate((element) => getComputedStyle(element).backgroundColor)).toBe(productBody.background);
-  await page.getByRole("button", { name: "Log out", exact: true }).click();
-  await page.getByRole("dialog", { name: "Log out of Neuebit?", exact: true }).getByRole("button", { name: "Log out", exact: true }).click();
+  await page.getByRole("button", { name: "Sign out", exact: true }).click();
   await page.getByRole("link", { name: "Back to Neuebit" }).click();
-  await expect(page.getByRole("heading", { name: "Your knowledge, in context." })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   expect(await page.locator("body").evaluate((element) => getComputedStyle(element).colorScheme)).toBe("light");
 });
 

@@ -1,6 +1,6 @@
-# Neuebit frontend
+# NeueBit frontend
 
-Neuebit lets users upload documents, ask questions with sources, and search related passages. Vector Lab contains the custom vector engine, PCA canvas, benchmarks, and maintenance controls.
+NeueBit lets users upload documents, ask questions with sources, and search related passages. Vector Lab contains the custom vector engine, PCA canvas, benchmarks, and maintenance controls.
 
 ## Stack and state
 
@@ -27,7 +27,7 @@ Set `VITE_API_BASE_URL` in `.env.local` to the backend origin, for example `http
 
 | URL | Without a session | With a verified session |
 | --- | --- | --- |
-| `/` | Public entry; Get started and Sign in | Public entry; Open Neuebit |
+| `/` | Public entry; Get started and Sign in | Public entry; Open NeueBit |
 | `/auth` or `/auth?mode=login` | Login form | Replace with `/app` |
 | `/auth?mode=register` | Registration form | Replace with `/app` |
 | `/app` | Replace with `/auth?mode=login` | Existing authenticated workspace |
@@ -65,7 +65,7 @@ Public routes use normal document scrolling. `data-theme` controls appearance be
 
 The architectural reset replaces the four-way hero playground and repeated feature walkthrough with one guided product tour. Desktop has three local steps and one canvas; mobile and enlarged text use stacked chapters. Chat sources open beside/below the answer and highlight correspondence in the authored example. Vector Lab is a separate local illustration, followed by the existing two-lane architecture. Navigation only scrolls; nothing controls a demo elsewhere on the page.
 
-The hero keeps “Your knowledge, in context.” and the established session-aware account actions. Neutral global colors and capability accents work in both modes. The small duck remains the brand mark; no hero mascot, rotating phrase, remote Try links or duplicate product chrome remain.
+The hero keeps “Your knowledge, in context.” and the established session-aware account actions. Neutral global colors and capability accents work in both modes. The geometric N is the shared brand mark; no hero mascot, rotating phrase, remote Try links or duplicate product chrome remain.
 
 Public demos use fixed sample content and local React state, with no product queries, AppShell, D3 or backend calls. Framer Motion stays in public chunks. Sources, selections and transitions are accessible with reduced motion and keyboard controls. See [MARKETING.md](MARKETING.md) for the current composition, sample authenticity, motion values, responsive rules, metadata/deployment handoff and capture command.
 

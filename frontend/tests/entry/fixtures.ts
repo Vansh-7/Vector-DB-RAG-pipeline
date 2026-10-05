@@ -30,7 +30,7 @@ export async function chooseAppTheme(page: Page, theme: "light" | "dark") {
 export async function signOutFromApp(page: Page) {
   await page.getByRole("button", { name: "Account menu", exact: true }).click();
   await page.getByRole("menuitem", { name: "Log out", exact: true }).click();
-  await page.getByRole("dialog", { name: "Log out of Neuebit?", exact: true }).getByRole("button", { name: "Log out", exact: true }).click();
+  await page.getByRole("dialog", { name: "Log out of NeueBit?", exact: true }).getByRole("button", { name: "Log out", exact: true }).click();
 }
 
 export function deferred() {

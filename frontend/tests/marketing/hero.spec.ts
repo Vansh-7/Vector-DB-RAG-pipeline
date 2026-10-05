@@ -10,7 +10,7 @@ test("desktop navigation reaches the real preview and preserves browser history"
   await expect(page).toHaveURL(/\/#product$/);
   await expect(page.locator("#product")).toBeFocused();
   await expect(page.locator(".marketing-header")).toHaveClass(/marketing-header--scrolled/);
-  const frame = await page.locator(".tour-layout").boundingBox();
+  const frame = await page.locator(".retrieval-canvas").boundingBox();
   const header = await page.getByRole("banner").boundingBox();
   expect(frame!.y).toBeGreaterThanOrEqual(header!.height);
   await page.goBack();
@@ -42,7 +42,7 @@ test("mobile disclosure supports keyboard, Escape, and product navigation", asyn
   await expect(page.locator("#product")).toBeFocused();
   await expect(page).toHaveURL(/\/#product$/);
   await page.keyboard.press("Tab");
-  await expect(page.locator(".demo-document-row").first()).toBeFocused();
+  await expect(page.locator("#product .retrieval-document")).toBeFocused();
 });
 
 test("mobile account links use the established auth modes", async ({ page }) => {
@@ -67,7 +67,7 @@ test("changing to desktop closes the disclosure and preserves focus", async ({ p
   await page.goto("/");
   await page.getByRole("button", { name: "Open navigation" }).click();
   await page.getByRole("navigation").getByRole("link", { name: "Product", exact: true }).focus();
-  await page.setViewportSize({ width: 1024, height: 900 });
+  await page.setViewportSize({ width: 1280, height: 900 });
   await expect(page.getByRole("link", { name: "Neuebit home" })).toBeFocused();
   await page.setViewportSize({ width: 375, height: 900 });
   await expect(page.getByRole("button", { name: "Open navigation" })).toHaveAttribute("aria-expanded", "false");
@@ -91,7 +91,7 @@ test("hero enters in sequence, settles, and does not replay on scroll", async ({
     (window as unknown as { heroMotion: typeof observed }).heroMotion = observed;
     function sample() {
       const parts = [...document.querySelectorAll<HTMLElement>("[data-hero-part]")];
-      let completed = parts.length === 3;
+      let completed = parts.length === 4;
       for (const part of parts) {
         const style = getComputedStyle(part);
         const opacity = Number(style.opacity);
@@ -109,7 +109,7 @@ test("hero enters in sequence, settles, and does not replay on scroll", async ({
   await stubApi(page);
   await page.goto("/");
   const parts = page.locator("[data-hero-part]");
-  await expect(parts).toHaveCount(3);
+  await expect(parts).toHaveCount(4);
   for (const part of await parts.all()) {
     await expect(part).toHaveCSS("opacity", "1");
     await expect(part).toHaveCSS("transform", "none");
@@ -118,7 +118,7 @@ test("hero enters in sequence, settles, and does not replay on scroll", async ({
     heroMotion: { firstVisible: Record<string, number>; maxTranslation: number; minPreviewScale: number };
   }).heroMotion);
   await testInfo.attach("hero-motion", { body: JSON.stringify(observed, null, 2), contentType: "application/json" });
-  expect(Object.keys(observed.firstVisible)).toEqual(["headline", "copy", "actions"]);
+  expect(Object.keys(observed.firstVisible)).toEqual(["headline", "copy", "actions", "preview"]);
   expect(observed.firstVisible.copy).toBeGreaterThan(observed.firstVisible.headline);
   expect(observed.firstVisible.actions).toBeGreaterThan(observed.firstVisible.copy);
   expect(observed.maxTranslation).toBeLessThanOrEqual(24.1);
@@ -183,7 +183,7 @@ test("measure public JavaScript and keep marketing code off direct app entry", a
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   await expect(page.getByRole("heading", { name: /Less looking/ })).toHaveCount(1);
-  await expect(page.getByRole("heading", { name: "From source to answer." })).toHaveCount(1);
+  await expect(page.getByRole("heading", { name: "Follow one question through Neuebit." })).toHaveCount(1);
   const assets = await Promise.all([...new Set(scripts)].map(async (url) => {
     const response = await page.request.get(url);
     return { asset: new URL(url).pathname, gzipBytes: gzipSync(await response.body()).length };

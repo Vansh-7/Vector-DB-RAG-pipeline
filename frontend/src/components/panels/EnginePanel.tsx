@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 // Check marks confirm successful engine changes and vector inserts.
 // avoid-ai-design-ignore: I3
-import { AlertTriangle, Check, DatabaseZap, Loader2, LockKeyhole, RefreshCw } from "lucide-react";
+import { AlertTriangle, Check, DatabaseZap, Loader2, LockKeyhole } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { configureEngine } from "../../api/engine";
 import { getStatus, type DbStatusResponse } from "../../api/status";
@@ -114,10 +114,8 @@ export function EnginePanel() {
             <div className="flex items-center gap-2">
               <span className="flex items-center gap-1.5 text-xs text-[--text-tertiary]">
                 {!isOperator && <LockKeyhole className="h-3.5 w-3.5" aria-hidden="true" />}
-                {isOperator ? "Operator" : "Read-only"}
+                {isOperator ? "Operator access" : "Read-only"}
               </span>
-              <button type="button" onClick={() => void refreshStatus()} aria-label="Refresh engine status"
-                className="icon-button"><RefreshCw className="h-4 w-4" aria-hidden="true" /></button>
             </div>
           </div>
           {statusPending && <p role="status" className="mt-5 flex items-center gap-2 text-xs text-[--text-secondary]"><Loader2 className="h-3.5 w-3.5 animate-spin" /> Reading current configuration…</p>}
@@ -135,7 +133,7 @@ export function EnginePanel() {
               <Button type="submit" disabled={!changed || configure.isPending || statusError} className="h-9 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--color-info]">
                 {configure.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />} {configure.isPending ? "Applying…" : "Apply configuration"}
               </Button>
-          </form> : <p className="mt-4 text-xs leading-relaxed text-[--text-secondary]">Shared engine configuration is managed by Neuebit operators.</p>}
+          </form> : <p className="mt-4 text-xs leading-relaxed text-[--text-secondary]">Shared engine configuration is managed by NeueBit operators.</p>}
 
           <section aria-label="Retrieval depth" className="mt-6 border-t border-[--border-subtle] pt-5">
             <h3 className="text-sm font-medium">Retrieval depth</h3>

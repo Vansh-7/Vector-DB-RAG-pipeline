@@ -1,10 +1,10 @@
-# Neuebit public design contract
+# NeueBit public design contract
 
 This architectural reset supersedes the separate four-tab hero playground and repeated Phase D walkthrough. The current page has one narrative: **knowledge workspace → grounded answer → custom vector engine**. The authenticated application, auth boundary, global appearance system and SEO setup remain intact.
 
 ## Product, audience and character
 
-Neuebit is a knowledge workspace for people who want to search their documents and ask questions with inspectable sources. Engineering readers can then examine the custom vector database. Lead with use, reveal implementation later. The tone is calm, clear, curious and technical. The duck remains a small brand mark, not a hero illustration. No fictional customers, usage counts, benchmarks or capabilities.
+NeueBit is a knowledge workspace for people who want to search their documents and ask questions with inspectable sources. Engineering readers can then examine the custom vector database. Lead with use, reveal implementation later. The tone is calm, clear, curious and technical. The geometric N remains a small brand mark, not a hero illustration. No fictional customers, usage counts, benchmarks or capabilities.
 
 ## One hierarchy
 
@@ -66,7 +66,7 @@ Production remains React → S3 → CloudFront on `deploy/v1`. This branch docum
 
 No production origin is chosen. `VITE_PUBLIC_SITE_URL` accepts an HTTPS origin only. Once set, Vite writes static canonical/OG/Twitter URLs into `dist/index.html`. Without it, previews are noindex and omit guessed canonical/social URLs. `EntryEffects` maintains route-specific titles and removes public metadata on auth/app/404. The shared static HTML requires deployment response headers for non-JavaScript crawlers on private routes.
 
-The neutral duck SVG, Geist fonts, SVG favicon, 180×180 touch icon and 1200×630 authored OG image remain. Regenerate the latter exports using `node scripts/create-brand-assets.mjs`. Previously captured product WebPs remain available as historical assets but are not loaded by this reset; the primary public visuals are real interactive local markup/SVG, not fabricated screenshots.
+The geometric NeueBit monogram uses black on light surfaces and white on dark surfaces. Its raw SVG is `public/brand/neuebit-mark.svg`; app components use the theme-aware `NeuebitLogo`. Geist fonts remain unchanged. Regenerate the SVG favicon, 180×180 touch icon and 1200×630 authored OG image using `node scripts/create-brand-assets.mjs`. Previously captured product WebPs remain available as historical assets but are not loaded by this reset; the primary public visuals are real interactive local markup/SVG, not fabricated screenshots.
 
 ## Verification and review
 

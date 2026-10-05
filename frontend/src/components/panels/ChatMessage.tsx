@@ -1,6 +1,6 @@
 
 import ReactMarkdown from 'react-markdown';
-import { BrandMark } from '../ui/BrandMark';
+import { NeuebitBrand } from '../brand/NeuebitBrand';
 import type { ChatMessage as ChatMessageType } from '../../types';
 import type { RAGSource } from '../../types';
 import { SourceCitation } from './SourceCitation';
@@ -8,10 +8,11 @@ import { SourceCitation } from './SourceCitation';
 interface ChatMessageProps {
   message: ChatMessageType;
   isStreaming?: boolean;
-  onInspectSources?: (sources: RAGSource[], trigger: HTMLButtonElement) => void;
+  originatingQuery?: string | null;
+  onInspectSources?: (sources: RAGSource[], trigger: HTMLButtonElement, originatingQuery: string | null) => void;
 }
 
-export function ChatMessage({ message, isStreaming, onInspectSources }: ChatMessageProps) {
+export function ChatMessage({ message, isStreaming, originatingQuery = null, onInspectSources }: ChatMessageProps) {
   const isUser = message.role === 'user';
 
   if (isUser) {
@@ -28,8 +29,7 @@ export function ChatMessage({ message, isStreaming, onInspectSources }: ChatMess
     <div className="w-full flex justify-start py-1">
       <div className="w-full min-w-0 flex flex-col text-left">
         <div className="flex items-center gap-2 mb-3">
-          <BrandMark className="h-[18px] w-[18px]" />
-          <span className="font-medium text-sm text-[--text-secondary]">Neuebit</span>
+          <NeuebitBrand size={16} className="neuebit-brand--subtle" />
         </div>
         
         <div className="markdown max-w-[65ch] text-[15px] leading-[1.75] text-[--text-primary] relative">
@@ -46,7 +46,7 @@ export function ChatMessage({ message, isStreaming, onInspectSources }: ChatMess
         </div>
 
         {message.sources && message.sources.length > 0 && (
-          <SourceCitation sources={message.sources} onInspect={onInspectSources} />
+          <SourceCitation sources={message.sources} originatingQuery={originatingQuery} onInspect={onInspectSources} />
         )}
       </div>
     </div>

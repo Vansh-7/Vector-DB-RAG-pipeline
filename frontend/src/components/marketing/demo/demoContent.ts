@@ -1,6 +1,5 @@
 import type { Category } from "../../../types/vector";
 
-export type DemoView = "chat" | "documents" | "search" | "vectors";
 export type DemoEngine = "hnsw" | "kdtree" | "exact";
 export type DemoChunk = { id: string; documentId: string; text: string; category: Category; position: [number, number]; embedding: [number, number, number] };
 

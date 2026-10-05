@@ -6,12 +6,13 @@ import { DemoVectorLab } from "./demo/DemoVectorLab";
 import { ArchitecturePipeline } from "./ArchitecturePipeline";
 import "../../styles/marketing-engineering.css";
 import "../../styles/marketing-demo.css";
+import "../../styles/marketing-machine.css";
 
 const ease: [number, number, number, number] = [.22, 1, .36, 1];
 const indexes = [
-  ["HNSW", "Follow a graph of neighbors to find nearby vectors without comparing every one."],
-  ["KD-tree", "Partition vector space along its dimensions to narrow the search."],
-  ["Exact", "Compare every stored vector. A direct reference for the search."],
+  ["hnsw", "HNSW", "Follow neighboring vectors instead of comparing every stored vector."],
+  ["kdtree", "KD-tree", "Partition the dimensions and narrow the search region."],
+  ["exact", "Exact", "Compare against every stored vector as the reference baseline."],
 ] as const;
 
 export default function EngineeringSection() {
@@ -43,8 +44,8 @@ export default function EngineeringSection() {
           <div className="marketing-container">
             <div className="vector-reveal-intro">
               <m.div {...reveal()}>
-                <p className="engineering-transition">Want to see why a passage was retrieved?</p>
-                <h2 id="vector-reveal-heading">There’s a vector engine underneath.</h2>
+                <p className="engineering-transition">Under the hood</p>
+                <h2 id="vector-reveal-heading">There’s an engine underneath.</h2>
               </m.div>
               <m.div className="vector-reveal-copy" {...reveal()}>
                 <p>Neuebit runs on a custom vector database. Vector Lab brings it into view: explore a two-dimensional projection, inspect individual passages, and examine the engine behind retrieval.</p>
@@ -68,21 +69,30 @@ export default function EngineeringSection() {
                 <div className="vector-reveal-image demo-shell">
                   <DemoVectorLab selectedId={selectedVector} engine={engine} onSelect={setSelectedVector} onEngine={setEngine} />
                 </div>
-                <figcaption><span>Select a vector to read its passage.</span><span>Interactive preview · Illustrative projection. No live engine.</span></figcaption>
               </m.figure>
             </div>
-            <m.dl className="engineering-indexes" {...reveal()} aria-label="Three custom search implementations">
-              {indexes.map(([name, description]) => <div key={name}><dt>{name}</dt><dd>{description}</dd></div>)}
-            </m.dl>
+            <m.div className="engineering-strategies" {...reveal()}>
+              <h3>Three ways to search the space.</h3>
+              <dl className="engineering-indexes" aria-label="Three custom search implementations">
+                {indexes.map(([id, name, description]) => <div key={id} data-engine={id} data-active={engine === id}>
+                  <dt>{name}</dt>
+                  <dd>{description}</dd>
+                </div>)}
+              </dl>
+            </m.div>
           </div>
         </section>
         <section id="architecture" tabIndex={-1} className="architecture-section marketing-section" aria-labelledby="architecture-heading">
           <div className="marketing-container">
             <m.div className="architecture-heading" {...reveal()}>
-              <h2 id="architecture-heading">From source to answer.</h2>
-              <p>Prepare the knowledge once. Retrieve the right context when a question arrives. Two paths, one engine.</p>
+              <h2 id="architecture-heading">Follow one question through Neuebit.</h2>
+              <p>From a question to a vector, from retrieved context to a grounded answer. Inspect the decisions along the way.</p>
             </m.div>
             <ArchitecturePipeline />
+            <div className="architecture-storage-bridge">
+              <h3>Knowledge is prepared before you ask.</h3>
+              <p>Documents are split into passages and embedded ahead of time. The custom index makes them searchable; WAL and snapshots recover its state, while PostgreSQL stores the workspace’s users, document records, and conversations separately.</p>
+            </div>
             <m.dl className="engineering-storage" {...reveal()} aria-label="Persistence behind the workspace">
               <div><dt>WAL + snapshots</dt><dd>Vector operations are logged before they change the index. On startup, a saved snapshot is loaded and the log is replayed.</dd></div>
               <div><dt>PostgreSQL</dt><dd>Users, document metadata, and conversation history live in PostgreSQL. Vectors live in Neuebit’s custom index.</dd></div>

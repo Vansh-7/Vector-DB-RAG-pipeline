@@ -3,11 +3,12 @@ import { ArrowUpRight } from "lucide-react";
 import { domAnimation, LazyMotion, m, useReducedMotion } from "framer-motion";
 import { BrandMark } from "../ui/BrandMark";
 import { GITHUB_URL } from "./LandingNav";
+import { useAuthStore } from "../../store/authStore";
 import "../../styles/marketing-footer.css";
 
 const capabilities = [
-  { label: "Documents", href: "#product" }, { label: "Search", href: "#product" },
-  { label: "Chat", href: "#product" }, { label: "Vector Lab", href: "#vector-lab" },
+  { label: "Chat", href: "#knowledge-chat" }, { label: "Documents", href: "#knowledge-documents" },
+  { label: "Search", href: "#knowledge-search" }, { label: "Vector Lab", href: "#vector-lab" },
 ];
 
 export function FinalCTA({ accessTo, accessLabel }: { accessTo: string; accessLabel: string }) {
@@ -18,7 +19,7 @@ export function FinalCTA({ accessTo, accessLabel }: { accessTo: string; accessLa
         <m.div className="marketing-container" initial={reduced ? false : { opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: .2 }}
           transition={{ duration: reduced ? 0 : .6, ease: [.22, 1, .36, 1] }}>
-          <h2 id="final-cta-heading">Ask your knowledge.</h2>
+          <h2 id="final-cta-heading">Ready to work with<br />your knowledge?</h2>
           <p>Add a document. Ask a question. Follow the sources.</p>
           <div className="marketing-closing-actions">
             <Link to={accessTo} className="marketing-button marketing-button--primary">{accessLabel}</Link>
@@ -30,7 +31,9 @@ export function FinalCTA({ accessTo, accessLabel }: { accessTo: string; accessLa
   );
 }
 
-export function LandingFooter() {
+export function LandingFooter({ accessTo, accessLabel }: { accessTo: string; accessLabel: string }) {
+  const status = useAuthStore(state => state.status);
+  const logout = useAuthStore(state => state.logout);
   const focus = (id: string) => document.getElementById(id)?.focus({ preventScroll: true });
   return (
     <footer className="marketing-footer">
@@ -47,10 +50,17 @@ export function LandingFooter() {
           <nav aria-label="Footer project navigation">
             <h2>Project</h2>
             <a href={GITHUB_URL}>GitHub<ArrowUpRight size={14} aria-hidden="true" /></a>
+            <a href="#product" onClick={() => focus("product")}>How it works</a>
             <a href="#architecture" onClick={() => focus("architecture")}>Architecture</a>
           </nav>
+          <nav aria-label="Footer account navigation">
+            <h2>Account</h2>
+            {status === "unauthenticated" && <Link to="/auth?mode=login">Sign in</Link>}
+            <Link to={accessTo}>{accessLabel}</Link>
+            {status === "authenticated" && <button type="button" onClick={logout}>Log out</button>}
+          </nav>
         </div>
-        <p className="marketing-footer-attribution">Built by Vansh Gupta.</p>
+        <div className="marketing-footer-attribution"><span>© 2026 Neuebit</span><span>Built by Vansh Gupta</span></div>
       </div>
     </footer>
   );

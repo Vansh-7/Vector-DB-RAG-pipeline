@@ -13,10 +13,10 @@ for (const [os, stored, expected] of [
     try {
       await expect(page.locator("html")).toHaveAttribute("data-theme", expected);
       await expect(page.locator("#root")).toBeEmpty();
-      await expect(page.locator("body")).toHaveCSS("background-color", expected === "light" ? "rgb(255, 255, 255)" : "rgb(8, 9, 10)");
+      await expect(page.locator("body")).toHaveCSS("background-color", expected === "light" ? "rgb(255, 255, 255)" : "rgb(20, 20, 20)");
     } finally { release.resolve(); }
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-    await expect(page.locator("body")).toHaveCSS("background-color", expected === "light" ? "rgb(255, 255, 255)" : "rgb(8, 9, 10)");
+    await expect(page.locator("body")).toHaveCSS("background-color", expected === "light" ? "rgb(255, 255, 255)" : "rgb(20, 20, 20)");
     expect(await page.evaluate(() => localStorage.getItem("neuebit-theme"))).toBe(stored ?? null);
   });
 }
@@ -38,7 +38,7 @@ test("landing toggle is keyboard accessible, persists on refresh, and preserves 
   await expect(page.getByRole("button", { name: "Switch to light theme" })).toBeVisible();
   await page.getByRole("link", { name: "Sign in", exact: true }).click();
   await expect(page.locator("html")).toHaveAttribute("data-page-surface", "product");
-  await expect(page.locator("body")).toHaveCSS("background-color", "rgb(8, 9, 10)");
+  await expect(page.locator("body")).toHaveCSS("background-color", "rgb(20, 20, 20)");
   await fillCredentials(page);
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await expectWorkspace(page);
@@ -49,7 +49,7 @@ test("landing toggle is keyboard accessible, persists on refresh, and preserves 
   await expect(page.getByRole("heading", { name: "Welcome back" })).toBeVisible();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
   expect(await page.evaluate(() => localStorage.getItem("neuebit-theme"))).toBe("light");
-  await page.getByRole("link", { name: "Back to Neuebit" }).click();
+  await page.getByRole("link", { name: "Back to NeueBit" }).click();
   await expect(page.locator("html")).toHaveAttribute("data-page-surface", "marketing");
   await expect(page.locator("body")).toHaveCSS("background-color", "rgb(255, 255, 255)");
   expect(calls.filter((call) => call.path.startsWith("/auth")).map((call) => call.path)).toEqual(["/auth/login", "/auth/me"]);
@@ -99,7 +99,7 @@ for (const theme of ["light", "dark"] as const) {
       await page.goto("/");
       await expect(page.locator(".tour-layout")).toHaveAttribute("data-tour-layout", width === 1440 ? "stage" : "chapters");
       if (width === 1440) await page.getByRole("tab", { name: /Ask \+ verify/ }).click();
-      await expect(page.locator(".demo-chat")).toHaveCSS("background-color", theme === "light" ? "rgb(255, 255, 255)" : "rgb(17, 18, 20)");
+      await expect(page.locator(".demo-chat")).toHaveCSS("background-color", theme === "light" ? "rgb(255, 255, 255)" : "rgb(24, 24, 24)");
       await page.getByRole("button", { name: "2 sources" }).click();
       await expect(page.getByRole("complementary", { name: "Preview answer sources" })).toBeVisible();
       await page.evaluate(() => { document.documentElement.style.fontSize = "200%"; });
@@ -113,7 +113,7 @@ for (const theme of ["light", "dark"] as const) {
       expect((await toggle.boundingBox())!.height).toBeGreaterThanOrEqual(44);
       await toggle.focus(); await page.keyboard.press("Enter");
       await expect(page.locator("html")).toHaveAttribute("data-theme", theme === "light" ? "dark" : "light");
-      await expect(page.locator(".demo-chat")).toHaveCSS("background-color", theme === "light" ? "rgb(17, 18, 20)" : "rgb(255, 255, 255)");
+      await expect(page.locator(".demo-chat")).toHaveCSS("background-color", theme === "light" ? "rgb(24, 24, 24)" : "rgb(255, 255, 255)");
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
       expect(calls).toEqual([]); expectNoProductCode(scripts);
     });
@@ -131,7 +131,7 @@ for (const theme of ["light", "dark"] as const) {
     const chat = page.getByRole("region", { name: "Chat workspace" });
     await chat.getByRole("button", { name: "2 sources" }).click();
     await expect(page.getByRole("complementary", { name: "Answer sources" })).toBeVisible();
-    await expect(page.locator("body")).toHaveCSS("background-color", theme === "light" ? "rgb(255, 255, 255)" : "rgb(8, 9, 10)");
+    await expect(page.locator("body")).toHaveCSS("background-color", theme === "light" ? "rgb(255, 255, 255)" : "rgb(20, 20, 20)");
     await page.evaluate(() => document.fonts.ready);
     await page.getByRole("button", { name: "Close answer sources" }).evaluate((button) => (button as HTMLElement).blur());
     await page.screenshot({ path: testInfo.outputPath(`chat-1440-${theme}.png`) });
@@ -143,11 +143,11 @@ for (const theme of ["light", "dark"] as const) {
     await sidebar.getByRole("button", { name: "Documents", exact: true }).click();
     await page.getByRole("button", { name: "Add document", exact: true }).click();
     const drawer = page.getByRole("complementary", { name: "Add document", exact: true });
-    await expect(drawer).toHaveCSS("background-color", theme === "light" ? "rgb(255, 255, 255)" : "rgb(27, 28, 32)");
+    await expect(drawer).toHaveCSS("background-color", theme === "light" ? "rgb(255, 255, 255)" : "rgb(28, 28, 28)");
     await page.getByRole("button", { name: "Close add document" }).click();
     await page.getByRole("button", { name: "Delete Product architecture.md", exact: true }).click();
     const deletion = page.getByRole("dialog", { name: "Delete document?" });
-    await expect(deletion).toHaveCSS("background-color", theme === "light" ? "rgb(255, 255, 255)" : "rgb(17, 18, 20)");
+    await expect(deletion).toHaveCSS("background-color", theme === "light" ? "rgb(255, 255, 255)" : "rgb(24, 24, 24)");
     await expect(deletion.getByRole("button", { name: "Delete document", exact: true })).toHaveCSS("background-color", theme === "light" ? "rgba(198, 44, 44, 0.05)" : "rgba(239, 68, 68, 0.05)");
     await page.getByRole("button", { name: "Cancel", exact: true }).click();
     await sidebar.getByRole("button", { name: "Search", exact: true }).click();
@@ -164,9 +164,9 @@ for (const theme of ["light", "dark"] as const) {
     const requestsBeforeToggle = calls.length;
     await chooseAppTheme(page, theme === "light" ? "dark" : "light");
     await expect(page.getByRole("complementary", { name: "Vector inspector" }).getByText("sample-1", { exact: true })).toBeVisible();
-    await expect(page.locator("body")).toHaveCSS("background-color", theme === "light" ? "rgb(8, 9, 10)" : "rgb(255, 255, 255)");
+    await expect(page.locator("body")).toHaveCSS("background-color", theme === "light" ? "rgb(20, 20, 20)" : "rgb(255, 255, 255)");
     expect(calls.length).toBe(requestsBeforeToggle);
-    await expect(page.getByRole("region", { name: "Terminal" })).toHaveCSS("background-color", "rgb(12, 13, 14)");
+    await expect(page.getByRole("region", { name: "Terminal" })).toHaveCSS("background-color", "rgb(12, 12, 12)");
     const terminalFocusColor = await page.getByRole("region", { name: "Terminal" }).evaluate((element) => getComputedStyle(element).getPropertyValue("--color-info").trim());
     expect(terminalFocusColor).toBe("rgb(139 181 248)");
     expect(calls.filter((call) => call.path !== "/auth/me").every((call) => call.authorization === `Bearer ${SESSION_TOKEN}`)).toBe(true);

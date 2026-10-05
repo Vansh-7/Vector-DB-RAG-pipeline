@@ -16,6 +16,10 @@
   --border-subtle: #eeeeec;
   --border-default: #e3e3e0;
   --border-strong: #d3d3cf;
+  --popover-surface: var(--surface);
+  --popover-border: var(--border-default);
+  --danger-action: var(--color-error);
+  --danger-text: var(--color-error);
   --text-primary: #191919;
   --text-secondary: #5f5e5b;
   --text-tertiary: #787774;
@@ -37,35 +41,38 @@
   --color-warning-rgb: 152 98 0;
   --overlay: rgba(0,0,0,.35);
   --grid-line: rgba(25,25,25,.09);
-  --brand-mark-filter: grayscale(1);
+  --nb-logo-mark: var(--nb-logo-on-light);
 }
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --surface-canvas-rgb: 8 9 10;
-  --surface-panel-rgb: 17 18 20;
-  --surface-elevated-rgb: 23 24 26;
-  --surface-hover-rgb: 28 29 32;
-  --surface-active-rgb: 34 35 38;
-  --canvas: #08090a;
-  --surface-subtle: #0d0e10;
-  --surface: #111214;
-  --surface-elevated: #17181a;
-  --surface-hover: #1c1d20;
-  --surface-active: #222326;
-  --border-subtle: rgba(255,255,255,.055);
+  --surface-canvas-rgb: 20 20 20;
+  --surface-panel-rgb: 24 24 24;
+  --surface-elevated-rgb: 32 32 32;
+  --surface-hover-rgb: 38 38 38;
+  --surface-active-rgb: 43 43 43;
+  --canvas: rgb(var(--surface-canvas-rgb));
+  --surface-subtle: #1c1c1c;
+  --surface: rgb(var(--surface-panel-rgb));
+  --surface-elevated: rgb(var(--surface-elevated-rgb));
+  --surface-hover: rgb(var(--surface-hover-rgb));
+  --surface-active: rgb(var(--surface-active-rgb));
+  --border-subtle: rgba(255,255,255,.06);
   --border-default: rgba(255,255,255,.09);
   --border-strong: rgba(255,255,255,.15);
-  --text-primary: #f4f4f5;
-  --text-secondary: #a1a1aa;
-  /* Slightly brighter than the starting palette for small product labels. */
-  --text-tertiary: #8b8b94;
-  --text-placeholder: #62626a;
-  --text-inverse: #08090a;
-  --primary-action: #f4f4f5;
-  --primary-action-hover: #e4e4e7;
-  --primary-action-active: #d4d4d8;
-  --primary-action-text: #08090a;
+  --popover-surface: var(--surface-elevated);
+  --popover-border: rgba(255,255,255,.11);
+  --danger-action: color-mix(in srgb, var(--color-error) 84%, #000000);
+  --danger-text: color-mix(in srgb, var(--color-error) 84%, var(--text-primary));
+  --text-primary: #f2f2f2;
+  --text-secondary: #b2b2b2;
+  --text-tertiary: #969696;
+  --text-placeholder: #919191;
+  --text-inverse: #141414;
+  --primary-action: #f2f2f2;
+  --primary-action-hover: #e4e4e4;
+  --primary-action-active: #d4d4d4;
+  --primary-action-text: #141414;
   --color-tech-rgb: 167 139 250;
   --color-finance-rgb: 52 211 153;
   --color-food-rgb: 249 115 22;
@@ -76,13 +83,18 @@
   --color-error-rgb: 239 68 68;
   --color-info-rgb: 139 181 248;
   --color-warning-rgb: 245 158 11;
-  --overlay: rgba(0,0,0,.7);
+  --overlay: rgba(0,0,0,.5);
   --grid-line: rgba(255,255,255,.055);
-  --brand-mark-filter: grayscale(1) invert(1);
+  --nb-logo-mark: var(--nb-logo-on-dark);
 }
 
 :root {
   background: var(--canvas);
+  /* Monochrome brand foregrounds follow the selected appearance. */
+  --nb-logo-on-light: #000000;
+  --nb-logo-on-dark: #ffffff;
+  --nb-logo-surface-light: #ffffff;
+  --nb-logo-surface-dark: #111214;
   /* Shared semantic colors also expose channels for Tailwind opacity utilities. */
   --color-tech: rgb(var(--color-tech-rgb));
   --color-finance: rgb(var(--color-finance-rgb));
@@ -102,26 +114,45 @@
   --bg-hover: var(--surface-hover);
   --bg-active: var(--surface-active);
   --bg-composer: var(--surface-elevated);
-  --bg-terminal: #0c0d0e;
+  --bg-terminal: #0c0c0c;
+  /* Neutral session actions remain separate from functional blue app actions. */
+  --neutral-action: var(--text-primary);
+  --neutral-action-hover: color-mix(in srgb, var(--text-primary) 90%, var(--canvas));
+  --neutral-action-active: color-mix(in srgb, var(--text-primary) 80%, var(--canvas));
+  --neutral-action-text: var(--text-inverse);
+  --dialog-surface: var(--popover-surface);
+  --danger-action-hover: color-mix(in srgb, var(--danger-action) 90%, #000000);
+  --danger-action-active: color-mix(in srgb, var(--danger-action) 82%, #000000);
+  --danger-action-text: #ffffff;
   --score-high: var(--color-success);
   --score-mid: var(--color-warning);
   --score-low: var(--color-error);
 }
 
-.brand-mark { filter: var(--brand-mark-filter); }
-
 /* The terminal is an intentional dark technical subsystem in either mode. */
 .technical-terminal {
   color-scheme: dark;
-  --text-primary: #f4f4f5;
-  --text-secondary: #a1a1aa;
-  --text-tertiary: #a1a1aa;
+  --text-primary: #f2f2f2;
+  --text-secondary: #b2b2b2;
+  --text-tertiary: #969696;
   --border-subtle: rgba(255,255,255,.055);
-  --surface-hover-rgb: 28 29 32;
-  --surface-hover: #1c1d20;
+  --surface-hover-rgb: 38 38 38;
+  --surface-hover: rgb(var(--surface-hover-rgb));
   --bg-hover: var(--surface-hover);
   --color-info-rgb: 139 181 248;
   --color-info: rgb(var(--color-info-rgb));
+}
+
+.session-confirmation {
+  inline-size: calc(100vw - 2rem);
+  max-inline-size: 440px;
+  padding: 24px;
+  border: 1px solid var(--popover-border);
+  border-radius: 10px;
+  background: var(--dialog-surface);
+}
+@media (any-pointer: coarse), (max-width: 639px) {
+  .session-confirmation button { min-inline-size: 44px; min-block-size: 44px; }
 }
 
 .theme-control { position: relative; display: inline-flex; flex-shrink: 0; }

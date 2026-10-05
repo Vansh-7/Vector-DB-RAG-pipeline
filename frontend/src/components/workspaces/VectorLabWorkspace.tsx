@@ -14,6 +14,9 @@ import { ALGORITHM_DISPLAY, METRIC_DISPLAY } from "../../types/vector";
 import { WorkspaceHeader } from "../layout/WorkspaceHeader";
 import { Button } from "../ui/Button";
 import { useAuthStore } from "../../store/authStore";
+import { useCanvasStore } from "../../store/canvasStore";
+import { useEngineStore } from "../../store/engineStore";
+import { projectTextQuery } from "../../api/search";
 
 const EMPTY_VECTORS: VectorPoint2D[] = [];
 
@@ -33,6 +36,7 @@ export function VectorLabWorkspace({ active }: { active: boolean }) {
   const [inspectorOpen, setInspectorOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const queryClient = useQueryClient();
+  const sourceQueryHandoff = useCanvasStore((s) => s.sourceQueryHandoff);
   const inspectorToggleRef = useRef<HTMLButtonElement>(null);
   const closeInspector = () => {
     setInspectorOpen(false);
@@ -45,9 +49,22 @@ export function VectorLabWorkspace({ active }: { active: boolean }) {
   useEffect(() => {
     if (!active || view !== "space") setInspectorOpen(false);
   }, [active, view]);
+  useEffect(() => {
+    if (!active || sourceQueryHandoff?.status !== "pending") return;
+    const controller = new AbortController();
+    void projectTextQuery(sourceQueryHandoff.query, useEngineStore.getState().topK, controller.signal)
+      .then((point) => {
+        if (!controller.signal.aborted) useCanvasStore.getState().finishSourceHandoff(sourceQueryHandoff,
+          point ? { x: point[0], y: point[1] } : null);
+      }).catch(() => {
+        if (!controller.signal.aborted) useCanvasStore.getState().finishSourceHandoff(sourceQueryHandoff, null);
+      });
+    return () => controller.abort();
+  }, [active, sourceQueryHandoff]);
   const refreshLab = async () => {
     if (isRefreshing) return;
     setIsRefreshing(true);
+    useCanvasStore.getState().clearAll();
     try {
       await Promise.all(["dbStatus", "vectorSample", "benchmarks", "search"].map((key) =>
         queryClient.invalidateQueries({ queryKey: [key] })));

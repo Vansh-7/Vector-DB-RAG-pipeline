@@ -1,7 +1,7 @@
 {
   "origin": "http://127.0.0.1:4176",
   "capturedAt": "2026-10-02T18:46:55.529Z",
-  "provenance": "Actual authenticated Neuebit Vector Lab rendered with shared authored API fixtures. Sample coordinates are illustrative, not measured PCA or live backend output.",
+  "provenance": "Actual authenticated NeueBit Vector Lab rendered with shared authored API fixtures. Sample coordinates are illustrative, not measured PCA or live backend output.",
   "captures": [
     {
       "filename": "vector-lab-desktop-light.webp",

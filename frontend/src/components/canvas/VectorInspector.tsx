@@ -13,7 +13,9 @@ export function VectorInspector({ status, vectors, count, onClose }: {
   const highlightedIds = useCanvasStore((s) => s.highlightedIds);
   const highlightedScores = useCanvasStore((s) => s.highlightedScores);
   const queryPoint = useCanvasStore((s) => s.queryPoint);
+  const sourceQueryHandoff = useCanvasStore((s) => s.sourceQueryHandoff);
   const setHighlighted = useCanvasStore((s) => s.setHighlighted);
+  const clearAll = useCanvasStore((s) => s.clearAll);
   const selectedId = highlightedIds.length === 1 ? highlightedIds[0] : null;
   const selected = selectedId ? vectors.find((vector) => vector.id === selectedId) : null;
   const selectedDistance = selectedId ? highlightedScores[selectedId] : undefined;
@@ -47,10 +49,14 @@ export function VectorInspector({ status, vectors, count, onClose }: {
 
         <div className="border-t border-[--border-subtle] pt-5">
           <p className="flex items-center gap-2 text-2xs text-[--text-tertiary]"><Layers3 className="h-3 w-3" /> Query projection</p>
-          {queryPoint ? <div className="mt-3 grid grid-cols-2 gap-2 font-mono text-2xs">
-            <div className="rounded-md bg-elevated p-2"><span className="text-[--text-tertiary]">PC1</span><p className="mt-1 text-[--color-warning]">{queryPoint.x.toFixed(3)}</p></div>
-            <div className="rounded-md bg-elevated p-2"><span className="text-[--text-tertiary]">PC2</span><p className="mt-1 text-[--color-warning]">{queryPoint.y.toFixed(3)}</p></div>
-          </div> : <p className="mt-3 text-xs leading-relaxed text-[--text-secondary]">Search or ask a question to project a query into vector space.</p>}
+          {sourceQueryHandoff && <p className="mt-3 break-words text-xs leading-relaxed text-[--text-secondary]">{sourceQueryHandoff.query}</p>}
+          {queryPoint ? <>
+            <div className="mt-3 grid grid-cols-2 gap-2 font-mono text-2xs">
+              <div className="rounded-md bg-elevated p-2"><span className="text-[--text-tertiary]">PC1</span><p className="mt-1 text-[--color-warning]">{queryPoint.x.toFixed(3)}</p></div>
+              <div className="rounded-md bg-elevated p-2"><span className="text-[--text-tertiary]">PC2</span><p className="mt-1 text-[--color-warning]">{queryPoint.y.toFixed(3)}</p></div>
+            </div>
+          </> : <p role={sourceQueryHandoff ? "status" : undefined} className="mt-3 text-xs leading-relaxed text-[--text-secondary]">{sourceQueryHandoff?.status === "pending" ? "Projecting question…" : sourceQueryHandoff?.status === "unavailable" ? "Query projection unavailable." : "Search or ask a question to project a query into vector space."}</p>}
+          {(queryPoint || sourceQueryHandoff) && <button type="button" onClick={clearAll} className="mt-4 text-xs text-[--color-info] hover:text-[--text-primary] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[--color-info]">Clear query</button>}
         </div>
 
         <div className="border-t border-[--border-subtle] pt-5">

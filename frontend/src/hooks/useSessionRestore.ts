@@ -18,7 +18,7 @@ export function useSessionRestore() {
       if (controller.signal.aborted || useAuthStore.getState().accessToken !== token) return;
       useAuthStore.getState().verificationFailed(cause instanceof ApiError
         ? cause.message
-        : "Could not connect to the Neuebit API. Check your connection and retry.");
+        : "Could not connect to the NeueBit API. Check your connection and retry.");
     });
     return () => controller.abort();
   }, [status, token]);

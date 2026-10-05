@@ -1,0 +1,26 @@
+.neuebit-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(var(--nb-brand-height, 20px) * .4);
+  flex-shrink: 0;
+  font-family: "Geist Sans", sans-serif;
+  font-size: calc(var(--nb-brand-height, 20px) * .85);
+  font-weight: 600;
+  letter-spacing: -.02em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.neuebit-brand > .neuebit-logo {
+  inline-size: var(--nb-brand-height, 20px);
+  block-size: var(--nb-brand-height, 20px);
+}
+.neuebit-brand__name {
+  display: block;
+}
+
+.neuebit-brand--subtle {
+  --nb-logo-mark: currentColor;
+  color: var(--text-secondary);
+  font-weight: 500;
+}

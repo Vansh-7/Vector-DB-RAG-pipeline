@@ -5,6 +5,7 @@ import { ThemeToggle } from "../theme/ThemeToggle";
 import { useTheme } from "../theme/themeContext";
 import { Tooltip } from "../ui/Tooltip";
 import { ConfirmDialog } from "../ui/ConfirmDialog";
+import { UserAvatar } from "../ui/UserAvatar";
 
 export function AccountMenu() {
   const user = useAuthStore((s) => s.user);
@@ -79,7 +80,7 @@ export function AccountMenu() {
             setOpen(true);
           }
         }}>
-        <span aria-hidden="true" className="account-initial">{user?.email.charAt(0).toUpperCase() || "U"}</span>
+        <UserAvatar userId={user?.id} email={user?.email} />
         <span className="sidebar-label account-email" title={user?.email}>{user?.email}</span>
         <ChevronRight className="sidebar-label h-3.5 w-3.5 shrink-0 text-[--text-tertiary]" aria-hidden="true" />
       </button>
@@ -87,29 +88,31 @@ export function AccountMenu() {
     {open && <div ref={menuRef} id={menuId} role="menu" aria-label={appearance ? "Appearance" : "Account"}
       className="account-menu" onKeyDown={menuKeys}>
       {appearance ? <>
-        <button type="button" role="menuitem" className="account-menu-row" onClick={() => setAppearance(false)}>
+        <button type="button" role="menuitem" className="account-menu-row account-menu-back" onClick={() => setAppearance(false)}>
           <ArrowLeft size={16} aria-hidden="true" /> Account
         </button>
-        <div className="account-menu-separator" />
         <p className="account-menu-caption">Appearance</p>
         <ThemeToggle variant="menu" onThemeChange={() => close()} />
       </> : <>
         <div className="account-menu-info">
-          <p className="account-menu-email" title={user?.email}>{user?.email}</p>
-          <p className="account-menu-caption">Account{user?.is_operator && <span className="account-operator">Operator</span>}</p>
+          <UserAvatar userId={user?.id} email={user?.email} size={34} />
+          <div className="account-menu-identity">
+            <p className="account-menu-email" title={user?.email}>{user?.email}</p>
+            <p className="account-menu-caption">Account{user?.is_operator && <span className="account-operator">Operator</span>}</p>
+          </div>
         </div>
         <div className="account-menu-separator" />
         <button id={`${menuId}-appearance`} type="button" role="menuitem" className="account-menu-row" onClick={() => setAppearance(true)}>
           <Palette size={16} aria-hidden="true" /><span>Appearance</span>
           <span className="account-menu-value">{theme === "light" ? "Light" : "Dark"}</span><ChevronRight size={14} aria-hidden="true" />
         </button>
-        <button type="button" role="menuitem" className="account-menu-row" onClick={() => { close(false); setConfirmLogout(true); }}>
+        <button type="button" role="menuitem" className="account-menu-row account-menu-row-danger" onClick={() => { close(false); setConfirmLogout(true); }}>
           <LogOut size={16} aria-hidden="true" /> Log out
         </button>
       </>}
     </div>}
-    <ConfirmDialog open={confirmLogout} onOpenChange={setConfirmLogout} title="Log out of Neuebit?"
-      description="You'll need to sign in again to access your workspace." confirmLabel="Log out"
+    <ConfirmDialog open={confirmLogout} onOpenChange={setConfirmLogout} title="Log out of NeueBit?" tone="session"
+      description="You’ll need to sign in again to access your workspace." confirmLabel="Log out"
       onConfirm={logout} returnFocusRef={triggerRef} />
   </div>;
 }

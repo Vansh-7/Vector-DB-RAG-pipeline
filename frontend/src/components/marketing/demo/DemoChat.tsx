@@ -5,9 +5,11 @@ import { cosineDistance, demoChunks, demoPrompts, documentFor } from "./demoCont
 
 // A fixed authored example. The visual correspondence explains the sample;
 // it is not a claim that the product measures sentence-level attribution.
-export function DemoChat({ reducedMotion }: { reducedMotion: boolean }) {
-  const [phase, setPhase] = useState(reducedMotion ? 2 : 0);
-  const [showSources, setShowSources] = useState(false);
+export function DemoChat({ reducedMotion, editorial = false, presentation }: { reducedMotion: boolean; editorial?: boolean; presentation?: { phase: number; sources: boolean } }) {
+  const [localPhase, setPhase] = useState(reducedMotion ? 2 : 0);
+  const [sourcesOverride, setShowSources] = useState<boolean | null>(null);
+  const phase = presentation?.phase ?? localPhase;
+  const showSources = sourcesOverride ?? presentation?.sources ?? false;
   const [selectedSource, setSelectedSource] = useState(0);
   const [connector, setConnector] = useState("");
   const root = useRef<HTMLDivElement>(null);
@@ -24,12 +26,13 @@ export function DemoChat({ reducedMotion }: { reducedMotion: boolean }) {
   const complete = phase === 2;
 
   useEffect(() => {
+    if (presentation) return;
     if (reducedMotion) { setPhase(2); return; }
     if (!visible || complete) return;
-    const reveal = setTimeout(() => setPhase(1), 450);
-    const finish = setTimeout(() => setPhase(2), 1200);
+    const reveal = setTimeout(() => setPhase(1), editorial ? 2400 : 450);
+    const finish = setTimeout(() => setPhase(2), editorial ? 4600 : 1200);
     return () => { clearTimeout(reveal); clearTimeout(finish); };
-  }, [visible, reducedMotion, complete]);
+  }, [visible, reducedMotion, complete, editorial, presentation]);
 
   useLayoutEffect(() => {
     if (!showSources || !root.current) { setConnector(""); return; }
@@ -52,11 +55,14 @@ export function DemoChat({ reducedMotion }: { reducedMotion: boolean }) {
 
   function closeSources() { setShowSources(false); sourcesButton.current?.focus({ preventScroll: true }); }
 
-  return <div className="demo-workspace demo-chat" data-chat-phase={phase} onPointerDownCapture={() => setPhase(2)} onKeyDownCapture={() => setPhase(2)}>
-    <div className="demo-view-heading"><h4>Chat</h4><span>Answers grounded in your documents</span></div>
+  const Heading = editorial ? "h2" : "h4";
+  const InspectorHeading = editorial ? "h3" : "h5";
+  return <div className={`demo-workspace demo-chat${editorial ? " demo-chat--editorial" : ""}`} data-chat-phase={phase} onPointerDownCapture={() => { if (!presentation) setPhase(2); }} onKeyDownCapture={() => { if (!presentation) setPhase(2); }}>
+    <div className="demo-view-heading"><Heading>Chat</Heading><span>Answers grounded in your documents</span></div>
     <div ref={root} className={`demo-grounding-layout${showSources ? " demo-grounding-layout--open" : ""}`}>
       <div className="demo-conversation">
-        <div className="demo-question">{prompt.question}</div>
+        <div className="demo-question" style={{ visibility: phase < 0 ? "hidden" : "visible" }}>{prompt.question}</div>
+        {editorial && <div className="hero-retrieval" aria-hidden="true"><span className="hero-retrieval-dot" />Context from your documents<span className="demo-mono">2 passages</span></div>}
         <div className="demo-answer" data-answer={prompt.answer}>
           <p className="demo-answer-text" style={{ visibility: phase > 0 ? "visible" : "hidden" }}>
             {answer.map((sentence, index) => <span key={index} ref={(element) => { sentences.current[index] = element; }}
@@ -73,13 +79,12 @@ export function DemoChat({ reducedMotion }: { reducedMotion: boolean }) {
       </div>
       {showSources && <aside ref={inspector} id={id} className="demo-inspector demo-sources" aria-label="Preview answer sources"
         onKeyDown={(event) => { if (event.key === "Escape") { event.preventDefault(); closeSources(); } }}>
-        <div className="demo-inspector-title"><h5>Answer sources</h5><button type="button" className="demo-icon-button" aria-label="Close preview sources" onClick={closeSources}><X size={17} aria-hidden="true" /></button></div>
+        <div className="demo-inspector-title"><InspectorHeading>Answer sources</InspectorHeading><button type="button" className="demo-icon-button" aria-label="Close preview sources" onClick={closeSources}><X size={17} aria-hidden="true" /></button></div>
         <div className="demo-source-list">{sources.map((item, index) => <button key={item.id} type="button" className="demo-source-card" aria-pressed={selectedSource === index}
           onClick={() => setSelectedSource(index)}><span>Source {index + 1}</span><strong>{documentFor(item).name}</strong></button>)}</div>
         <div className="demo-selected-source" aria-live="polite"><p ref={excerpt} className="demo-source-excerpt">{source.text}</p>
           <p className="demo-source-correspondence">Source {selectedSource + 1} → Answer passage {selectedSource + 1}</p>
-          <p className="demo-muted">Demo cosine distance <span className="demo-mono">{cosineDistance(source, prompt.query).toFixed(4)}</span></p>
-          <p className="demo-muted">Highlight shows the corresponding passage in this authored example.</p>
+          <p className="demo-muted">Cosine distance <span className="demo-mono">{cosineDistance(source, prompt.query).toFixed(4)}</span></p>
         </div>
       </aside>}
       {connector && <svg className="demo-grounding-connector" aria-hidden="true"><path key={selectedSource} d={connector} pathLength={1} /></svg>}

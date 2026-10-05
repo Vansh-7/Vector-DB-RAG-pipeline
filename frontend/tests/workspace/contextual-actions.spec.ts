@@ -63,7 +63,7 @@ for (const theme of ["light", "dark"] as const) {
       await expect(inspector).toContainText(vectorId);
       await expect(inspector).toContainText("0.80000");
       await lab.getByRole("navigation", { name: "Vector Lab sections" }).getByRole("button", { name: "Engine", exact: true }).click();
-      await expect(lab.getByText("Shared engine configuration is managed by Neuebit operators.")).toBeVisible();
+      await expect(lab.getByText("Shared engine configuration is managed by NeueBit operators.")).toBeVisible();
       await expect(lab.getByRole("combobox", { name: "Index algorithm" })).toHaveCount(0);
       await expect(lab.getByRole("combobox", { name: "Distance metric", exact: true })).toHaveCount(0);
       await expect(lab.getByRole("button", { name: "Apply configuration", exact: true })).toHaveCount(0);

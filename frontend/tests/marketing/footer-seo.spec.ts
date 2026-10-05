@@ -5,13 +5,37 @@ import { test, expect, stubApi, expectNoProductCode, seedSession, expectWorkspac
 import { appearance } from "../theme/fixtures";
 import { LANDING_DESCRIPTION, LANDING_TITLE, publicSiteUrl } from "../../src/lib/siteMetadata";
 
+for (const theme of ["light", "dark"] as const) for (const height of [900,960]) {
+  test(`${theme} closing chapter fits 1440x${height} with a viewport-wide divider`, async ({page}) => {
+    await page.setViewportSize({width:1440,height}); await appearance(page,theme,theme);
+    await page.emulateMedia({reducedMotion:"reduce"}); await stubApi(page); await page.goto("/");
+    const close=page.locator(".landing-close"), footer=page.getByRole("contentinfo");
+    await close.scrollIntoViewIfNeeded(); await page.evaluate(()=>document.fonts.ready);
+    const header=(await page.getByRole("banner").boundingBox())!;
+    const whole=(await close.boundingBox())!, edge=(await footer.boundingBox())!;
+    expect(whole.height).toBeLessThanOrEqual(height-header.height+1);
+    expect(whole.y).toBeGreaterThanOrEqual(header.height-1);
+    expect(whole.y+whole.height).toBeLessThanOrEqual(height+1);
+    expect(edge.x).toBe(0); expect(edge.width).toBe(1440);
+    await expect(footer).toHaveCSS("border-top-width","1px");
+    await expect(footer.locator(".marketing-footer-content")).toHaveCSS("border-top-width","0px");
+    const actions=(await close.locator(".marketing-closing-actions").boundingBox())!;
+    expect(edge.y-actions.y-actions.height).toBeGreaterThanOrEqual(48);
+    expect(edge.y-actions.y-actions.height).toBeLessThanOrEqual(64);
+    const utility=(await footer.locator(".marketing-footer-attribution").boundingBox())!;
+    expect(utility.y+utility.height).toBeLessThan(height);
+    await expect(close.locator(".footer-wordmark")).toHaveCount(0);
+    await expect(close.locator(".closing-motif, .marketing-final-cta svg:not(.lucide)")).toHaveCount(0);
+  });
+}
+
 for (const theme of ["light", "dark"] as const) {
   test(`${theme} closing CTA and footer reflow from 320px to desktop and 200% text`, async ({ page }) => {
     await appearance(page, theme, theme);
     await page.emulateMedia({ reducedMotion: "reduce" });
     const { calls, scripts } = await stubApi(page);
     await page.goto("/");
-    const closing = page.getByRole("region", { name: "Ask your knowledge." });
+    const closing = page.getByRole("region", { name: "Ready to work with your knowledge?" });
     const footer = page.getByRole("contentinfo");
     for (const width of [320, 375, 390, 430, 768, 1024, 1280, 1440]) {
       await page.setViewportSize({ width, height: 900 });
@@ -34,27 +58,27 @@ for (const theme of ["light", "dark"] as const) {
       }
     }
     await expect(footer).toHaveCSS("background-color", theme === "light" ? "rgb(255, 255, 255)" : "rgb(8, 9, 10)");
-    await expect(footer).toContainText("Built by Vansh Gupta.");
+    await expect(footer).toContainText("Built by Vansh Gupta");
     expect(calls).toEqual([]);
     expectNoProductCode(scripts);
   });
 }
 
-test("footer navigation scrolls locally without changing the selected tour chapter", async ({ page }) => {
+test("footer navigation scrolls locally without changing local story state", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.setViewportSize({ width: 1440, height: 1000 });
   const { calls, scripts } = await stubApi(page);
   await page.goto("/");
-  await page.getByRole("tab", { name: /Find context/ }).click();
+  await expect(page.locator(".retrieval-canvas")).toBeAttached();
   const footer = page.getByRole("contentinfo");
   const product = footer.getByRole("navigation", { name: "Footer product navigation" });
-  await expect(product.getByRole("link")).toHaveText(["Documents", "Search", "Chat", "Vector Lab"]);
-  for (const name of ["Documents", "Search", "Chat", "Vector Lab"]) {
+  await expect(product.getByRole("link")).toHaveText(["Chat", "Documents", "Search", "Vector Lab"]);
+  for (const name of ["Chat", "Documents", "Search", "Vector Lab"]) {
     await product.getByRole("link", { name, exact: true }).click();
-    const id = name === "Vector Lab" ? "vector-lab" : "product";
+    const id = name === "Vector Lab" ? "vector-lab" : `knowledge-${name.toLowerCase()}`;
     await expect(page.locator(`#${id}`)).toBeFocused();
     await expect(page).toHaveURL(new RegExp(`/#${id}$`));
-    await expect(page.getByRole("tab", { name: /Find context/ })).toHaveAttribute("aria-selected", "true");
+    await expect(page.locator(".retrieval-canvas")).toHaveAttribute("data-retrieval-stage", "5");
   }
   await footer.getByRole("link", { name: "Architecture" }).click();
   await expect(page.locator("#architecture")).toBeFocused();
@@ -70,7 +94,7 @@ test("closing CTA uses the existing register and authenticated app boundaries", 
   await page.emulateMedia({ reducedMotion: "reduce" });
   await stubApi(page);
   await page.goto("/");
-  const closing = page.getByRole("region", { name: "Ask your knowledge." });
+  const closing = page.getByRole("region", { name: "Ready to work with your knowledge?" });
   await expect(closing.getByRole("link", { name: "Get started" })).toHaveAttribute("href", "/auth?mode=register");
   await closing.getByRole("link", { name: "Get started" }).click();
   await expect(page.getByRole("heading", { name: "Create your account" })).toBeVisible();

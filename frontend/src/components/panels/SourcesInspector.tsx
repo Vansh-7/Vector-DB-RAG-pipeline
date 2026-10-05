@@ -8,13 +8,15 @@ import { CATEGORY_LABELS } from "../../types/vector";
 import { Button } from "../ui/Button";
 import { ContextPane } from "../layout/ContextPane";
 
-export function SourcesInspector({ sources, onClose, active }: {
+export function SourcesInspector({ sources, originatingQuery, onClose, active }: {
   sources: RAGSource[];
+  originatingQuery: string | null;
   onClose: (restoreFocus?: boolean) => void;
   active: boolean;
 }) {
   const documents = useDocuments().data ?? [];
   const setHighlighted = useCanvasStore((s) => s.setHighlighted);
+  const beginSourceHandoff = useCanvasStore((s) => s.beginSourceHandoff);
   const openVectorLab = useSessionStore((s) => s.openVectorLab);
   const [selected, setSelected] = useState(0);
   const current = sources[selected] ?? sources[0];
@@ -53,7 +55,7 @@ export function SourcesInspector({ sources, onClose, active }: {
           {current.documentId != null && <div className="flex justify-between gap-4"><dt className="text-[--text-secondary]">Document ID</dt><dd className="font-mono">{current.documentId}</dd></div>}
         </dl>
         <Button type="button" variant="ghost" onClick={() => {
-          setHighlighted([current.vectorId], { [current.vectorId]: current.score });
+          beginSourceHandoff(current.vectorId, current.score, originatingQuery);
           openVectorLab("space"); onClose(false);
           requestAnimationFrame(() => document.getElementById("workspace")?.focus());
         }} className="mt-5 !px-0 text-[--color-info]">View in Vector Lab <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" /></Button>

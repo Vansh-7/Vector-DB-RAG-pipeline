@@ -8,7 +8,7 @@ test("public entry is usable without a session, product code, or product polling
   await page.clock.install();
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "Your knowledge, in context." })).toBeFocused();
-  await expect(page).toHaveTitle("Neuebit — Your knowledge, in context");
+  await expect(page).toHaveTitle("NeueBit — Your knowledge, in context");
   await expect(page.locator(".marketing-hero").getByRole("link", { name: "Get started" })).toHaveAttribute("href", "/auth?mode=register");
   await expect(page.getByRole("link", { name: "Sign in" })).toHaveAttribute("href", "/auth?mode=login");
   await page.clock.fastForward(30_000);
@@ -32,17 +32,17 @@ test("public session restoration preserves the page and visitor focus", async ({
   } });
   await page.clock.install();
   await page.goto("/");
-  const open = page.locator(".marketing-hero").getByRole("link", { name: "Continue to Neuebit" });
+  const open = page.locator(".marketing-hero").getByRole("link", { name: "Continue to NeueBit" });
   await open.focus();
   await expect.poll(() => calls.length).toBe(1);
   restore.resolve();
-  await expect(page.locator(".marketing-hero").getByRole("link", { name: "Open Neuebit" })).toBeFocused();
+  await expect(page.locator(".marketing-hero").getByRole("link", { name: "Open NeueBit" })).toBeFocused();
   await expect(page).toHaveURL(/\/$/);
   await page.clock.fastForward(30_000);
   expect(calls.map((call) => call.path)).toEqual(["/auth/me"]);
   expect(calls[0].authorization).toBe(`Bearer ${SESSION_TOKEN}`);
   expectNoProductCode(scripts);
-  await page.locator(".marketing-hero").getByRole("link", { name: "Open Neuebit" }).click();
+  await page.locator(".marketing-hero").getByRole("link", { name: "Open NeueBit" }).click();
   await expectWorkspace(page);
 });
 
@@ -64,7 +64,7 @@ for (const path of ["/auth", "/auth?mode=login", "/auth?mode=unknown"]) {
     const { calls, scripts } = await stubApi(page);
     await page.goto(path);
     await expect(page.getByRole("heading", { name: "Welcome back" })).toBeFocused();
-    await expect(page).toHaveTitle("Neuebit — Sign in");
+    await expect(page).toHaveTitle("NeueBit — Sign in");
     await expect(page.getByLabel("Confirm password", { exact: true })).toHaveCount(0);
     expect(calls).toEqual([]);
     expectNoProductCode(scripts);
@@ -91,7 +91,7 @@ test("authenticated auth access opens the app after verification", async ({ page
   const { scripts } = await stubApi(page);
   await page.goto("/auth?mode=register");
   await expectWorkspace(page);
-  await expect(page).toHaveTitle("Neuebit — Workspace");
+  await expect(page).toHaveTitle("NeueBit — Workspace");
   expect(scripts.some((url) => /\/LandingPage-/.test(url))).toBe(false);
 });
 
@@ -135,9 +135,9 @@ test("public entry remains available when session verification fails", async ({ 
   });
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "Your knowledge, in context." })).toBeVisible();
-  await page.locator(".marketing-hero").getByRole("link", { name: "Continue to Neuebit" }).click();
+  await page.locator(".marketing-hero").getByRole("link", { name: "Continue to NeueBit" }).click();
   await expect(page.getByRole("heading", { name: "Connection unavailable" })).toBeVisible();
-  await page.getByRole("link", { name: "Back to Neuebit" }).click();
+  await page.getByRole("link", { name: "Back to NeueBit" }).click();
   await expect(page).toHaveURL(/\/$/);
   expectNoProductCode(scripts);
 });
@@ -147,7 +147,7 @@ test("log out from verification failure removes the token and opens login", asyn
   await stubApi(page, { "/auth/me": (route) => reply(route, { detail: "Unavailable" }, 503) });
   await page.goto("/app");
   await page.getByRole("button", { name: "Log out", exact: true }).click();
-  await page.getByRole("dialog", { name: "Log out of Neuebit?", exact: true }).getByRole("button", { name: "Log out", exact: true }).click();
+  await page.getByRole("dialog", { name: "Log out of NeueBit?", exact: true }).getByRole("button", { name: "Log out", exact: true }).click();
   await expect(page).toHaveURL(/\/auth\?mode=login$/);
   expect(await page.evaluate((key) => localStorage.getItem(key), TOKEN_KEY)).toBeNull();
   await page.reload();
@@ -178,13 +178,13 @@ test("sign in, refresh, public return, and logout preserve the session boundary"
   expect(calls.filter((call) => call.path === "/auth/me")).toHaveLength(2);
   // Successful auth replaced the auth history entry, so Back returns to public.
   await page.goBack();
-  await expect(page.locator(".marketing-hero").getByRole("link", { name: "Open Neuebit" })).toBeVisible();
+  await expect(page.locator(".marketing-hero").getByRole("link", { name: "Open NeueBit" })).toBeVisible();
   await page.goForward();
   await expectWorkspace(page);
   await page.getByRole("textbox", { name: "Ask a question about your knowledge" }).fill("Private unsent draft");
   await page.getByRole("button", { name: "Account menu", exact: true }).click();
   await page.getByRole("menuitem", { name: "Log out", exact: true }).click();
-  await page.getByRole("dialog", { name: "Log out of Neuebit?", exact: true }).getByRole("button", { name: "Log out", exact: true }).click();
+  await page.getByRole("dialog", { name: "Log out of NeueBit?", exact: true }).getByRole("button", { name: "Log out", exact: true }).click();
   await expect(page).toHaveURL(/\/auth\?mode=login$/);
   await expect(page.getByRole("complementary", { name: "Primary sidebar" })).toHaveCount(0);
   expect(await page.evaluate((key) => localStorage.getItem(key), TOKEN_KEY)).toBeNull();
@@ -202,7 +202,7 @@ test("create account registers, signs in, verifies, then opens the product", asy
   const { calls } = await stubApi(page);
   await page.goto("/auth?mode=register");
   await page.reload();
-  await expect(page).toHaveTitle("Neuebit — Create account");
+  await expect(page).toHaveTitle("NeueBit — Create account");
   await fillCredentials(page);
   await page.getByLabel("Confirm password", { exact: true }).fill("test-password-123");
   await page.getByRole("button", { name: "Create account", exact: true }).click();
@@ -285,7 +285,7 @@ for (const pendingPath of ["/auth/login", "/auth/register", "/auth/me"]) {
     if (pendingPath === "/auth/register") await page.getByLabel("Confirm password", { exact: true }).fill("test-password-123");
     await page.getByRole("button", { name: pendingPath === "/auth/register" ? "Create account" : "Sign in", exact: true }).click();
     await expect.poll(() => calls.some((call) => call.path === pendingPath)).toBe(true);
-    await page.getByRole("link", { name: "Back to Neuebit" }).click();
+    await page.getByRole("link", { name: "Back to NeueBit" }).click();
     await expect(page.locator(".marketing-hero").getByRole("link", { name: "Get started" })).toBeVisible();
     const completed = pendingPath === "/auth/me" ? null
       : page.waitForResponse((response) => response.url().endsWith(pendingPath));
@@ -314,7 +314,7 @@ test("unknown paths show an accessible client 404 and return home", async ({ pag
   const { calls, scripts } = await stubApi(page);
   await page.goto("/does-not-exist");
   await expect(page.getByRole("heading", { name: "Page not found" })).toBeFocused();
-  await expect(page).toHaveTitle("Neuebit — Page not found");
+  await expect(page).toHaveTitle("NeueBit — Page not found");
   await page.getByRole("link", { name: "Return home" }).click();
   await expect(page.locator(".marketing-hero").getByRole("link", { name: "Get started" })).toBeVisible();
   expect(calls).toEqual([]);
@@ -337,7 +337,7 @@ test("a failed route chunk has a recoverable reload action", async ({ page }) =>
     await route.abort("failed");
   });
   await page.goto("/auth");
-  await expect(page.getByRole("heading", { name: "Unable to open Neuebit" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Unable to open NeueBit" })).toBeVisible();
   await page.getByRole("button", { name: "Reload page" }).click();
   await expect(page.getByRole("heading", { name: "Welcome back" })).toBeVisible();
 });

@@ -26,6 +26,8 @@
 .demo-inspector h4, .demo-inspector h5 { font-size: .9375rem; font-weight: 600; margin-block: .75rem; }
 .demo-inspector > p + p, .demo-selected-source > p + p { margin-block-start: 1rem; }
 .demo-inspector-title { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
+.demo-inspector-title > :is(h3, h4, h5) { min-inline-size: 0; overflow-wrap: anywhere; }
+.demo-inspector-title .demo-icon-button { flex-shrink: 0; }
 .demo-inspector-title h5 { margin: 0; }
 .demo-metadata { margin-block-start: 1.5rem; display: grid; gap: .75rem; font-size: .8125rem; }
 .demo-metadata > div { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .5rem; }
@@ -72,7 +74,7 @@
 .demo-vector-map { position: relative; block-size: 340px; border: 1px solid var(--demo-border); border-radius: 8px; background: var(--surface-subtle); }
 .demo-vector-lines { position: absolute; inset: 0; inline-size: 100%; block-size: 100%; color: var(--border-strong); }
 .demo-vector-lines > line { stroke: var(--capability-mark); stroke-width: .2; opacity: .5; }
-.demo-vector-point { position: absolute; display: grid; place-items: center; inline-size: 28px; block-size: 28px; border-radius: 50%; transform: translate(-50%, -50%); }
+.demo-vector-point { position: absolute; display: grid; place-items: center; inline-size: 44px; block-size: 44px; border-radius: 50%; transform: translate(-50%, -50%); }
 .demo-vector-point > span { inline-size: 8px; block-size: 8px; border-radius: 50%; background: var(--point-color); }
 .demo-vector-point[aria-pressed="true"] { background: var(--capability-soft); outline: 1px solid var(--capability-mark); }
 .demo-map-caption { position: absolute; inset-inline-start: .75rem; inset-block-end: .5rem; color: var(--demo-secondary); font-size: .75rem; pointer-events: none; }

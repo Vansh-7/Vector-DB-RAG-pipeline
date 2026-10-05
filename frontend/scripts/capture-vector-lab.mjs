@@ -46,7 +46,7 @@ try {
   }
   await writeFile(resolve(destination, "capture-manifest.json"), JSON.stringify({
     origin, capturedAt: new Date().toISOString(),
-    provenance: "Actual authenticated Neuebit Vector Lab rendered with shared authored API fixtures. Sample coordinates are illustrative, not measured PCA or live backend output.",
+    provenance: "Actual authenticated NeueBit Vector Lab rendered with shared authored API fixtures. Sample coordinates are illustrative, not measured PCA or live backend output.",
     captures,
   }, null, 2) + "\n");
   console.log(JSON.stringify({ destination, captures }));

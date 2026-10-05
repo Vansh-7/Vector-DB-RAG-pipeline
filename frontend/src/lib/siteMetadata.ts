@@ -1,7 +1,7 @@
 // Shared by the static Vite head and client route effects. No product imports.
-export const LANDING_TITLE = "Neuebit — Your knowledge, in context";
-export const LANDING_DESCRIPTION = "Ask your documents, search by meaning, and trace answers to their sources. Neuebit is an AI knowledge workspace built on a custom vector engine.";
-export const SOCIAL_IMAGE_ALT = "Neuebit. Your knowledge, in context. An AI knowledge workspace with a custom vector engine.";
+export const LANDING_TITLE = "NeueBit — Your knowledge, in context";
+export const LANDING_DESCRIPTION = "Ask your documents, search by meaning, and trace answers to their sources. NeueBit is an AI knowledge workspace built on a custom vector engine.";
+export const SOCIAL_IMAGE_ALT = "NeueBit. Your knowledge, in context. An AI knowledge workspace with a custom vector engine.";
 
 export function publicSiteUrl(value?: string): string | null {
   if (!value?.trim()) return null;
@@ -20,7 +20,7 @@ export function publicMetadata(siteUrl: string | null): PublicMetadataTag[] {
   });
   return [
     meta("property", "og:type", "website"),
-    meta("property", "og:site_name", "Neuebit"),
+    meta("property", "og:site_name", "NeueBit"),
     meta("property", "og:title", LANDING_TITLE),
     meta("property", "og:description", LANDING_DESCRIPTION),
     meta("name", "twitter:card", siteUrl ? "summary_large_image" : "summary"),

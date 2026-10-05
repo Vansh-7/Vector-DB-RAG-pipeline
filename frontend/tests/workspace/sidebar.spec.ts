@@ -1,5 +1,34 @@
 import { test, expect, seedSession, TOKEN_KEY, reply } from "../entry/fixtures";
 import { appearance, knowledgeApi } from "../theme/fixtures";
+import type { Page } from "@playwright/test";
+
+async function resizeSidebar(page: Page, targetWidth: number) {
+  const sidebar = page.getByRole("complementary", { name: "Primary sidebar" });
+  const resizer = sidebar.getByRole("separator", { name: "Resize sidebar", exact: true });
+  const boundary = (await resizer.boundingBox())!;
+  const current = (await sidebar.boundingBox())!.width;
+  const handle = (await resizer.elementHandle())!;
+  const x = boundary.x + boundary.width / 2;
+  const y = boundary.y + boundary.height / 2;
+  await page.mouse.move(x, y); await page.mouse.down();
+  await expect(resizer).toHaveAttribute("data-resizing", "true");
+  await expect(sidebar).toHaveCSS("transition-property", "none");
+  expect(await resizer.evaluate((element) => element.hasPointerCapture(1))).toBe(true);
+  await page.mouse.move(x + targetWidth - current, y, { steps: 6 });
+  // Width changes while the pointer is still down, without a release or animation.
+  await expect(sidebar).toHaveCSS("width", `${Math.max(220, Math.min(360, targetWidth))}px`);
+  await expect(sidebar).toHaveAttribute("data-collapsed", "false");
+  await expect(resizer).toBeFocused();
+  await page.mouse.up();
+  if (targetWidth <= 188) {
+    await expect(sidebar).toHaveCSS("width", "56px");
+    await expect(resizer).toHaveCount(0);
+    await expect(sidebar.getByRole("button", { name: "Expand navigation", exact: true })).toBeFocused();
+    await expect(page.locator(".authenticated-app")).not.toHaveCSS("user-select", "none");
+  }
+  if (targetWidth > 188) await expect(resizer).toHaveAttribute("data-resizing", "false");
+  expect(await handle.evaluate((element) => element.hasPointerCapture(1))).toBe(false);
+}
 
 for (const theme of ["light", "dark"] as const) {
   for (const width of [1440, 1280, 1024, 390]) {
@@ -8,7 +37,7 @@ for (const theme of ["light", "dark"] as const) {
       await appearance(page, theme);
       await seedSession(page); await knowledgeApi(page); await page.goto("/app");
       const sidebar = page.getByRole("complementary", { name: "Primary sidebar" });
-      await expect(sidebar).toHaveCSS("width", width >= 768 ? "232px" : "56px");
+      await expect(sidebar).toHaveCSS("width", width >= 768 ? "256px" : "56px");
       if (width >= 768) {
         const recent = sidebar.getByRole("button", { name: "How does retrieval work?", exact: true });
         await expect(recent).toHaveCSS("height", "32px");
@@ -18,6 +47,7 @@ for (const theme of ["light", "dark"] as const) {
         await sidebar.getByRole("button", { name: "Collapse navigation" }).click();
       }
       await expect(sidebar).toHaveCSS("width", "56px");
+      await expect(page.getByRole("separator", { name: "Resize sidebar", exact: true })).toHaveCount(0);
       const controls = sidebar.locator(".sidebar-control:visible");
       const boxes = await controls.evaluateAll((items) => items.map((item) => {
         const { x, width, height } = item.getBoundingClientRect();
@@ -37,7 +67,7 @@ for (const theme of ["light", "dark"] as const) {
       await trigger.click();
       const menu = page.getByRole("menu", { name: "Account", exact: true });
       await expect(trigger).toHaveAttribute("aria-expanded", "true");
-      await expect(menu).toHaveCSS("width", "244px");
+      await expect(menu).toHaveCSS("width", "236px");
       await expect(menu).toHaveCSS("box-shadow", "none");
       await expect(menu).toHaveCSS("opacity", "1");
       await expect(menu.getByText("reader@example.com", { exact: true })).toBeVisible();
@@ -58,6 +88,169 @@ for (const theme of ["light", "dark"] as const) {
       }
     });
   }
+
+  for (const width of [1280, 1440]) {
+    test(`${theme} desktop sidebar pointer resizing, clamps and fixed account menu at ${width}px`, async ({ page }, testInfo) => {
+      await page.setViewportSize({ width, height: 900 }); await appearance(page, theme);
+      await seedSession(page); await knowledgeApi(page); await page.goto("/app");
+      const sidebar = page.getByRole("complementary", { name: "Primary sidebar" });
+      const resizer = sidebar.getByRole("separator", { name: "Resize sidebar", exact: true });
+      await expect(sidebar).toHaveCSS("width", "256px");
+      await expect(resizer).toHaveAttribute("aria-orientation", "vertical");
+      await expect(resizer).toHaveAttribute("aria-valuemin", "220");
+      await expect(resizer).toHaveAttribute("aria-valuemax", "360");
+      await expect(resizer).toHaveAttribute("aria-valuenow", "256");
+      await expect(resizer).toHaveCSS("width", "6px");
+      await expect(resizer).toHaveCSS("cursor", "col-resize");
+      const nav = sidebar.getByRole("button", { name: "Documents", exact: true });
+      const original = await nav.evaluate((element) => {
+        const rect = element.getBoundingClientRect(); const icon = element.querySelector("svg")!.getBoundingClientRect();
+        return { height: rect.height, icon: { x: icon.x, y: icon.y, width: icon.width, height: icon.height }, padding: getComputedStyle(element).padding };
+      });
+      await resizeSidebar(page, 320);
+      await expect(resizer).toHaveAttribute("aria-valuenow", "320");
+      expect((await page.locator("#workspace").boundingBox())!.x).toBe(320);
+      expect(await nav.evaluate((element) => {
+        const rect = element.getBoundingClientRect(); const icon = element.querySelector("svg")!.getBoundingClientRect();
+        return { height: rect.height, icon: { x: icon.x, y: icon.y, width: icon.width, height: icon.height }, padding: getComputedStyle(element).padding };
+      })).toEqual(original);
+      await resizeSidebar(page, 100);
+      await sidebar.getByRole("button", { name: "Expand navigation", exact: true }).click();
+      await expect(sidebar).toHaveCSS("width", "320px");
+      await resizeSidebar(page, 500); await expect(resizer).toHaveAttribute("aria-valuenow", "360");
+      await sidebar.getByRole("button", { name: "Account menu", exact: true }).click();
+      const menu = page.getByRole("menu", { name: "Account", exact: true });
+      await expect(menu).toHaveCSS("width", "236px"); await expect(menu).toHaveCSS("opacity", "1");
+      const menuBox = (await menu.boundingBox())!;
+      expect(menuBox.x).toBeGreaterThanOrEqual(0); expect(menuBox.x + menuBox.width).toBeLessThanOrEqual(width);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      await page.screenshot({ path: testInfo.outputPath(`sidebar-wide-${theme}-${width}.png`) });
+      await page.keyboard.press("Escape");
+      await resizeSidebar(page, 256);
+      await page.screenshot({ path: testInfo.outputPath(`sidebar-default-${theme}-${width}.png`) });
+    });
+  }
+
+  test(`${theme} sidebar keyboard resizing, collapse, reload and double-click reset preserve UI preferences`, async ({ page }) => {
+    await appearance(page, theme); await seedSession(page); await knowledgeApi(page); await page.goto("/app");
+    const sidebar = page.getByRole("complementary", { name: "Primary sidebar" });
+    const resizer = sidebar.getByRole("separator", { name: "Resize sidebar", exact: true });
+    await resizer.focus();
+    expect(await resizer.evaluate((element) => getComputedStyle(element, "::after").backgroundColor)).not.toBe("rgba(0, 0, 0, 0)");
+    await page.keyboard.press("ArrowRight"); await expect(sidebar).toHaveCSS("width", "264px");
+    await page.keyboard.press("ArrowLeft"); await expect(sidebar).toHaveCSS("width", "256px");
+    await page.keyboard.press("Shift+ArrowRight"); await expect(sidebar).toHaveCSS("width", "288px");
+    await page.keyboard.press("Shift+ArrowLeft"); await expect(sidebar).toHaveCSS("width", "256px");
+    await resizeSidebar(page, 320);
+    await page.reload(); await expect(sidebar).toHaveCSS("width", "320px");
+    await sidebar.getByRole("button", { name: "Collapse navigation", exact: true }).click();
+    await expect(sidebar).toHaveCSS("width", "56px"); await expect(resizer).toHaveCount(0);
+    const stored = await page.evaluate(() => JSON.parse(localStorage.getItem("vectordb-session-storage")!).state);
+    expect(stored).toEqual({ isNavigationCollapsed: true, sidebarWidth: 320, terminalHeight: 220 });
+    await page.reload(); await expect(sidebar).toHaveCSS("width", "56px");
+    await sidebar.getByRole("button", { name: "Expand navigation", exact: true }).click();
+    await expect(sidebar).toHaveCSS("width", "320px"); await expect(resizer).toHaveAttribute("aria-valuenow", "320");
+    await resizer.dblclick(); await expect(sidebar).toHaveCSS("width", "256px");
+    await page.reload(); await expect(sidebar).toHaveCSS("width", "256px");
+    await resizeSidebar(page, 228); await resizer.focus(); await page.keyboard.press("ArrowLeft");
+    await expect(sidebar).toHaveCSS("width", "220px");
+    await resizer.dispatchEvent("keydown", { key: "ArrowLeft", repeat: true });
+    await expect(sidebar).toHaveAttribute("data-collapsed", "false");
+    await page.keyboard.press("ArrowLeft");
+    await expect(sidebar).toHaveCSS("width", "56px");
+    const expand = sidebar.getByRole("button", { name: "Expand navigation", exact: true });
+    await expect(expand).toBeFocused(); await page.keyboard.press("Enter");
+    await expect(sidebar).toHaveCSS("width", "220px");
+    await resizeSidebar(page, 360); await resizer.focus(); await page.keyboard.press("Shift+ArrowRight");
+    await expect(sidebar).toHaveCSS("width", "360px");
+  });
+
+  test(`${theme} shrinking stops safely at the minimum and deliberate release collapses with width restoration`, async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await appearance(page, theme); await seedSession(page); await knowledgeApi(page); await page.goto("/app");
+    const sidebar = page.getByRole("complementary", { name: "Primary sidebar" });
+    await resizeSidebar(page, 220); await expect(sidebar).toHaveAttribute("data-collapsed", "false");
+    await resizeSidebar(page, 219); await expect(sidebar).toHaveAttribute("data-collapsed", "false");
+    await resizeSidebar(page, 189); await expect(sidebar).toHaveAttribute("data-collapsed", "false");
+    await resizeSidebar(page, 320); await resizeSidebar(page, 188);
+    await expect(sidebar).toHaveAttribute("data-collapsed", "true");
+    expect(await page.evaluate(() => JSON.parse(localStorage.getItem("vectordb-session-storage")!).state))
+      .toEqual({ isNavigationCollapsed: true, sidebarWidth: 320, terminalHeight: 220 });
+    await page.screenshot({ path: testInfo.outputPath(`sidebar-auto-collapse-${theme}.png`) });
+    await page.reload(); await expect(sidebar).toHaveCSS("width", "56px");
+    await sidebar.getByRole("button", { name: "Expand navigation", exact: true }).click();
+    await expect(sidebar).toHaveCSS("width", "320px");
+    await page.screenshot({ path: testInfo.outputPath(`sidebar-restored-${theme}.png`) });
+  });
+
+  test(`${theme} collapse gesture can be reversed or cancelled without losing the expanded sidebar`, async ({ page }) => {
+    await appearance(page, theme); await seedSession(page); await knowledgeApi(page); await page.goto("/app");
+    const sidebar = page.getByRole("complementary", { name: "Primary sidebar" });
+    const resizer = sidebar.getByRole("separator", { name: "Resize sidebar", exact: true });
+    for (const ending of ["reverse", "pointercancel", "lost-capture", "blur"] as const) {
+      await resizeSidebar(page, 320);
+      const boundary = (await resizer.boundingBox())!;
+      const x = boundary.x + boundary.width / 2;
+      const y = boundary.y + boundary.height / 2;
+      await page.mouse.move(x, y); await page.mouse.down();
+      await page.mouse.move(x - 160, y);
+      await expect(sidebar).toHaveCSS("width", "220px");
+      await expect(sidebar).toHaveAttribute("data-collapsed", "false");
+      if (ending === "reverse") await page.mouse.move(x - 70, y);
+      else if (ending === "pointercancel") await resizer.dispatchEvent("pointercancel", { pointerId: 1, clientX: x - 160 });
+      else if (ending === "lost-capture") await resizer.evaluate((element) => element.releasePointerCapture(1));
+      else await page.evaluate(() => window.dispatchEvent(new Event("blur")));
+      await page.mouse.up();
+      await expect(sidebar).toHaveAttribute("data-collapsed", "false");
+      await expect(resizer).toHaveAttribute("data-resizing", "false");
+      await expect(sidebar).toHaveCSS("width", ending === "reverse" ? "250px" : "220px");
+      expect(await resizer.evaluate((element) => element.hasPointerCapture(1))).toBe(false);
+      await expect(page.locator(".authenticated-app")).not.toHaveCSS("user-select", "none");
+    }
+  });
+
+  test(`${theme} sidebar motion is brief, disabled during dragging and respects reduced motion`, async ({ page }) => {
+    await appearance(page, theme); await seedSession(page); await knowledgeApi(page); await page.goto("/app");
+    const sidebar = page.getByRole("complementary", { name: "Primary sidebar" });
+    await expect(sidebar).toHaveCSS("transition-duration", "0.2s");
+    await expect(sidebar).toHaveCSS("transition-property", "inline-size");
+    await resizeSidebar(page, 320);
+    await sidebar.getByRole("button", { name: "Collapse navigation", exact: true }).click();
+    const intermediate = await sidebar.evaluate(async (element) => {
+      await new Promise(requestAnimationFrame);
+      return element.getBoundingClientRect().width;
+    });
+    expect(intermediate).toBeGreaterThan(56); expect(intermediate).toBeLessThanOrEqual(320);
+    await expect(sidebar).toHaveCSS("width", "56px");
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await expect(sidebar).toHaveCSS("transition-property", "none");
+    await sidebar.getByRole("button", { name: "Expand navigation", exact: true }).click();
+    await expect(sidebar).toHaveCSS("width", "320px");
+    await resizeSidebar(page, 188); await expect(sidebar).toHaveCSS("width", "56px");
+    await sidebar.getByRole("button", { name: "Expand navigation", exact: true }).click();
+    await expect(sidebar).toHaveCSS("width", "320px");
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  });
+
+  test(`${theme} narrow sidebar ignores desktop width and cancels an active drag`, async ({ page }) => {
+    await appearance(page, theme); await seedSession(page); await knowledgeApi(page); await page.goto("/app");
+    const sidebar = page.getByRole("complementary", { name: "Primary sidebar" });
+    const resizer = sidebar.getByRole("separator", { name: "Resize sidebar", exact: true });
+    await resizeSidebar(page, 360);
+    const box = (await resizer.boundingBox())!;
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2); await page.mouse.down();
+    await expect(resizer).toHaveAttribute("data-resizing", "true");
+    await expect(page.locator(".authenticated-app")).toHaveCSS("user-select", "none");
+    await page.setViewportSize({ width: 767, height: 900 });
+    await expect(resizer).toHaveCount(0); await expect(sidebar).toHaveCSS("width", "56px");
+    await page.mouse.up();
+    await expect(page.locator(".authenticated-app")).not.toHaveCSS("user-select", "none");
+    await page.setViewportSize({ width: 390, height: 900 }); await page.reload();
+    await expect(resizer).toHaveCount(0); await expect(sidebar).toHaveCSS("width", "56px");
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.setViewportSize({ width: 1024, height: 900 });
+    await expect(sidebar).toHaveCSS("width", "360px"); await expect(resizer).toBeVisible();
+  });
 
   test(`${theme} account keyboard navigation, appearance and logout retain the session boundary`, async ({ page }) => {
     await appearance(page, theme); await seedSession(page);
@@ -92,7 +285,7 @@ for (const theme of ["light", "dark"] as const) {
     await expect(page.getByRole("menu")).toHaveCount(0);
     await page.getByRole("textbox", { name: "Ask a question about your knowledge" }).fill("Private draft");
     await trigger.click(); await page.keyboard.press("End"); await page.keyboard.press("Enter");
-    await page.getByRole("dialog", { name: "Log out of Neuebit?", exact: true }).getByRole("button", { name: "Log out", exact: true }).click();
+    await page.getByRole("dialog", { name: "Log out of NeueBit?", exact: true }).getByRole("button", { name: "Log out", exact: true }).click();
     await expect(page.getByRole("heading", { name: "Welcome back" })).toBeVisible();
     expect(await page.evaluate((key) => localStorage.getItem(key), TOKEN_KEY)).toBeNull();
     expect(calls.filter((call) => call.path.startsWith("/auth")).map((call) => call.path)).toEqual(["/auth/me"]);

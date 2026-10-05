@@ -1,0 +1,171 @@
+{
+  "provenance": "Screen recordings of the actual authenticated Neuebit frontend with shared authored sample API fixtures. No public runtime API requests. Sample coordinates and values are illustrative, not live backend measurements.",
+  "origin": "http://127.0.0.1:4176",
+  "capturedAt": "2026-10-03T16:32:35.464Z",
+  "sequence": [
+    "Documents",
+    "Search",
+    "Chat",
+    "Sources",
+    "Vector Lab"
+  ],
+  "assets": [
+    {
+      "file": "neuebit-desktop-light.mp4",
+      "bytes": 192816,
+      "durationSeconds": 15.25,
+      "width": 1280,
+      "height": 722,
+      "chapters": [
+        {
+          "scene": "documents",
+          "word": "Ask",
+          "start": 0
+        },
+        {
+          "scene": "search",
+          "word": "Search",
+          "start": 2.485
+        },
+        {
+          "scene": "chat",
+          "word": "Ask",
+          "start": 5.848
+        },
+        {
+          "scene": "sources",
+          "word": "Trace",
+          "start": 8.092
+        },
+        {
+          "scene": "vectors",
+          "word": "Inspect",
+          "start": 10.78
+        },
+        {
+          "scene": "documents",
+          "word": "Ask",
+          "start": 14.218
+        }
+      ]
+    },
+    {
+      "file": "neuebit-mobile-light.mp4",
+      "bytes": 174025,
+      "durationSeconds": 15.39,
+      "width": 390,
+      "height": 722,
+      "chapters": [
+        {
+          "scene": "documents",
+          "word": "Ask",
+          "start": 0
+        },
+        {
+          "scene": "search",
+          "word": "Search",
+          "start": 2.487
+        },
+        {
+          "scene": "chat",
+          "word": "Ask",
+          "start": 5.935
+        },
+        {
+          "scene": "sources",
+          "word": "Trace",
+          "start": 8.205
+        },
+        {
+          "scene": "vectors",
+          "word": "Inspect",
+          "start": 10.904
+        },
+        {
+          "scene": "documents",
+          "word": "Ask",
+          "start": 14.352
+        }
+      ]
+    },
+    {
+      "file": "neuebit-desktop-dark.mp4",
+      "bytes": 203451,
+      "durationSeconds": 15.23,
+      "width": 1280,
+      "height": 722,
+      "chapters": [
+        {
+          "scene": "documents",
+          "word": "Ask",
+          "start": 0
+        },
+        {
+          "scene": "search",
+          "word": "Search",
+          "start": 2.481
+        },
+        {
+          "scene": "chat",
+          "word": "Ask",
+          "start": 5.841
+        },
+        {
+          "scene": "sources",
+          "word": "Trace",
+          "start": 8.094
+        },
+        {
+          "scene": "vectors",
+          "word": "Inspect",
+          "start": 10.783
+        },
+        {
+          "scene": "documents",
+          "word": "Ask",
+          "start": 14.212
+        }
+      ]
+    },
+    {
+      "file": "neuebit-mobile-dark.mp4",
+      "bytes": 177344,
+      "durationSeconds": 15.21,
+      "width": 390,
+      "height": 722,
+      "chapters": [
+        {
+          "scene": "documents",
+          "word": "Ask",
+          "start": 0
+        },
+        {
+          "scene": "search",
+          "word": "Search",
+          "start": 2.478
+        },
+        {
+          "scene": "chat",
+          "word": "Ask",
+          "start": 5.86
+        },
+        {
+          "scene": "sources",
+          "word": "Trace",
+          "start": 8.111
+        },
+        {
+          "scene": "vectors",
+          "word": "Inspect",
+          "start": 10.773
+        },
+        {
+          "scene": "documents",
+          "word": "Ask",
+          "start": 14.188
+        }
+      ]
+    }
+  ],
+  "encoding": "H.264, 24fps, CRF 26, faststart, no audio. Actual UI returned to Documents before the loop boundary."
+}

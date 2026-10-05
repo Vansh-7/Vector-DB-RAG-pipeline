@@ -71,7 +71,7 @@ try {
   }
   await writeFile(resolve(destination, "capture-manifest.json"), JSON.stringify({
     origin, capturedAt: new Date().toISOString(),
-    provenance: "Actual authenticated Neuebit UI rendered with the shared authored sample API fixtures. Not live backend output.",
+    provenance: "Actual authenticated NeueBit UI rendered with the shared authored sample API fixtures. Not live backend output.",
     captures,
   }, null, 2) + "\n");
   console.log(JSON.stringify({ destination, captures: captures.length }));

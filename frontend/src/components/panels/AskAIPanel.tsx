@@ -62,16 +62,18 @@ export function AskAIPanel({ onProcessingChange, active, documentPaneOpen, onAdd
   const [stream, setStream] = useState<StreamingTurn | null>(null);
   const [requestError, setRequestError] = useState<string | null>(null);
   const [inspectedSources, setInspectedSources] = useState<RAGSource[] | null>(null);
+  const [inspectedQuery, setInspectedQuery] = useState<string | null>(null);
   const [sourcesOpen, setSourcesOpen] = useState(false);
   const inspectorTriggerRef = useRef<HTMLButtonElement | null>(null);
   const closeInspector = useCallback((restoreFocus = true) => {
     setSourcesOpen(false);
     if (restoreFocus) requestAnimationFrame(() => inspectorTriggerRef.current?.focus());
   }, []);
-  const openInspector = useCallback((sources: RAGSource[], trigger: HTMLButtonElement) => {
+  const openInspector = useCallback((sources: RAGSource[], trigger: HTMLButtonElement, originatingQuery: string | null) => {
     if (documentPaneOpen) return;
     inspectorTriggerRef.current = trigger;
     setInspectedSources(sources);
+    setInspectedQuery(originatingQuery);
     setSourcesOpen(true);
   }, [documentPaneOpen]);
   const addDocument = () => { closeInspector(false); onAddDocument(); };
@@ -102,6 +104,12 @@ export function AskAIPanel({ onProcessingChange, active, documentPaneOpen, onAdd
     { id: "stream-assistant", role: "assistant", content: stream.answer, sources: stream.sources, timestamp: "" },
   ] : serverMessages;
   const conversation = conversationsQuery.data?.find((conversation) => conversation.id === conversationId);
+  // Resolve each answer from message order, including loaded and streaming turns.
+  let precedingQuestion: string | null = null;
+  const originatingQueries = messages.map((message) => {
+    if (message.role === "user") precedingQuestion = message.content;
+    return message.role === "assistant" ? precedingQuestion : null;
+  });
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: isProcessing ? "smooth" : "instant" });
@@ -197,14 +205,14 @@ export function AskAIPanel({ onProcessingChange, active, documentPaneOpen, onAdd
             : <div className="flex min-h-0 flex-1 flex-col">
               <div className="custom-scrollbar flex-1 overflow-y-auto px-5 py-6 sm:px-7">
                 <div className="mx-auto w-full max-w-[760px] space-y-8">
-                  {messages.map((message, index) => <ChatMessageView key={message.id} message={message} isStreaming={stream !== null && index === messages.length - 1 && message.role === "assistant"} onInspectSources={openInspector} />)}
+                  {messages.map((message, index) => <ChatMessageView key={message.id} message={message} originatingQuery={originatingQueries[index]} isStreaming={stream !== null && index === messages.length - 1 && message.role === "assistant"} onInspectSources={openInspector} />)}
                   <div ref={messagesEndRef} className="h-2" />
                 </div>
               </div>
               <div className="shrink-0 bg-base px-5 pt-2 pb-5 sm:px-7"><div className="mx-auto max-w-[760px]"><AskAIComposer input={input} setInput={setInput} onSubmit={handleSubmit} onAddDocument={addDocument} onCancel={() => abortRef.current?.abort()} status={stream ? "PROCESSING" : "READY"} isCentered={false} /></div></div>
             </div>}
       </div>
-      {inspectedSources && <SourcesInspector sources={inspectedSources} onClose={closeInspector} active={sourcesVisible} />}
+      {inspectedSources && <SourcesInspector sources={inspectedSources} originatingQuery={inspectedQuery} onClose={closeInspector} active={sourcesVisible} />}
     </div>
   );
 }

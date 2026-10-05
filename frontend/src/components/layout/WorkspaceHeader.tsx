@@ -5,7 +5,7 @@ import { Button } from "../ui/Button";
 
 const WORKSPACES: Record<WorkspaceView, { title: string; description: string }> = {
   chat: { title: "New chat", description: "Your knowledge, in conversation." },
-  documents: { title: "Documents", description: "Manage the knowledge available to Neuebit." },
+  documents: { title: "Documents", description: "Manage the knowledge available to NeueBit." },
   search: { title: "Search", description: "Find knowledge by meaning." },
   "vector-lab": { title: "Vector Lab", description: "Inspect and operate the custom vector engine." },
 };

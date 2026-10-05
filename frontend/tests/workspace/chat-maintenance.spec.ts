@@ -113,10 +113,10 @@ for (const theme of ["light", "dark"] as const) {
     await input.fill("Private unsent draft");
     const account = page.getByRole("button", { name: "Account menu", exact: true });
     const open = async () => { await account.click(); await page.getByRole("menuitem", { name: "Log out", exact: true }).click(); };
-    const dialog = page.getByRole("dialog", { name: "Log out of Neuebit?", exact: true });
+    const dialog = page.getByRole("dialog", { name: "Log out of NeueBit?", exact: true });
     await open(); await expect(dialog.getByRole("button", { name: "Cancel", exact: true })).toBeFocused();
     await expect(dialog).toHaveCSS("box-shadow", "none");
-    await expect(dialog).toContainText("You'll need to sign in again to access your workspace.");
+    await expect(dialog).toContainText("You’ll need to sign in again to access your workspace.");
     await page.screenshot({ path: testInfo.outputPath(`logout-${theme}.png`) });
     await page.keyboard.press("Shift+Tab"); await page.keyboard.press("Shift+Tab");
     expect(await dialog.evaluate((element) => element.contains(document.activeElement))).toBe(true);

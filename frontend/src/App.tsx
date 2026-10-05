@@ -4,6 +4,7 @@ import { EntryEffects } from "./components/entry/EntryEffects";
 import { useSessionRestore } from "./hooks/useSessionRestore";
 
 const LandingPage = lazy(() => import("./pages/LandingPage"));
+const BrandPage = lazy(() => import("./pages/BrandPage"));
 const AuthGate = lazy(() => import("./components/auth/AuthGate").then((module) => ({ default: module.AuthGate })));
 
 class EntryBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
@@ -18,7 +19,7 @@ class EntryBoundary extends Component<{ children: ReactNode }, { failed: boolean
     return (
       <main className="entry-surface min-h-dvh bg-base px-6 py-16 text-[--text-primary]">
         <div className="mx-auto max-w-lg">
-          <h1 className="text-2xl font-semibold">Unable to open Neuebit</h1>
+          <h1 className="text-2xl font-semibold">Unable to open NeueBit</h1>
           <p role="alert" className="entry-description mt-3 text-[--text-secondary]">Reload the page to try again.</p>
           <div className="mt-6 flex gap-4">
             <button type="button" onClick={() => window.location.reload()} className="min-h-11 rounded px-3 underline underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4">Reload page</button>
@@ -59,9 +60,10 @@ export default function App() {
 
   return (
     <EntryBoundary key={location.pathname}>
-      <Suspense fallback={<main className="entry-surface min-h-dvh bg-base p-6 text-[--text-primary]"><p role="status">Loading Neuebit…</p></main>}>
+      <Suspense fallback={<main className="entry-surface min-h-dvh bg-base p-6 text-[--text-primary]"><p role="status">Loading NeueBit…</p></main>}>
         <Routes>
           <Route caseSensitive path="/" element={<LandingPage />} />
+          <Route caseSensitive path="/brand" element={<BrandPage />} />
           <Route caseSensitive path="/auth" element={<AuthGate intent="auth" />} />
           <Route caseSensitive path="/app" element={<AuthGate intent="app" />} />
           <Route path="*" element={<NotFound />} />

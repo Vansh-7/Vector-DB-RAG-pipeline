@@ -1,7 +1,7 @@
 {
   "origin": "http://127.0.0.1:4176",
   "capturedAt": "2026-10-02T18:04:38.968Z",
-  "provenance": "Actual authenticated Neuebit UI rendered with the shared authored sample API fixtures. Not live backend output.",
+  "provenance": "Actual authenticated NeueBit UI rendered with the shared authored sample API fixtures. Not live backend output.",
   "captures": [
     {
       "filename": "documents-desktop-light.webp",

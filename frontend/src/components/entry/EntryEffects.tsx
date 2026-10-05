@@ -13,13 +13,15 @@ export function EntryEffects() {
 
   useEffect(() => {
     const title = pathname === "/" ? "Your knowledge, in context"
+      : pathname === "/brand" ? "Brand"
       : pathname === "/app" ? "Workspace"
       : pathname === "/auth" ? mode === "register" ? "Create account" : "Sign in"
       : "Page not found";
-    document.title = pathname === "/" ? LANDING_TITLE : `Neuebit — ${title}`;
+    document.title = pathname === "/" ? LANDING_TITLE : `NeueBit — ${title}`;
     document.querySelector('meta[name="description"]')?.setAttribute("content", pathname === "/" ? LANDING_DESCRIPTION
-      : pathname === "/auth" ? mode === "register" ? "Create your Neuebit knowledge workspace." : "Sign in to your Neuebit knowledge workspace."
-      : pathname === "/app" ? "Your private Neuebit knowledge workspace." : "This Neuebit page does not exist.");
+      : pathname === "/brand" ? "The NeueBit mark across themes, surfaces, and sizes."
+      : pathname === "/auth" ? mode === "register" ? "Create your NeueBit knowledge workspace." : "Sign in to your NeueBit knowledge workspace."
+      : pathname === "/app" ? "Your private NeueBit knowledge workspace." : "This NeueBit page does not exist.");
     document.querySelector('meta[name="robots"]')?.setAttribute("content", pathname === "/" && siteUrl ? "index, follow" : "noindex, nofollow");
     document.querySelectorAll("[data-public-metadata]").forEach((node) => node.remove());
     if (pathname === "/") for (const { tag, attrs } of publicMetadata(siteUrl)) {

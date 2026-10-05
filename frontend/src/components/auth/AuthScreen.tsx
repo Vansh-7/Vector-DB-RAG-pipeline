@@ -5,7 +5,7 @@ import { getMe, login, register } from "../../api/auth";
 import { ApiError } from "../../api/client";
 import { useAuthStore } from "../../store/authStore";
 import { Button } from "../ui/Button";
-import { BrandEmblem } from "../ui/BrandMark";
+import { NeuebitBrand } from "../brand/NeuebitBrand";
 import { ThemeToggle } from "../theme/ThemeToggle";
 
 export function AuthScreen() {
@@ -76,7 +76,7 @@ export function AuthScreen() {
         setSearchParams({ mode: "login" }, { replace: true });
         setNotice("Account created. Sign in to continue.");
       }
-      setLocalError(error instanceof ApiError ? error.message : "Could not connect to the Neuebit API. Try again.");
+      setLocalError(error instanceof ApiError ? error.message : "Could not connect to the NeueBit API. Try again.");
     } finally {
       if (!controller.signal.aborted) setBusy(false);
     }
@@ -88,8 +88,7 @@ export function AuthScreen() {
       <div className="relative flex min-h-full items-center justify-center px-6 pt-8 pb-[104px]">
         <div className="w-full max-w-[360px]">
           <div className="mb-9 flex flex-col items-center gap-1.5">
-            <BrandEmblem className="h-14 w-14" />
-            <span className="text-body font-semibold tracking-tight">Neuebit</span>
+            <NeuebitBrand />
           </div>
           <h1 tabIndex={-1} className="text-center text-[24px] font-semibold tracking-[-0.03em]">{mode === "login" ? "Welcome back" : "Create your account"}</h1>
           <p className="text-center text-sm text-[--text-secondary] mt-2">{mode === "login" ? "Sign in to your workspace." : "Upload documents and ask questions about them."}</p>
@@ -136,12 +135,12 @@ export function AuthScreen() {
             </Button>
           </form>
           <p className="mt-6 text-center text-xs text-[--text-secondary]">
-            {mode === "login" ? "New to Neuebit?" : "Already have an account?"}{" "}
+            {mode === "login" ? "New to NeueBit?" : "Already have an account?"}{" "}
             <button type="button" onClick={switchMode} disabled={busy} className="text-[--text-primary] hover:text-[--color-info] underline underline-offset-4 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[--color-info] disabled:opacity-50">
               {mode === "login" ? "Create an account" : "Sign in"}
             </button>
           </p>
-          <p className="mt-4 text-center"><Link to="/" className="inline-flex min-h-11 items-center rounded text-xs text-[--text-secondary] underline underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4">Back to Neuebit</Link></p>
+          <p className="mt-4 text-center"><Link to="/" className="inline-flex min-h-11 items-center rounded text-xs text-[--text-secondary] underline underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4">Back to NeueBit</Link></p>
         </div>
       </div>
     </main>

@@ -8,7 +8,7 @@ function cn(...inputs: ClassValue[]) {
 }
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "outline" | "ghost" | "danger";
+  variant?: "primary" | "neutral" | "outline" | "ghost" | "danger" | "danger-solid";
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -18,9 +18,11 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
     const variants = {
       primary: "bg-[--primary-action] text-[--primary-action-text] hover:bg-[--primary-action-hover] active:bg-[--primary-action-active]",
+      neutral: "bg-[--neutral-action] text-[--neutral-action-text] hover:bg-[--neutral-action-hover] active:bg-[--neutral-action-active]",
       outline: "border border-[--border-default] bg-elevated text-[--text-primary] hover:bg-hover hover:border-[--border-strong]",
       ghost: "text-[--text-secondary] hover:bg-hover hover:text-[--text-primary]",
       danger: "border border-error/30 bg-error/5 text-error hover:bg-error/10 hover:border-error/50",
+      "danger-solid": "bg-[--danger-action] text-[--danger-action-text] hover:bg-[--danger-action-hover] active:bg-[--danger-action-active]",
     };
 
     return (
