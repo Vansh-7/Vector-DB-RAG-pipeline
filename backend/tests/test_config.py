@@ -15,6 +15,10 @@ def test_default_config(monkeypatch) -> None:
         "VECTOR_DB_FILE",
         "VECTOR_WAL_FILE",
         "OPERATOR_USER_IDS",
+        "LLM_PROVIDER",
+        "LLM_FALLBACK_PROVIDER",
+        "GROQ_MODEL",
+        "GEMINI_MODEL"
     ]
 
     for env_var in env_vars:
@@ -28,6 +32,8 @@ def test_default_config(monkeypatch) -> None:
     assert settings.vector_db_file == "vector_database.pkl"
     assert settings.vector_wal_file == "vector_database.wal"
     assert settings.operator_user_ids == frozenset()
+    assert settings.llm_provider == "ollama"
+    assert settings.llm_fallback_provider == "none"
 
 
 def test_vector_data_directory(monkeypatch) -> None:
@@ -70,3 +76,94 @@ def test_operator_ids_must_be_positive_integers(monkeypatch) -> None:
         monkeypatch.setenv("OPERATOR_USER_IDS", invalid)
         with pytest.raises(ValueError, match="OPERATOR_USER_IDS"):
             load_settings()
+
+
+@pytest.mark.parametrize(
+    "provider,fallback",
+    [
+        ("ollama", "none"),
+        ("groq", "none"),
+        ("groq", "gemini"),
+    ],
+)
+def test_valid_provider_configuration(
+    monkeypatch,
+    provider,
+    fallback,
+):
+    monkeypatch.setenv("LLM_PROVIDER", provider)
+    monkeypatch.setenv("LLM_FALLBACK_PROVIDER", fallback)
+
+    settings = load_settings()
+
+    assert settings.llm_provider == provider
+    assert settings.llm_fallback_provider == fallback
+
+
+@pytest.mark.parametrize(
+    "provider,fallback,error",
+    [
+        ("gemini", "none", "LLM_PROVIDER"),
+        ("unknown", "none", "LLM_PROVIDER"),
+        ("groq", "unknown", "LLM_FALLBACK_PROVIDER"),
+        ("ollama", "gemini", "Gemini fallback requires"),
+    ],
+)
+def test_invalid_provider_configuration(
+    monkeypatch,
+    provider,
+    fallback,
+    error,
+):
+    monkeypatch.setenv("LLM_PROVIDER", provider)
+    monkeypatch.setenv("LLM_FALLBACK_PROVIDER", fallback)
+
+    with pytest.raises(ValueError, match=error):
+        load_settings()
+
+
+def test_provider_names_are_normalized(monkeypatch):
+    monkeypatch.setenv("LLM_PROVIDER", " GROQ ")
+    monkeypatch.setenv("LLM_FALLBACK_PROVIDER", " GEMINI ")
+
+    settings = load_settings()
+
+    assert settings.llm_provider == "groq"
+    assert settings.llm_fallback_provider == "gemini"
+
+
+def test_model_identifiers_preserve_case(monkeypatch):
+    monkeypatch.setenv("GROQ_MODEL", "Custom/Groq-Model")
+    monkeypatch.setenv("GEMINI_MODEL", "Custom/Gemini-Model")
+
+    settings = load_settings()
+
+    assert settings.groq_model == "Custom/Groq-Model"
+    assert settings.gemini_model == "Custom/Gemini-Model"
+
+
+def test_secrets_are_excluded_from_repr(monkeypatch):
+    monkeypatch.setenv(
+        "GROQ_API_KEY",
+        "fake-super-secret-groq-key",
+    )
+    monkeypatch.setenv(
+        "GEMINI_API_KEY",
+        "fake-super-secret-gemini-key",
+    )
+    monkeypatch.setenv(
+        "JWT_SECRET_KEY",
+        "fake-super-secret-jwt-key",
+    )
+    monkeypatch.setenv(
+        "DATABASE_URL",
+        "postgresql+psycopg://user:secret-password@localhost/db",
+    )
+
+    settings = load_settings()
+    representation = repr(settings)
+
+    assert "fake-super-secret-groq-key" not in representation
+    assert "fake-super-secret-gemini-key" not in representation
+    assert "fake-super-secret-jwt-key" not in representation
+    assert "secret-password" not in representation
