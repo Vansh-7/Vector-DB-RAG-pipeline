@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useTheme } from "../theme/themeContext";
 import { heroFilmChapters, type HeroFilmScene } from "./heroFilmTimings";
-import { FilmIllustrations } from "./FilmIllustrations";
 import "../../styles/marketing-film.css";
 
 const mobileMedia = window.matchMedia("(max-width: 767px)");
@@ -76,7 +75,6 @@ function FilmPlayback({ variant, mobile, reduced }: {
         Explore NeueBit’s Documents, Search, Chat, sources and Vector Lab in the product stories below.
       </video>}
     </div>
-    <FilmIllustrations reduced={reduced || failed} />
     <p id="hero-film-description" className="sr-only">An actual NeueBit workspace recorded with illustrative sample documents: Documents, semantic search, Chat, two answer sources, and Vector Lab. Explore these features in the interactive sections below.</p>
   </div>;
 }

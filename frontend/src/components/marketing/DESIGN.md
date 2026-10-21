@@ -7,7 +7,7 @@ This file covers implementation ownership and constraints within the public mark
 | File | Responsibility |
 | --- | --- |
 | `LandingNav`, `LandingHero`, `CapabilityMarquee` | Public navigation, centered capability headline and moving capability strip |
-| `HeroProductFilm`, `FilmIllustrations`, `heroFilmTimings` | Static-media playback/fallback, approved perimeter artwork and encoded scene metadata |
+| `HeroProductFilm`, `heroFilmTimings` | Static-media playback/fallback and encoded scene metadata |
 | `KnowledgeStories` | Documents/Search pair, wide saved Chat/source example and discovery links |
 | `ProductTour`, `useRetrievalStory` | Three-zone retrieval explanation, sticky eligibility, progression and technical handoff |
 | `EngineeringSection`, `demo/DemoVectorLab` | Local vector illustration/inspector and technical chapter |
@@ -26,13 +26,13 @@ Public example data lives in `demo/demoContent.ts`. Examples use local React sta
 | `--marketing-gap-section` | `clamp(6.5rem, 10vw, 9.5rem)` |
 | `--marketing-gap-chapter` | `clamp(8rem, 13vw, 12.5rem)` |
 
-The incoming section normally owns the gap. Film perimeter bounds, discovery-to-story separation, sticky release and the closing CTA have deliberate boundary exceptions. Do not stack neighboring arbitrary margins/padding or shorten scroll duration to normalize whitespace.
+The incoming section normally owns the gap. The hero-to-film gap, discovery-to-story separation, sticky release and the closing CTA have deliberate boundary exceptions. Do not stack neighboring arbitrary margins/padding or shorten scroll duration to normalize whitespace.
 
-[marketing.css](../../styles/marketing.css) owns the hero/navigation and knowledge/discovery composition; [marketing-film.css](../../styles/marketing-film.css) owns the approved media frame and illustration layering. [marketing-tour.css](../../styles/marketing-tour.css), [marketing-engineering.css](../../styles/marketing-engineering.css), [marketing-narrative.css](../../styles/marketing-narrative.css) and [marketing-footer.css](../../styles/marketing-footer.css) own their respective chapter/presentation boundaries.
+[marketing.css](../../styles/marketing.css) owns the hero/navigation and knowledge/discovery composition; [marketing-film.css](../../styles/marketing-film.css) owns the approved media frame. [marketing-tour.css](../../styles/marketing-tour.css), [marketing-engineering.css](../../styles/marketing-engineering.css), [marketing-narrative.css](../../styles/marketing-narrative.css) and [marketing-footer.css](../../styles/marketing-footer.css) own their respective chapter/presentation boundaries.
 
 Capability accents use the existing `--capability-*-ink/soft/mark` roles and theme overrides. Primary conversion actions use the high-contrast neutral action treatment. The GitHub secondary action uses the existing soft-blue treatment. Use the geometric N and NeueBit wordmark; internal component/asset names retain their established casing.
 
-The observer sits above/right of the frame; the reader sits behind its opaque left edge. Preserve the exact PNGs, sizing and layers. CSS hides both in dark mode and below 1200px. Illustrations remain outside captured film pixels.
+The product frame has no perimeter figures; its media and historical capture provenance remain unchanged.
 
 ## Motion ownership
 
@@ -42,7 +42,7 @@ Framer Motion is confined to public presentation chunks. Keep the existing easin
 - `usePresentation` advances saved Search/Chat content through finite phases. Hidden/offscreen time is excluded, interaction interrupts presentation, and unmount cleans timers.
 - `useRetrievalStory` measures heading/canvas fit below the header using resize observers. Only eligible desktop uses the 240svh sticky section and scroll-linked reveal/release. The completed story fades into the technical grid/gradient; complete content remains available in fallback layouts.
 - `useArchitectureSequence` advances inspectable stages only while visible. Manual selection pauses it; pause/resume is explicit. Reduced motion retains manual stages without autoplay.
-- The marquee exposes pause/resume and stops under reduced motion. Decorative illustrations and discovery feedback retain their existing reduced-motion behavior.
+- The marquee exposes pause/resume and stops under reduced motion. Discovery feedback retains its existing reduced-motion behavior.
 
 Do not describe saved public examples as live generation. The product film's streaming behavior comes from capture-only chunked API fixtures, not the landing runtime.
 

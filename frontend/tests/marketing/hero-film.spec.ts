@@ -1,13 +1,12 @@
-import { readFile, mkdir } from "node:fs/promises";
-import { fileURLToPath } from "node:url";
+import { readFile } from "node:fs/promises";
 import { test, expect, stubApi } from "../entry/fixtures";
 import { appearance } from "../theme/fixtures";
 import { heroFilmChapters } from "../../src/components/marketing/heroFilmTimings";
 
 for (const theme of ["light", "dark"] as const) for (const [width, height] of [
-  [1920, 1080], [1440, 900], [1280, 800], [1024, 900], [430, 900], [390, 900],
+  [1920, 1080], [1440, 900], [1280, 800], [1024, 900], [768, 900], [390, 900], [375, 900], [320, 900],
 ]) {
-  test(`${theme} ${width}px film retains its whole frame and quiet perimeter figures`, async ({ page }) => {
+  test(`${theme} ${width}px film retains its whole frame without perimeter figures`, async ({ page }) => {
     await page.setViewportSize({ width, height });
     await appearance(page, theme, theme);
     await page.emulateMedia({ reducedMotion: "reduce" });
@@ -15,79 +14,42 @@ for (const theme of ["light", "dark"] as const) for (const [width, height] of [
     const movies: string[] = [];
     page.on("request", request => { if (request.url().endsWith(".mp4")) movies.push(request.url()); });
     await page.goto("/");
-    const frame = page.locator(".film-screen"), figures = page.locator(".film-illustrations");
+    const frame = page.locator(".film-screen"), video = page.locator(".film-video");
+    const variant = `${width < 768 ? "mobile" : "desktop"}-${theme}`;
+    await expect(page.locator(".film-illustrations, .film-artwork, .film-reader, .film-observer")).toHaveCount(0);
+    await expect(page.locator('img[src*="/illustrations/product-film/"]')).toHaveCount(0);
     await expect(frame).toHaveCSS("border-radius", "12px");
-    expect(await frame.evaluate(element => getComputedStyle(element).boxShadow)).not.toBe("none");
-    await expect(figures).toHaveAttribute("aria-hidden", "true");
-    await expect(figures).toHaveCSS("pointer-events", "none");
-    await expect(figures.locator("img")).toHaveCount(2);
-    await expect(figures.locator("svg")).toHaveCount(0);
-    await expect(figures.locator("img").nth(0)).toHaveAttribute("src", "/illustrations/product-film/reader-peek.png");
-    await expect(figures.locator("img").nth(1)).toHaveAttribute("src", "/illustrations/product-film/observer-magnifier.png");
-    for (const img of await figures.locator("img").all()) await expect(img).toHaveAttribute("alt", "");
-    if (theme === "light" && width >= 1200) {
-      await expect(page.locator(".film-observer")).toBeVisible();
-      await expect(page.locator(".film-reader")).toBeVisible();
-      const screen = (await frame.boundingBox())!, observer = (await page.locator(".film-observer").boundingBox())!;
-      const reader = (await page.locator(".film-reader").boundingBox())!;
-      expect(observer.y + observer.height).toBeLessThanOrEqual(screen.y + 6);
-      expect(observer.width / screen.width).toBeGreaterThanOrEqual(.11);
-      expect(observer.width / screen.width).toBeLessThanOrEqual(.15);
-      expect(reader.x).toBeGreaterThanOrEqual(0);
-      expect(reader.x).toBeLessThan(screen.x);
-      expect(reader.x + reader.width).toBeGreaterThan(screen.x);
-      expect(reader.y).toBeGreaterThan(screen.y);
-      expect(reader.y + reader.height).toBeLessThan(screen.y + screen.height);
-      expect(observer.width / observer.height).toBeCloseTo(1128 / 744, 2);
-      const readerAspect = await page.locator(".film-reader img").evaluate(image => image.naturalWidth / image.naturalHeight);
-      expect(reader.width / reader.height).toBeCloseTo(readerAspect, 2);
-      await expect(frame).toHaveCSS("z-index", "1");
-      await expect(page.locator(".film-reader")).toHaveCSS("z-index", "0");
-      await expect(page.locator(".film-observer")).toHaveCSS("z-index", "2");
-      expect(await page.locator(".film-observer").evaluate(element => getComputedStyle(element).transform)).toBe("none");
-    } else await expect(figures).toBeHidden();
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-    await expect(page.locator(".film-video")).toHaveAttribute("poster", `/product/film/neuebit-${width < 768 ? "mobile" : "desktop"}-${theme}.webp`);
+    await expect(frame).toHaveCSS("border-top-width", "1px");
+    await expect(frame).toHaveCSS("border-top-style", "solid");
+    await expect(frame).toHaveCSS("aspect-ratio", width < 768 ? "390 / 722" : "1280 / 722");
+    const shadow = await frame.evaluate(element => getComputedStyle(element).boxShadow);
+    expect(shadow).not.toBe("none");
+    const before = (await frame.boundingBox())!;
+    const poster = `/product/film/neuebit-${variant}.webp`;
+    await expect(video).toHaveAttribute("poster", poster);
+    expect(await page.evaluate(async src => {
+      const image = new Image(); image.src = src; await image.decode();
+      return { width: image.naturalWidth, height: image.naturalHeight };
+    }, poster)).toEqual({width: width < 768 ? 390 : 1280, height: 722});
+    await expect(video).not.toHaveAttribute("src");
     expect(movies).toEqual([]); expect(calls).toEqual([]);
     expect(scripts.filter(url => /AppShell-|d3-|VectorLab-/.test(url))).toEqual([]);
-    const directory = fileURLToPath(new URL("../../scripts/test-results/film-artwork-review/", import.meta.url));
-    await mkdir(directory, { recursive: true });
-    const variant = `${width}-${theme}`;
-    await page.locator(".marketing-hero").screenshot({ path: `${directory}/${variant}-poster.png` });
     await page.emulateMedia({ reducedMotion: "no-preference" });
     await frame.scrollIntoViewIfNeeded();
-    // Leave room above the frame for the observer below the sticky header.
-    // Full-page review clips should show the intended composition unobstructed.
-    await frame.evaluate(element => window.scrollTo({
-      top: Math.max(0, element.getBoundingClientRect().top + scrollY - 200), behavior: "instant",
-    }));
-    const video = page.locator(".film-video");
     await expect(page.locator(".product-film")).toHaveAttribute("data-presentation", "playing");
-    if (theme === "light" && width >= 1200) await expect(page.locator(".film-observer")).toHaveCSS("opacity", "1");
-    for (const [name, time, scene] of [["search", 6, "search"]] as const) {
-      await video.evaluate(async (element, seconds) => {
-        element.pause();
-        // seeked can precede compositor presentation. Wait for the decoded
-        // frame to be painted so review PNGs cannot retain the previous scene.
-        await new Promise<void>(done => {
-          element.requestVideoFrameCallback(() => done()); element.currentTime = seconds;
-        });
-      }, time);
-      await expect(page.locator(".product-film")).toHaveAttribute("data-scene", scene);
-      const box = (await frame.boundingBox())!;
-      const scroll = await page.evaluate(() => scrollY);
-      await page.screenshot({ path: `${directory}/${variant}-${name}.png`, fullPage: true,
-        clip: { x: 0, y: box.y + scroll - (width >= 1200 ? 130 : 16), width,
-          height: box.height + (width >= 1200 ? 180 : 32) } });
-      if (theme === "light" && width >= 1200) {
-        const occluded = await page.locator(".film-reader").evaluate(element => {
-          const reader = element.getBoundingClientRect();
-          const frame = document.querySelector(".film-screen")!.getBoundingClientRect();
-          return !!document.elementFromPoint(frame.x + 8, reader.y + reader.height / 2)?.closest(".film-screen");
-        });
-        expect(occluded, "Product frame is painted in front of the reader").toBe(true);
-      }
-    }
+    await expect(video).toHaveAttribute("src", `/product/film/neuebit-${variant}.mp4`);
+    await video.evaluate(async element => {
+      element.pause();
+      await new Promise<void>(done => {
+        element.requestVideoFrameCallback(() => done()); element.currentTime = 6;
+      });
+    });
+    await expect(page.locator(".product-film")).toHaveAttribute("data-scene", "search");
+    const after = (await frame.boundingBox())!;
+    expect(after.width).toBeCloseTo(before.width, 1);
+    expect(after.height).toBeCloseTo(before.height, 1);
+    expect(await frame.evaluate(element => getComputedStyle(element).boxShadow)).toBe(shadow);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   });
 }
 
@@ -115,7 +77,7 @@ test("the film stays within a 320px viewport with enlarged text", async ({ page 
     expect(box.x).toBeGreaterThanOrEqual(0);
     expect(box.x + box.width).toBeLessThanOrEqual(320);
   }
-  await expect(page.locator(".film-illustrations")).toBeHidden();
+  await expect(page.locator(".film-illustrations")).toHaveCount(0);
 });
 
 test("autoplay rejection falls back to a poster without a runtime exception", async ({ page }) => {
@@ -128,19 +90,14 @@ test("autoplay rejection falls back to a poster without a runtime exception", as
   await expect(page.locator(".product-film").getByRole("img")).toBeVisible();
 });
 
-test("supplied figures finish their entrance and remain still across source and vector scenes", async ({ page }) => {
+test("film frame remains stable across source, vector and loop-return scenes", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await stubApi(page); await page.goto("/");
-  const figures = page.locator(".film-artwork");
+  const frame = page.locator(".film-screen");
   await expect(page.locator('[data-hero-part="preview"]')).toHaveCSS("transform", "none");
-  for (const figure of await figures.all()) {
-    await expect(figure).toHaveCSS("opacity", "1");
-    await expect(figure).toHaveCSS("transform", "none");
-    await expect(figure.locator("img")).toHaveCSS("filter", "none");
-    await expect(figure.locator("img")).toHaveCSS("box-shadow", "none");
-  }
-  const boxes = await Promise.all((await figures.all()).map(figure => figure.boundingBox()));
+  await expect(page.locator(".product-film")).toHaveAttribute("data-presentation", "playing");
+  const box = await frame.boundingBox();
   for (const [time, scene] of [[10.5, "sources"], [13, "vectors"], [15.5, "documents"]] as const) {
     await page.locator(".film-video").evaluate(async (video, seconds) => {
       video.pause();
@@ -149,8 +106,8 @@ test("supplied figures finish their entrance and remain still across source and 
       });
     }, time);
     await expect(page.locator(".product-film")).toHaveAttribute("data-scene", scene);
-    expect(await Promise.all((await figures.all()).map(figure => figure.boundingBox()))).toEqual(boxes);
-    for (const figure of await figures.all()) await expect(figure).toHaveCSS("transform", "none");
+    expect(await frame.boundingBox()).toEqual(box);
+    await expect(page.locator(".film-artwork")).toHaveCount(0);
   }
 });
 

@@ -63,15 +63,13 @@ Temporary capture output is ignored under `scripts/test-results/hero-film/`. Suc
 
 Responsive playback selects mobile at widths below 768px and follows the global light/dark theme. It pauses offscreen or in hidden tabs. Reduced motion uses the WebP poster without loading/autoplaying the MP4; a load/playback failure also falls back to the poster. There is no visible player/chapter control.
 
-Two approved PNG illustrations remain outside the recording: the observer above the top-right frame edge and the reader peeking behind its left edge. They appear only in light mode at widths of at least 1200px, are decorative, and do not cover product controls.
-
 The retained `capture-product-story.mjs`, `capture-vector-lab.mjs` and `capture-guided-tour-review.mjs` are historical engineering/reference tools. Their older exports or DOM assumptions are not the current production workflow; do not rely on them to recapture the final landing or film.
 
 ## Visual, responsive and accessibility contract
 
 Global semantic colors own light/dark appearance. Marketing composition tokens own the shared grid, responsive spacing and radii. Light uses white/neutral fields; dark uses graphite/charcoal. Capability accents remain blue, coral, green and violet with readable theme-specific ink. Primary conversion actions use the high-contrast neutral action treatment. The GitHub secondary action uses the existing soft-blue treatment. The technical chapter uses the current quiet gradient/grid handoff.
 
-Geist Sans carries editorial text; Geist Mono carries vector/engine/technical values. Preserve the centered hero, film frame/shadow/illustration layers, knowledge windows, discovery drawings and technical layout. Section rhythm uses continuation, section and chapter tiers with specific outer-boundary exceptions, rather than identical gaps.
+Geist Sans carries editorial text; Geist Mono carries vector/engine/technical values. Preserve the centered hero, film frame/shadow, knowledge windows, discovery drawings and technical layout. Section rhythm uses continuation, section and chapter tiers with specific outer-boundary exceptions, rather than identical gaps.
 
 The headline capsule cycles Ask questions / Search meaning / Trace answers / Inspect retrieval while visible; reduced motion holds Ask questions. The marquee stops for reduced motion. Saved examples, retrieval progression, architecture sequencing and film playback retain their own lifecycle rules.
 
