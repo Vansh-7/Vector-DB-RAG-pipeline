@@ -6,7 +6,7 @@ The current landing presents a knowledge workspace, explains traceable retrieval
 
 | Order | Section | Current presentation |
 | --- | --- | --- |
-| 1 | Hero and product film | Centered “Your knowledge,” headline with a changing capability capsule and “in context.”; explanation, account/GitHub actions and the authenticated product recording |
+| 1 | Hero and product film | Centered “Your knowledge.” headline with the complete second statement rotating inside one capability capsule; explanation, account/GitHub actions and the authenticated product recording |
 | 2 | Capability marquee | Moving capability labels with a pause/resume control |
 | 3 | Knowledge stories | “AI where your knowledge works.”; Documents + Search pair followed by the wide Chat + Sources card |
 | 4 | Capability discovery | “See what NeueBit can do”; four illustrated links to Chat, Search, sources and Vector Lab |
@@ -71,7 +71,7 @@ Global semantic colors own light/dark appearance. Marketing composition tokens o
 
 Geist Sans carries editorial text; Geist Mono carries vector/engine/technical values. Preserve the centered hero, film frame/shadow, knowledge windows, discovery drawings and technical layout. Section rhythm uses continuation, section and chapter tiers with specific outer-boundary exceptions, rather than identical gaps.
 
-The headline capsule cycles Ask questions / Search meaning / Trace answers / Inspect retrieval while visible; reduced motion holds Ask questions. The marquee stops for reduced motion. Saved examples, retrieval progression, architecture sequencing and film playback retain their own lifecycle rules.
+The headline capsule cycles “Ask your documents.” / “Search by meaning.” / “Trace every answer.” / “Explore the vector engine.” every three seconds while visible and the tab is active. The statements retain the Chat/green, Search/coral, Sources/blue and Vector Lab/violet capability mapping. Inactive statements remain in the shared grid slot for stable geometry and are hidden from assistive technology. Narrow layouts can wrap within the capsule. Reduced motion holds “Ask your documents.” The marquee stops for reduced motion. Saved examples, retrieval progression, architecture sequencing and film playback retain their own lifecycle rules.
 
 Knowledge cards stack naturally when available width is insufficient. Vector inspector moves below the map; architecture controls wrap on narrow/enlarged layouts. Keep keyboard focus, semantic headings, source disclosure state, native point selection, pause/resume controls and local anchor focus. Do not add a miniature desktop shell to mobile examples or clip content to fit a scene.
 

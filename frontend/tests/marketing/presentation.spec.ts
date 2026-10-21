@@ -97,7 +97,7 @@ test("reduced motion uses a static poster and headline without downloading video
   await expect(film).toHaveAttribute("data-presentation","complete");
   expect(movies).toEqual([]); await expect(film.locator("video")).not.toHaveAttribute("src");
   await expect(film.getByRole("button")).toHaveCount(0);
-  await expect(page.locator('.hero-headline-phrase[data-active="true"]')).toHaveText("Ask questions");
+  await expect(page.locator('.hero-headline-phrase[data-active="true"]')).toHaveText("Ask your documents.");
   await page.emulateMedia({reducedMotion:"no-preference"});
   await expect(film).toHaveAttribute("data-presentation","playing"); expect(movies.length).toBeGreaterThan(0);
   await page.emulateMedia({reducedMotion:"reduce"});

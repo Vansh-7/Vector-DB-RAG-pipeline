@@ -28,17 +28,17 @@ Public example data lives in `demo/demoContent.ts`. Examples use local React sta
 
 The incoming section normally owns the gap. The hero-to-film gap, discovery-to-story separation, sticky release and the closing CTA have deliberate boundary exceptions. Do not stack neighboring arbitrary margins/padding or shorten scroll duration to normalize whitespace.
 
-[marketing.css](../../styles/marketing.css) owns the hero/navigation and knowledge/discovery composition; [marketing-film.css](../../styles/marketing-film.css) owns the approved media frame. [marketing-tour.css](../../styles/marketing-tour.css), [marketing-engineering.css](../../styles/marketing-engineering.css), [marketing-narrative.css](../../styles/marketing-narrative.css) and [marketing-footer.css](../../styles/marketing-footer.css) own their respective chapter/presentation boundaries.
+[marketing.css](../../styles/marketing.css) owns the hero/navigation and knowledge/discovery composition; [marketing-film.css](../../styles/marketing-film.css) owns the complete dynamic headline capsule and approved media frame. [marketing-tour.css](../../styles/marketing-tour.css), [marketing-engineering.css](../../styles/marketing-engineering.css), [marketing-narrative.css](../../styles/marketing-narrative.css) and [marketing-footer.css](../../styles/marketing-footer.css) own their respective chapter/presentation boundaries.
 
 Capability accents use the existing `--capability-*-ink/soft/mark` roles and theme overrides. Primary conversion actions use the high-contrast neutral action treatment. The GitHub secondary action uses the existing soft-blue treatment. Use the geometric N and NeueBit wordmark; internal component/asset names retain their established casing.
 
-The product frame has no perimeter figures; its media and historical capture provenance remain unchanged.
+The hero keeps “Your knowledge.” static and rotates “Ask your documents.”, “Search by meaning.”, “Trace every answer.” and “Explore the vector engine.” inside one capability-colored capsule, in that order. All four statements share a centered grid cell that reserves the longest/wrapped measure. Keep the existing capability mappings, pale fills, dot, three-second cycle and easing. The product frame has no perimeter figures; its media and historical capture provenance remain unchanged.
 
 ## Motion ownership
 
 Framer Motion is confined to public presentation chunks. Keep the existing easing and bounded transforms; CSS owns marquee/discovery feedback. Do not add animation dependencies or a second global timeline.
 
-- Headline cycling and film playback suspend when offscreen or the document is hidden; reduced motion fixes the phrase and uses the poster.
+- Headline cycling and film playback suspend when offscreen or the document is hidden; reduced motion fixes “Ask your documents.” and uses the poster. Only the active complete headline statement is exposed to assistive technology.
 - `usePresentation` advances saved Search/Chat content through finite phases. Hidden/offscreen time is excluded, interaction interrupts presentation, and unmount cleans timers.
 - `useRetrievalStory` measures heading/canvas fit below the header using resize observers. Only eligible desktop uses the 240svh sticky section and scroll-linked reveal/release. The completed story fades into the technical grid/gradient; complete content remains available in fallback layouts.
 - `useArchitectureSequence` advances inspectable stages only while visible. Manual selection pauses it; pause/resume is explicit. Reduced motion retains manual stages without autoplay.

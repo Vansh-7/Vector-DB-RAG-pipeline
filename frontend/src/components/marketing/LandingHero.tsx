@@ -15,10 +15,10 @@ const subscribeReducedMotion = (notify: () => void) => {
   return () => reducedMotionPreference.removeEventListener("change", notify);
 };
 const phrases = [
-  { text: "Ask questions", capability: "chat" },
-  { text: "Search meaning", capability: "search" },
-  { text: "Trace answers", capability: "documents" },
-  { text: "Inspect retrieval", capability: "vectors" },
+  { text: "Ask your documents.", capability: "chat" },
+  { text: "Search by meaning.", capability: "search" },
+  { text: "Trace every answer.", capability: "documents" },
+  { text: "Explore the vector engine.", capability: "vectors" },
 ];
 
 function HeadlinePhrase({ reduced }: { reduced: boolean }) {
@@ -70,8 +70,8 @@ export function LandingHero({ accessTo, accessLabel }: {
       <section className="marketing-hero" aria-labelledby="hero-heading">
         <div className="marketing-container"><div className="marketing-intro">
           <m.h1 id="hero-heading" tabIndex={-1} className="marketing-title" data-hero-part="headline" {...reveal(0)}>
-            <span>Your knowledge,</span>{" "}
-            <span className="hero-headline-line"><HeadlinePhrase reduced={reduceMotion} />{" "}<span className="hero-headline-context">in context.</span></span>
+            <span>Your knowledge.</span>{" "}
+            <HeadlinePhrase reduced={reduceMotion} />
           </m.h1>
             <m.p className="marketing-lead" data-hero-part="copy" {...reveal(0.08)}>An AI workspace for what you know. Find the right context and trace every answer back to its source.</m.p>
             <m.div className="marketing-actions" data-hero-part="actions" {...reveal(0.14)}>

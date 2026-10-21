@@ -1,15 +1,9 @@
-.marketing-title > .hero-headline-line {
-  display: flex;
-  align-items: baseline;
-  justify-content: center;
-  gap: .18em;
-  margin-block-start: 0;
-  white-space: nowrap;
-}
-.hero-headline-slot {
-  display: inline-grid;
+.marketing-title > .hero-headline-slot {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  inline-size: max-content;
   max-inline-size: 100%;
-  flex-shrink: 0;
+  margin-inline: auto;
   font-size: .75em;
   font-weight: 400;
   line-height: 1.21;
@@ -38,12 +32,11 @@
   background: var(--capability-mark);
   transition: background-color 350ms ease;
 }
-/* A stable invisible slot reserves the longest phrase, while each visible
-   capsule hugs its own text and stays close to the static suffix. */
-.hero-headline-phrase { grid-area: 1 / 1; justify-self: end; min-inline-size: 0; text-align: start; }
-.hero-headline-label { white-space: nowrap; }
+/* All complete statements share a grid cell, reserving the longest/wrapped
+   measure without moving the copy, actions or film as the active text changes. */
+.hero-headline-phrase { grid-area: 1 / 1; place-self: center; min-inline-size: 0; text-align: center; }
+.hero-headline-label { min-inline-size: 0; }
 .hero-headline-phrase[data-active="false"] { pointer-events: none; user-select: none; }
-.hero-headline-context { flex-shrink: 0; }
 .marketing-hero .hero-product { margin-block-start: var(--marketing-gap-continuation); border: 0; border-radius: 0; background: transparent; overflow: visible; }
 .product-film { position: relative; isolation: isolate; }
 .film-screen {
@@ -58,16 +51,12 @@ html[data-theme="dark"] .marketing-hero .marketing-button--secondary:hover { bac
 @media (max-width: 767px) {
   .film-screen { aspect-ratio: 390 / 722; }
 }
-@container hero-intro (max-width: 56rem) {
-  .marketing-title > .hero-headline-line { flex-direction: column; align-items: center; gap: .1em; }
-  .hero-headline-phrase { justify-self: center; }
-}
 @container hero-intro (min-width: 56rem) {
-  /* The inline phrase and suffix share this measure on smaller desktops. */
+  /* Preserve the established desktop headline measure. */
   .marketing-hero .marketing-title { --hero-headline-measure: 8.8cqi; }
 }
 @container hero-intro (max-width: 20rem) {
-  /* Keep the complete phrase on one row at narrow/enlarged-text measures. */
+  /* Allow complete statements to wrap at narrow/enlarged-text measures. */
   .marketing-hero .marketing-title { line-height: 1.14; }
   .hero-headline-highlight { padding-inline: 16px; }
 }
