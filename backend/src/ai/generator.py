@@ -3,7 +3,7 @@ import logging
 from typing import AsyncGenerator, List
 from config import settings
 from ai.providers.base import LLMProvider
-from ai.providers.ollama import OllamaProvider
+from ai.providers.factory import build_llm_provider
 
 logger = logging.getLogger(__name__)
 class RagGenerator:
@@ -78,8 +78,5 @@ class RagGenerator:
 
 # Initialize a global instance for the API router to consume
 llm_generator = RagGenerator(
-    provider=OllamaProvider(
-        model_name=settings.llm_model,
-        host=settings.ollama_host,
-    )
+    provider=build_llm_provider(settings)
 )
