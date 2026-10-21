@@ -106,7 +106,7 @@ html[data-theme="dark"] .marketing-page {
 
 .marketing-lead {
   max-inline-size: min(100%, 42.5rem);
-  margin: .75rem 0 0;
+  margin: calc(.75rem + clamp(.5rem, .7vw, .75rem)) 0 0;
   color: var(--text-secondary);
   font-size: 1.25rem;
   font-weight: 400;

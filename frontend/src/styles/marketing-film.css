@@ -4,6 +4,7 @@
   inline-size: max-content;
   max-inline-size: 100%;
   margin-inline: auto;
+  margin-block-start: clamp(.5rem, .7vw, .75rem);
   font-size: .75em;
   font-weight: 400;
   line-height: 1.21;
@@ -37,7 +38,7 @@
 .hero-headline-phrase { grid-area: 1 / 1; place-self: center; min-inline-size: 0; text-align: center; }
 .hero-headline-label { min-inline-size: 0; }
 .hero-headline-phrase[data-active="false"] { pointer-events: none; user-select: none; }
-.marketing-hero .hero-product { margin-block-start: var(--marketing-gap-continuation); border: 0; border-radius: 0; background: transparent; overflow: visible; }
+.marketing-hero .hero-product { margin-block-start: calc(var(--marketing-gap-continuation) - clamp(1rem, 1.667vw, 1.5rem)); border: 0; border-radius: 0; background: transparent; overflow: visible; }
 .product-film { position: relative; isolation: isolate; }
 .film-screen {
   position: relative; z-index: 1; aspect-ratio: 1280 / 722; background: var(--canvas); overflow: clip;
