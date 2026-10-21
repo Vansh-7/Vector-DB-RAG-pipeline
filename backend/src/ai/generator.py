@@ -1,8 +1,11 @@
-from typing import AsyncGenerator, List
 import json
-from ollama import AsyncClient
+import logging
+from typing import AsyncGenerator, List
 from config import settings
+from ai.providers.base import LLMProvider
+from ai.providers.ollama import OllamaProvider
 
+logger = logging.getLogger(__name__)
 class RagGenerator:
     """
     A LLM orchestrator.
@@ -10,9 +13,8 @@ class RagGenerator:
     and asynchronous streaming generation for a real-time user experience.
     """
 
-    def __init__(self, model_name: str, ollama_host: str):
-        self.model_name = model_name
-        self._client = AsyncClient(host=ollama_host)
+    def __init__(self, provider: LLMProvider):
+        self.provider = provider
 
         # The System Prompt acts as a strict guardrail against hallucinations
         # with tone alignment + Chain of thought
@@ -49,30 +51,35 @@ class RagGenerator:
         # 2. Inject context into the system guardrail
         system_message = self._system_prompt.format(context=context_string)
 
+        messages = [
+            {"role": "system", "content": system_message},
+            {"role": "user", "content": question},
+        ]
+        
         try:
-            # 3. Call the LLM asynchronously with stream=True
-            response_stream = await self._client.chat(
-                model=self.model_name,
-                messages=[
-                    {"role": "system", "content": system_message},
-                    {"role": "user", "content": question},
-                ],
-                stream=True,
-            )
+            # 3. Asynchronously iterate over the stream and yield tokens immediately
+            # (Call the LLM asynchronously with provider)
+            async for text in self.provider.stream(messages):
+                if text:
+                    yield json.dumps({
+                        "type": "token",
+                        "data": text,
+                    }) + "\n"
 
-            # 4. Asynchronously iterate over the stream and yield tokens immediately
-            async for chunk in response_stream:
-                if "message" in chunk and "content" in chunk["message"]:
-                    # Yield JSON line
-                    yield json.dumps({"type": "token", "data": chunk["message"]["content"]}) + "\n"
-
-        except Exception as e:
+        except Exception:
             # Safely yield the error so the stream doesn't abruptly crash the frontend
-            yield json.dumps({"type": "error", "data": f"LLM generation failed: {e}"}) + "\n"
+            logger.exception("LLM provider generation failed")
+
+            yield json.dumps({
+                "type": "error",
+                "data": "LLM generation failed.",
+            }) + "\n"
 
 
 # Initialize a global instance for the API router to consume
 llm_generator = RagGenerator(
-    model_name=settings.llm_model,
-    ollama_host=settings.ollama_host,
+    provider=OllamaProvider(
+        model_name=settings.llm_model,
+        host=settings.ollama_host,
+    )
 )
