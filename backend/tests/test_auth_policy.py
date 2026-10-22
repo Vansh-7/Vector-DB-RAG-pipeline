@@ -31,7 +31,7 @@ def test_existing_password_remains_valid_for_login():
 
 @pytest.fixture
 def auth_client(monkeypatch):
-    from api.auth_routes import router
+    from api.routers.auth import router
     from db.session import get_db
 
     session = SimpleNamespace(
@@ -47,7 +47,9 @@ def auth_client(monkeypatch):
         session.scalar.return_value = user
 
     session.add = add
-    monkeypatch.setattr("api.auth_routes.create_access_token", lambda user_id: "test-session-token")
+    monkeypatch.setattr(
+        "api.routers.auth.create_access_token", lambda user_id: "test-session-token"
+    )
     app = FastAPI()
     app.include_router(router, prefix="/api/v1")
     app.dependency_overrides[get_db] = lambda: session
