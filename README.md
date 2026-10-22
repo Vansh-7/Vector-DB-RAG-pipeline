@@ -245,6 +245,7 @@ From the repository root, choose **one** shell variant:
 
 ```powershell
 Set-Location backend
+$env:PYTHONDONTWRITEBYTECODE = "1"
 uv sync --python 3.12 --locked
 Copy-Item .env.example .env
 uv run --python 3.12 python -c "import secrets; print(secrets.token_hex(32))"
@@ -252,6 +253,7 @@ uv run --python 3.12 python -c "import secrets; print(secrets.token_hex(32))"
 
 ```bash
 cd backend
+export PYTHONDONTWRITEBYTECODE=1
 uv sync --python 3.12 --locked
 cp .env.example .env
 uv run --python 3.12 python -c 'import secrets; print(secrets.token_hex(32))'
@@ -259,6 +261,8 @@ uv run --python 3.12 python -c 'import secrets; print(secrets.token_hex(32))'
 
 
 Edit `backend/.env`: replace `JWT_SECRET_KEY=replace-me` with the generated value, verify `DATABASE_URL`, and set `VECTOR_DATA_DIR=./data`. Keep it untracked. The URL uses SQLAlchemy's `postgresql+psycopg://...` form; URL-encode special characters in database credentials.
+
+Keep `PYTHONDONTWRITEBYTECODE=1` in the local environment. It is included in `.env.example`; add it to an existing `.env` as well. The shell setting above applies to Python commands in that terminal, and `uv run --env-file .env` loads it before Python starts in a new terminal. This prevents runtime `.pyc` generation; pytest, Ruff and mypy can still maintain their own ignored caches.
 
 While still in `backend/`:
 
@@ -329,6 +333,8 @@ Register, sign in, add a document, wait for Ready, search, ask and inspect sourc
 ## Docker workflow
 
 The [Dockerfile](backend/Dockerfile) packages the **backend**, not PostgreSQL, Ollama or the frontend. It uses Python 3.12, locked production dependencies, UID/GID 10001, one worker and a `/api/v1/status` healthcheck.
+
+Docker currently enables both `PYTHONDONTWRITEBYTECODE=1` for runtime imports and `UV_COMPILE_BYTECODE=1` for dependency installation. Stage 1 preserves these settings. During Stage 3, benchmark the existing build against a build with uv bytecode precompilation disabled: compare final image size and cold/warm startup time to the health endpoint, holding the base image, locked dependencies, hardware, worker count and vector test data constant. Record measurements before deciding whether to change the Docker configuration.
 
 After migrating the local database, run from the repository root:
 
@@ -421,8 +427,13 @@ For `/ask`, send `question`, optional `k` (1–20, default 5) and optional `conv
 
 From `backend/`, after installing dependencies:
 
-```bash
+```powershell
+$env:PYTHONDONTWRITEBYTECODE = "1"
 uv run --python 3.12 pytest
+```
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 uv run --python 3.12 pytest
 ```
 
 pytest config adds `src` to the import path. Coverage includes metrics, index search/deletion/persistence, API insert/search/status, configuration, registration policy and operator guards. API/auth tests use overrides/fake sessions. Persistence paths default to `test_vector_database.*`; do not point them at live files or load normal `.env` into unit tests.
