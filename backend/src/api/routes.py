@@ -36,6 +36,12 @@ from core.logger import logger
 from core.types import SearchResult, VectorItem
 from db.models import Conversation, Document, Message, User
 from db.session import AsyncSessionLocal, get_db
+from services.retrieval import (
+    get_all_user_items,
+    get_ready_document_ids,
+    get_searchable_user_items,
+    search_user_vectors,
+)
 
 router = APIRouter()
 
@@ -90,122 +96,6 @@ def _validate_embedding(embedding: list[float]) -> None:
 
 def _new_vector_id() -> int:
     return int(uuid.uuid4().int >> 64)
-
-
-# ---------------------------------------------------------------------------
-# Tenant helpers
-# ---------------------------------------------------------------------------
-
-
-async def _get_ready_document_ids(
-    session: AsyncSession,
-    user_id: int,
-) -> set[int]:
-    """
-    Returns document IDs belonging to this user that are safe to retrieve.
-
-    Only 'ready' documents participate in RAG. This means vectors left behind
-    by a failed or partially deleted document do not become searchable.
-    """
-    result = await session.scalars(
-        select(Document.id).where(
-            Document.user_id == user_id,
-            Document.status == "ready",
-        )
-    )
-
-    return set(result.all())
-
-
-def _is_searchable_for_user(
-    item: VectorItem,
-    user_id: int,
-    ready_document_ids: set[int],
-) -> bool:
-    if getattr(item, "user_id", None) != user_id:
-        return False
-
-    document_id = getattr(item, "document_id", None)
-
-    # Raw /insert vectors are user-owned but are not attached to a Document.
-    if document_id is None:
-        return True
-
-    return document_id in ready_document_ids
-
-
-def _search_user_vectors(
-    query: np.ndarray,
-    user_id: int,
-    ready_document_ids: set[int],
-    k: int,
-) -> list[SearchResult]:
-    """
-    V1 tenant-aware ANN strategy.
-
-    The HNSW index is still shared across users, so we over-fetch candidates,
-    enforce tenant ownership, then return the user's top results.
-
-    Long-term this should evolve to tenant-aware collections/namespaces or
-    filter-aware ANN search.
-    """
-    total_vectors = state.vector_db.size()
-
-    if total_vectors == 0:
-        return []
-
-    candidate_k = min(
-        total_vectors,
-        max(200, k * 50),
-    )
-
-    candidates = state.vector_db.search(
-        query,
-        k=candidate_k,
-    )
-
-    user_results = [
-        result
-        for result in candidates
-        if _is_searchable_for_user(
-            result.item,
-            user_id,
-            ready_document_ids,
-        )
-    ]
-
-    return user_results[:k]
-
-
-async def _get_searchable_user_items(
-    user_id: int,
-    ready_document_ids: set[int],
-) -> list[VectorItem]:
-    async with state.db_lock:
-        items = state.vector_db.get_all_items()
-
-    return [
-        item
-        for item in items
-        if _is_searchable_for_user(
-            item,
-            user_id,
-            ready_document_ids,
-        )
-    ]
-
-
-async def _get_all_user_items(
-    user_id: int,
-) -> list[VectorItem]:
-    async with state.db_lock:
-        items = state.vector_db.get_all_items()
-
-    return [
-        item
-        for item in items
-        if getattr(item, "user_id", None) == user_id
-    ]
 
 
 def _to_search_result_item(
@@ -679,7 +569,7 @@ async def clear_user_data(
     It MUST NOT rebuild the global index or clear the global WAL because those
     contain data for other tenants.
     """
-    user_items = await _get_all_user_items(
+    user_items = await get_all_user_items(
         current_user.id
     )
 
@@ -899,14 +789,14 @@ async def search_vectors(
     )
 
     ready_document_ids = (
-        await _get_ready_document_ids(
+        await get_ready_document_ids(
             session,
             current_user.id,
         )
     )
 
     try:
-        results = _search_user_vectors(
+        results = search_user_vectors(
             query=query_arr,
             user_id=current_user.id,
             ready_document_ids=ready_document_ids,
@@ -967,14 +857,14 @@ async def search_vectors_by_text(
     )
 
     ready_document_ids = (
-        await _get_ready_document_ids(
+        await get_ready_document_ids(
             session,
             current_user.id,
         )
     )
 
     try:
-        results = _search_user_vectors(
+        results = search_user_vectors(
             query=query_arr,
             user_id=current_user.id,
             ready_document_ids=ready_document_ids,
@@ -1029,13 +919,13 @@ async def get_vectors_sample(
     )
 
     ready_document_ids = (
-        await _get_ready_document_ids(
+        await get_ready_document_ids(
             session,
             current_user.id,
         )
     )
 
-    items = await _get_searchable_user_items(
+    items = await get_searchable_user_items(
         current_user.id,
         ready_document_ids,
     )
@@ -1298,13 +1188,13 @@ async def get_benchmarks(
     session: AsyncSession = Depends(get_db),
 ) -> schemas.BenchmarkResponse:
     ready_document_ids = (
-        await _get_ready_document_ids(
+        await get_ready_document_ids(
             session,
             current_user.id,
         )
     )
 
-    items = await _get_searchable_user_items(
+    items = await get_searchable_user_items(
         current_user.id,
         ready_document_ids,
     )
@@ -1971,7 +1861,7 @@ async def ask_question(
     # ---------------------------------------------------------
 
     ready_document_ids = (
-        await _get_ready_document_ids(
+        await get_ready_document_ids(
             session,
             current_user.id,
         )
@@ -1984,7 +1874,7 @@ async def ask_question(
         )
 
         raw_results = (
-            _search_user_vectors(
+            search_user_vectors(
                 query=question_arr,
                 user_id=current_user.id,
                 ready_document_ids=(
