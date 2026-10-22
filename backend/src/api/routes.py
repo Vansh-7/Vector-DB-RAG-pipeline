@@ -57,16 +57,6 @@ ALLOWED_FILE_EXTENSIONS = {
 
 
 # ---------------------------------------------------------------------------
-# Per-user visualization state
-#
-# This is intentionally process-local because the Vector DB itself is
-# process-local in V1 and we run exactly one Uvicorn worker.
-# ---------------------------------------------------------------------------
-
-_pca_models: dict[int, tuple[PCA, float]] = {}
-
-
-# ---------------------------------------------------------------------------
 # Validation / normalization helpers
 # ---------------------------------------------------------------------------
 
@@ -123,7 +113,7 @@ def _project_query_for_user(
     user_id: int,
     query: np.ndarray,
 ) -> list[float] | None:
-    pca_state = _pca_models.get(user_id)
+    pca_state = state.pca_models.get(user_id)
 
     if pca_state is None:
         return None
@@ -450,7 +440,7 @@ async def delete_document(
             detail="Document deletion was incomplete.",
         ) from exc
 
-    _pca_models.pop(
+    state.pca_models.pop(
         current_user.id,
         None,
     )
@@ -523,7 +513,7 @@ async def insert_vector(
             state.wal.log_insert(item)
             state.vector_db.insert(item)
 
-        _pca_models.pop(
+        state.pca_models.pop(
             current_user.id,
             None,
         )
@@ -612,7 +602,7 @@ async def clear_user_data(
             detail="Document metadata cleanup failed.",
         ) from exc
 
-    _pca_models.pop(
+    state.pca_models.pop(
         current_user.id,
         None,
     )
@@ -713,7 +703,7 @@ async def delete_vector(
                 f"document_id={document_id}: {exc}"
             )
 
-    _pca_models.pop(
+    state.pca_models.pop(
         current_user.id,
         None,
     )
@@ -939,7 +929,7 @@ async def get_vectors_sample(
         )
 
     if not items:
-        _pca_models.pop(
+        state.pca_models.pop(
             current_user.id,
             None,
         )
@@ -963,7 +953,7 @@ async def get_vectors_sample(
             dtype=float,
         )
 
-        _pca_models.pop(
+        state.pca_models.pop(
             current_user.id,
             None,
         )
@@ -988,7 +978,7 @@ async def get_vectors_sample(
 
         coords = coords / max_val
 
-        _pca_models[
+        state.pca_models[
             current_user.id
         ] = (
             pca,
@@ -1448,7 +1438,7 @@ async def ingest_document(
             document
         )
 
-        _pca_models.pop(
+        state.pca_models.pop(
             current_user.id,
             None,
         )
@@ -1482,7 +1472,7 @@ async def ingest_document(
             document.id,
         )
 
-        _pca_models.pop(
+        state.pca_models.pop(
             current_user.id,
             None,
         )
@@ -1644,7 +1634,7 @@ async def ingest_file(
             document
         )
 
-        _pca_models.pop(
+        state.pca_models.pop(
             current_user.id,
             None,
         )
@@ -1680,7 +1670,7 @@ async def ingest_file(
             document.id,
         )
 
-        _pca_models.pop(
+        state.pca_models.pop(
             current_user.id,
             None,
         )
