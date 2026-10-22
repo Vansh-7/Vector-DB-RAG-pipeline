@@ -35,9 +35,6 @@ jobs:
     env:
       PYTHONDONTWRITEBYTECODE: "1"
       UV_NO_CACHE: "1"
-      VECTOR_DATA_DIR: ${{ runner.temp }}/neuebit-ci
-      VECTOR_DB_FILE: ${{ runner.temp }}/neuebit-ci/vector_database.pkl
-      VECTOR_WAL_FILE: ${{ runner.temp }}/neuebit-ci/vector_database.wal
 
     steps:
       - name: Checkout repository
@@ -51,6 +48,13 @@ jobs:
           version: "0.12.18"
           python-version: "3.12"
           enable-cache: false
+
+      - name: Configure temporary vector storage
+        run: |
+          echo "VECTOR_DATA_DIR=$RUNNER_TEMP/neuebit-ci" >> "$GITHUB_ENV"
+          echo "VECTOR_DB_FILE=$RUNNER_TEMP/neuebit-ci/vector_database.pkl" >> "$GITHUB_ENV"
+          echo "VECTOR_WAL_FILE=$RUNNER_TEMP/neuebit-ci/vector_database.wal" >> "$GITHUB_ENV"
+
 
       - name: Install locked backend dependencies
         run: uv sync --locked --python 3.12
