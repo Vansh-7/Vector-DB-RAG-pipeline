@@ -11,6 +11,9 @@ node_modules
 dist
 dist-ssr
 coverage/
+.vite/
+.vite-temp/
+*.tsbuildinfo
 *.local
 
 # Editor directories and files

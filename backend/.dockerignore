@@ -7,6 +7,18 @@ __pycache__
 .pytest_cache
 .mypy_cache
 .ruff_cache
+**/.pytest_cache
+**/.mypy_cache
+**/.ruff_cache
+
+# Generated test reports and packaging artifacts
+.coverage
+.coverage.*
+htmlcov
+build
+dist
+wheels
+*.egg-info
 
 *.pkl
 *.wal
