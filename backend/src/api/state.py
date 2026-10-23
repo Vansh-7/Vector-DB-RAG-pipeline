@@ -1,40 +1,20 @@
 import asyncio
-from config import settings
 from pathlib import Path
 from typing import Any
 
-from core.indexes.hnsw import HNSWIndex
-from core.indexes.kd_tree import KDTreeIndex
-from core.indexes.brute_force import BruteForceIndex
+from config import settings
 from core.indexes.base import BaseIndex
-from core.metrics import cosine_distance, euclidean_distance, manhattan_distance
+from core.recovery import build_engine as create_engine
+from core.recovery import recover_engine
+from core.snapshots import METRICS as METRICS
 from core.wal import WriteAheadLog
-from core.logger import logger
-
-METRICS = {
-    "cosine": cosine_distance,
-    "euclidean": euclidean_distance,
-    "manhattan": manhattan_distance,
-}
 
 DEFAULT_DIMS = 768
 
 
 def build_engine(algorithm: str, metric: str) -> BaseIndex:
-    dist_fn = METRICS.get(metric, cosine_distance)
-    if algorithm == "hnsw":
-        return HNSWIndex(distance_metric=dist_fn, m=16, ef_construction=200)
-    elif algorithm == "kdtree":
-        return KDTreeIndex(distance_metric=dist_fn, dims=DEFAULT_DIMS)
-    elif algorithm == "exact":
-        return BruteForceIndex(distance_metric=dist_fn)
-    else:
-        return HNSWIndex(distance_metric=dist_fn, m=16, ef_construction=200)
+    return create_engine(algorithm, metric, DEFAULT_DIMS)
 
-
-ACTIVE_ALGORITHM = "hnsw"
-ACTIVE_METRIC = "cosine"
-vector_db: BaseIndex = build_engine(ACTIVE_ALGORITHM, ACTIVE_METRIC)
 
 WAL_FILE = settings.vector_wal_file
 DB_FILE = settings.vector_db_file
@@ -42,9 +22,13 @@ DB_FILE = settings.vector_db_file
 Path(DB_FILE).parent.mkdir(parents=True, exist_ok=True)
 Path(WAL_FILE).parent.mkdir(parents=True, exist_ok=True)
 
+# Recovery failure aborts startup rather than publishing an empty replacement.
+vector_db, ACTIVE_ALGORITHM, ACTIVE_METRIC = recover_engine(
+    DB_FILE, WAL_FILE, dimensions=DEFAULT_DIMS,
+    legacy_algorithm=settings.legacy_vector_algorithm,
+    legacy_metric=settings.legacy_vector_metric,
+)
 wal = WriteAheadLog(filepath=WAL_FILE)
-vector_db.load(DB_FILE)
-wal.replay(vector_db)
 
 db_lock = asyncio.Lock()
 # PCA State for projecting queries

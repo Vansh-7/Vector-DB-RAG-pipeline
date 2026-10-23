@@ -1,15 +1,13 @@
-import os
 import heapq
 import math
 import random
-import pickle
 from typing import Callable
 
 import numpy as np
 
 from core.types import SearchResult, VectorItem
 from core.indexes.base import BaseIndex, DuplicateVectorID
-from core.logger import logger
+from core.snapshots import load_snapshot, save_snapshot
 
 
 class HNSWNode:
@@ -31,6 +29,8 @@ class HNSWIndex(BaseIndex):
     Approximate Nearest Neighbor (ANN) search. Achieves O(log N) search time
     even in extremely high dimensions (e.g., 768D or 1536D).
     """
+
+    algorithm = "hnsw"
 
     def __init__(self, distance_metric: Callable[[np.ndarray, np.ndarray], float], m: int = 16, ef_construction: int = 200) -> None:
         self.distance_metric = distance_metric
@@ -225,41 +225,27 @@ class HNSWIndex(BaseIndex):
     def get_all_items(self) -> list[VectorItem]:
         return [node.item for nid, node in self.nodes.items() if nid not in self.tombstones]
 
-    def save(self, filepath: str) -> None:
-        state = {
-            "nodes": self.nodes,
-            "entry_point_id": self.entry_point_id,
-            "top_layer": self.top_layer,
-            "tombstones": self.tombstones  # Persist deleted items
+    def _snapshot_state(self):
+        return {
+            "nodes": self.nodes, "entry_point_id": self.entry_point_id,
+            "top_layer": self.top_layer, "tombstones": self.tombstones,
+            "m": self.m, "ef_construction": self.ef_construction,
         }
-        with open(filepath, "wb") as f:
-            pickle.dump(state, f)
-        logger.info(f"HNSW Index saved to {filepath} ({len(self.nodes)} nodes).")
+
+    def _restore_state(self, saved):
+        self.nodes = saved["nodes"]
+        self.entry_point_id = saved["entry_point_id"]
+        self.top_layer = saved["top_layer"]
+        self.tombstones = saved["tombstones"]
+        self.m = saved.get("m", 16)
+        self.m0 = self.m * 2
+        self.ml = 1.0 / math.log(self.m)
+        self.ef_construction = saved.get("ef_construction", 200)
+        for node in self.nodes.values():
+            node.embedding = np.array(node.item.embedding, dtype=float)
+
+    def save(self, filepath: str) -> None:
+        save_snapshot(self, filepath)
 
     def load(self, filepath: str) -> None:
-        if not os.path.exists(filepath):
-            logger.warning(f"Index file {filepath} not found. Starting fresh.")
-            return
-
-        try:
-            with open(filepath, "rb") as f:
-                state = pickle.load(f)
-
-            if not isinstance(state, dict) or "nodes" not in state:
-                logger.warning(f"Index file {filepath} format invalid or legacy. Starting fresh.")
-                return
-
-            self.nodes = state["nodes"]
-            self.entry_point_id = state["entry_point_id"]
-            self.top_layer = state["top_layer"]
-            self.tombstones = state.get("tombstones", set()) # Safe fallback
-            
-            # Reconstruct embeddings for loaded nodes (pickle bypasses __init__)
-            import numpy as np
-            for node in self.nodes.values():
-                if not hasattr(node, 'embedding'):
-                    node.embedding = np.array(node.item.embedding, dtype=float)
-
-            logger.info(f"HNSW Index loaded from {filepath} ({len(self.nodes)} nodes).")
-        except Exception as e:
-            logger.warning(f"Failed to load index file {filepath}: {e}. Starting fresh.")
+        load_snapshot(self, filepath)

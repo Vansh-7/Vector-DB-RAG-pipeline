@@ -1,10 +1,8 @@
 from typing import Callable
-import os
-import pickle
 import numpy as np
 
 from core.types import SearchResult, VectorItem
-from core.logger import logger
+from core.snapshots import load_snapshot, save_snapshot
 # Import our base contract and data types
 from core.indexes.base import BaseIndex, DuplicateVectorID
 
@@ -13,6 +11,8 @@ class BruteForceIndex(BaseIndex):
     Exact Nearest Neighbor search.
     Compares the query vector against every single item in the database.
     """
+
+    algorithm = "exact"
 
     def __init__(self, distance_metric: Callable[[np.ndarray, np.ndarray], float]) -> None:
         """
@@ -76,22 +76,17 @@ class BruteForceIndex(BaseIndex):
     def get_all_items(self) -> list[VectorItem]:
         return list(self.items.values())
 
+    def _snapshot_state(self):
+        return {"items": self.items, "tombstones": self.tombstones}
+
+    def _restore_state(self, saved):
+        self.items = saved["items"]
+        self.tombstones = saved["tombstones"]
+        self.embeddings = {item.id: np.array(item.embedding, dtype=float)
+                           for item in self.items.values()}
+
     def save(self, filepath: str) -> None:
-        """Serializes and saves the items dictionary to disk."""
-        with open(filepath, "wb") as f:
-            pickle.dump({"items": self.items, "tombstones": self.tombstones}, f)
-        logger.info(f"BruteForce Index successfully saved to {filepath} ({len(self.items)} items).")
+        save_snapshot(self, filepath)
 
     def load(self, filepath: str) -> None:
-        """Loads the items dictionary from disk."""
-        if not os.path.exists(filepath):
-            logger.warning(f"Index file {filepath} not found. Starting with a fresh database.")
-            return
-            
-        with open(filepath, "rb") as f:
-            saved = pickle.load(f)
-        self.items = saved["items"] if "items" in saved else saved
-        self.tombstones = saved.get("tombstones", set()) if "items" in saved else set()
-        for item in self.items.values():
-            self.embeddings[item.id] = np.array(item.embedding, dtype=float)
-        logger.info(f"BruteForce Index successfully loaded from {filepath} ({len(self.items)} items).")
+        load_snapshot(self, filepath)

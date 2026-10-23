@@ -1,13 +1,12 @@
 import heapq
 from typing import Callable
 
-import os
-import pickle
 import numpy as np
 
 from core.types import SearchResult, VectorItem
 from core.indexes.base import BaseIndex, DuplicateVectorID
-from core.logger import logger
+from core.metrics import euclidean_distance, manhattan_distance
+from core.snapshots import load_snapshot, save_snapshot
 
 class KDNode:
     """A single node in the KD-Tree."""
@@ -28,6 +27,8 @@ class KDTreeIndex(BaseIndex):
     Achieves O(log N) search time for low dimensions, but degrades to Brute Force
     in extremely high dimensions (The Curse of Dimensionality).
     """
+
+    algorithm = "kdtree"
 
     def __init__(self, distance_metric: Callable[[np.ndarray, np.ndarray], float], dims: int) -> None:
         self.distance_metric = distance_metric
@@ -110,7 +111,8 @@ class KDTreeIndex(BaseIndex):
         # PRUNING STEP: Only search the farther side if the distance to the splitting
         # boundary is less than our current worst match. If it's further, we can safely
         # ignore millions of nodes on that side!
-        if len(heap) < k or abs(axis_diff) < -heap[0][0]:
+        if (self.distance_metric not in (euclidean_distance, manhattan_distance)
+                or len(heap) < k or abs(axis_diff) < -heap[0][0]):
             self._knn_search(farther_node, query, k, depth + 1, heap)
 
     def remove(self, item_id: int) -> bool:
@@ -134,23 +136,16 @@ class KDTreeIndex(BaseIndex):
     def get_all_items(self) -> list[VectorItem]:
         return list(self._active_items.values())
 
+    def _snapshot_state(self):
+        return {"items": self._active_items, "tombstones": self.tombstones}
+
+    def _restore_state(self, saved):
+        self._active_items = saved["items"]
+        self.tombstones = saved["tombstones"]
+        self._rebuild()
+
     def save(self, filepath: str) -> None:
-        """Serializes the active items to disk."""
-        with open(filepath, "wb") as f:
-            pickle.dump({"items": self._active_items, "tombstones": self.tombstones}, f)
-        logger.info(f"KD-Tree Index successfully saved to {filepath} ({len(self._active_items)} items).")
+        save_snapshot(self, filepath)
 
     def load(self, filepath: str) -> None:
-        """Loads items from disk and rebuilds the spatial tree."""
-        if not os.path.exists(filepath):
-            logger.warning(f"Index file {filepath} not found. Starting with a fresh database.")
-            return
-            
-        with open(filepath, "rb") as f:
-            saved = pickle.load(f)
-        self._active_items = saved["items"] if "items" in saved else saved
-        self.tombstones = saved.get("tombstones", set()) if "items" in saved else set()
-            
-        # Reconstruct the physical tree structure from the loaded items
-        self._rebuild()
-        logger.info(f"KD-Tree Index successfully loaded and rebuilt from {filepath} ({len(self._active_items)} items).")
+        load_snapshot(self, filepath)

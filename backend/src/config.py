@@ -128,6 +128,8 @@ class Settings:
 
     # Vector engine operator access
     operator_user_ids: frozenset[int]
+    legacy_vector_algorithm: str | None = None
+    legacy_vector_metric: str | None = None
 
 
 def load_settings() -> Settings:
@@ -241,6 +243,8 @@ def load_settings() -> Settings:
 
         # Vector engine operator permissions
         operator_user_ids=_get_operator_user_ids(),
+        legacy_vector_algorithm=os.getenv("LEGACY_VECTOR_ALGORITHM"),
+        legacy_vector_metric=os.getenv("LEGACY_VECTOR_METRIC"),
     )
 
 
