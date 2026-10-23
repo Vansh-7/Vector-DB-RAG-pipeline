@@ -1,11 +1,29 @@
 from fastapi import APIRouter
 
-from api.routers.auth import router as auth_router
-from api.routers.conversations import router as conversation_router
-from api.routes import router as core_router
+from api.routers import (
+    auth,
+    benchmarks,
+    conversations,
+    documents,
+    engine,
+    ingestion,
+    rag,
+    search,
+    vectors,
+    visualization,
+)
 
 router = APIRouter()
 
-router.include_router(core_router)
-router.include_router(auth_router)
-router.include_router(conversation_router)
+# Preserve the original interleaved V1 route registration order.
+router.include_router(documents.router)
+router.include_router(vectors.router)
+router.include_router(engine.snapshot_router)
+router.include_router(search.router)
+router.include_router(visualization.router)
+router.include_router(benchmarks.router)
+router.include_router(engine.router)
+router.include_router(ingestion.router)
+router.include_router(rag.router)
+router.include_router(auth.router)
+router.include_router(conversations.router)

@@ -70,3 +70,27 @@ Phase evidence will be appended as each extraction passes its gates.
 - Conversation owner filters, stable ordering, default/normalized titles, 404 responses, write results and rollback behavior preserved.
 - Workflow AST and syntax checks pass. New services, routers and service tests pass Ruff. Four pre-existing E501 findings in `test_auth_policy.py` remain unchanged; that test only changes its token patch target.
 - Independent read-only review: no actionable findings; all extracted functions match after boundary adaptations.
+- Commit: `a7d932b18ff6005ad979bc8f652d4c04030fc14b`.
+
+### Phase 7 — domain routers and final verification
+
+- RED: architecture checks **1 failed, 4 passed**, demonstrating that the 15 core operations still belonged to `api.routes` before the split.
+- GREEN: architecture/OpenAPI/registration/PCA **42 passed, 1 warning in 19.22s**.
+- Final full Python 3.12 suite: **285 passed, 2 warnings in 23.39s** (127 regression tests added across Stage 2; baseline 158).
+- All 23 operations across 21 API paths retain their ordering, methods, names, authentication, operation IDs and complete OpenAPI contract. Engine snapshot registration has a separate fragment to preserve the original interleaving. `api/routes.py` is removed and no consumers remain.
+- Actual one-worker Uvicorn startup and graceful shutdown passed, using separate temporary vector files. Live `/api/v1/status` returned 200, `/api/v1/auth/me` returned 401 and `/openapi.json` exactly matched the original baseline. Shutdown saved an isolated snapshot before clearing its WAL.
+- Explicit FastAPI import and duplicate-operation checks passed. The outer FastAPI route count is 5 because this version uses lazy included routers; flattening verifies 23 unique operations, not 5 API endpoints.
+- Syntax compilation: **86 Python files** checked with built-in `compile()`, without writing bytecode. Import-graph and layer-boundary tests pass.
+- New/extracted Python code and modified PCA/retrieval tests pass Ruff. Full-tree Ruff reports **145 pre-existing findings**, down from 147; source-line/message comparison proves **0 new findings**. The four unchanged auth-policy E501 findings are included in that debt.
+- Two suite warnings: existing Starlette/httpx deprecation, plus the existing HTTP 413 constant's deprecation now exercised by upload-limit regression coverage. No tests fail.
+- Protected-scope diff is empty for Docker, frontend, CI, dependencies/lockfile, main, state, schemas, security primitives, AI/core/DB and migrations. The Dockerfile and OpenAPI golden fixture hashes are unchanged.
+- Fresh whole-change read-only review: **no Critical, Important or Minor findings**. All 15 moved handler ASTs and all extracted workflow semantics verified; ready for final commit.
+
+## Preserved behavior and review rulings
+
+- Ruling: retain existing partial raw-insert/delete/bulk-clear failure and PCA-invalidation semantics because the user requires behavior preservation. Cost if a future recovery change is needed: a separately tested durability/hardening change.
+- Ruling: retain the existing benchmark query-dimension behavior. Cost if malformed generated vectors occur: existing benchmark failures remain possible; validation needs separate contract review.
+- Ruling: retain existing malformed RAG-event handling and new-conversation flush-error behavior. Cost if upstream events or initial DB flush fail: existing error behavior remains; hardening needs separate tests and scope.
+- Ruling: `services -> api.state` remains intentional transitional debt, with one process-local index/WAL/lock/PCA cache. Moving state is separate work. Cost of treating it as a reusable distributed service: V1 does not provide multi-worker coordination.
+- Verification limit: tests use fake PostgreSQL sessions/providers and a real local Uvicorn smoke check; no live PostgreSQL/provider outage test, production concurrency test or Docker build was performed. These checks establish refactor parity, not production operational reliability.
+- No deferred review minors. Stage 3 dependency/Docker optimization, deployment and pushing were not started.

@@ -51,11 +51,11 @@ All rows apply to `deploy/v1`. Tests listed are additions alongside the unchange
 
 **Interfaces:** `list_documents(session, user_id)`, `delete_document(document_id, user_id, session)`, `ingest_document(text, category, title, user_id, session)`, `ingest_file(content, filename, extension, category, user_id, session)`. Internal lifecycle helpers retain their existing semantics. File service receives bytes after HTTP filename/category/size validation.
 
-- [ ] Write service tests for ready metadata/chunks, failed embedding/count/dimension/partial insertion, compensation WAL order, scoped deletion/query, parsing PDF/TXT/MD and HTTP validation.
-- [ ] Run focused tests RED: new service is absent; behavior assertions must execute once implemented.
-- [ ] Extract existing workflows, using domain errors mapped explicitly at HTTP boundary. Keep bounded upload reads in handler.
-- [ ] Run focused tests, full Python 3.12 suite, frozen contracts, changed-file Ruff and syntax checks; review diff independently.
-- [ ] Commit `refactor(documents): extract document lifecycle service`.
+- [x] Write service tests for ready metadata/chunks, failed embedding/count/dimension/partial insertion, compensation WAL order, scoped deletion/query, parsing PDF/TXT/MD and HTTP validation.
+- [x] Run focused tests RED: new service is absent; behavior assertions must execute once implemented.
+- [x] Extract existing workflows, using domain errors mapped explicitly at HTTP boundary. Keep bounded upload reads in handler.
+- [x] Run focused tests, full Python 3.12 suite, frozen contracts, changed-file Ruff and syntax checks; review diff independently.
+- [x] Commit `refactor(documents): extract document lifecycle service`.
 
 ## Phase 2: RAG
 
@@ -63,10 +63,10 @@ All rows apply to `deploy/v1`. Tests listed are additions alongside the unchange
 
 **Interfaces:** `ask_question(question, k, conversation_id, user_id, session)` returns an async NDJSON iterator after request-time preparation. `project_query_for_user(user_id, query)` accesses existing PCA cache. Keep private conversation preparation and stream functions within RAG service until conversation extraction if appropriate.
 
-- [ ] Write RED tests for new/reused/foreign conversations, durable user messages before embedding, source filtering, positive scores, fresh-session assistant persistence, error/empty/cancel/disconnect and persistence failure behavior.
-- [ ] Extract existing orchestration, preserving `asyncio.to_thread` reranking and exact NDJSON bytes/event ordering.
-- [ ] Run focused/full/contract/lint gates and independent review.
-- [ ] Commit `refactor(rag): extract RAG orchestration service`.
+- [x] Write RED tests for new/reused/foreign conversations, durable user messages before embedding, source filtering, positive scores, fresh-session assistant persistence, error/empty/cancel/disconnect and persistence failure behavior.
+- [x] Extract existing orchestration, preserving `asyncio.to_thread` reranking and exact NDJSON bytes/event ordering.
+- [x] Run focused/full/contract/lint gates and independent review.
+- [x] Commit `refactor(rag): extract RAG orchestration service`.
 
 ## Phase 3: Vectors
 
@@ -74,10 +74,10 @@ All rows apply to `deploy/v1`. Tests listed are additions alongside the unchange
 
 **Interfaces:** `insert_vector(payload, category, embedding, item_id, user_id)`, `delete_vector(item_id, user_id, session)`, `clear_user_data(user_id, session)` return existing result dictionaries.
 
-- [ ] Write RED tests for own/foreign/raw/non-ready mutations, WAL-before-memory failures, partial failures, dimension/category/ID validation and scoped PCA invalidation.
-- [ ] Extract existing workflows without altering conflict/rollback or best-effort metadata semantics.
-- [ ] Run focused/full/contract/lint gates and independent review.
-- [ ] Commit `refactor(vector): extract vector mutation service`.
+- [x] Write RED tests for own/foreign/raw/non-ready mutations, WAL-before-memory failures, partial failures, dimension/category/ID validation and scoped PCA invalidation.
+- [x] Extract existing workflows without altering conflict/rollback or best-effort metadata semantics.
+- [x] Run focused/full/contract/lint gates and independent review.
+- [x] Commit `refactor(vector): extract vector mutation service`.
 
 ## Phase 4: Search, Visualization and Benchmarks
 
@@ -85,10 +85,10 @@ All rows apply to `deploy/v1`. Tests listed are additions alongside the unchange
 
 **Interfaces:** `search_vectors(embedding, k, user_id, session)` returns core search results; text search returns results/query vector/query projection; sample and benchmark services return plain dictionaries. Reuse `services.retrieval` and `project_query_for_user`.
 
-- [ ] Write RED tests for ready/owned results, embedding errors, distances/order/k, sampling bounds, shared PCA normalization and benchmark isolation/workload/output fields.
-- [ ] Extract existing computations without changing benchmark methodology or thread offload.
-- [ ] Run focused/full/contract/lint gates and independent review.
-- [ ] Commit `refactor(search): extract search and visualization services`.
+- [x] Write RED tests for ready/owned results, embedding errors, distances/order/k, sampling bounds, shared PCA normalization and benchmark isolation/workload/output fields.
+- [x] Extract existing computations without changing benchmark methodology or thread offload.
+- [x] Run focused/full/contract/lint gates and independent review.
+- [x] Commit `refactor(search): extract search and visualization services`.
 
 ## Phase 5: Engine
 
@@ -96,10 +96,10 @@ All rows apply to `deploy/v1`. Tests listed are additions alongside the unchange
 
 **Interfaces:** `get_db_status()`, `save_database(user_id)`, `configure_engine(algorithm, metric, user_id)` return current dictionaries.
 
-- [ ] Write RED tests for snapshot/WAL order and failure, validation, engine replacement failure and successful cross-owner preservation.
-- [ ] Extract existing coordination; keep operator/JWT checks in HTTP handlers.
-- [ ] Run focused/full/contract/lint gates and independent review.
-- [ ] Commit `refactor(engine): extract engine management service`.
+- [x] Write RED tests for snapshot/WAL order and failure, validation, engine replacement failure and successful cross-owner preservation.
+- [x] Extract existing coordination; keep operator/JWT checks in HTTP handlers.
+- [x] Run focused/full/contract/lint gates and independent review.
+- [x] Commit `refactor(engine): extract engine management service`.
 
 ## Phase 6: Auth and Conversations
 
@@ -107,10 +107,10 @@ All rows apply to `deploy/v1`. Tests listed are additions alongside the unchange
 
 **Interfaces:** `register(email, password, session)` returns User; `login(email, password, session)` returns token string. Conversation functions take explicit `user_id`, IDs/title/session and return existing ORM objects/results.
 
-- [ ] Write RED tests for normalized email/duplicates/races, bad/disabled login, token subject, title normalization, owned CRUD, message ordering and failed commit rollback.
-- [ ] Extract workflows using unchanged security primitives and database models.
-- [ ] Run focused/full/contract/lint gates and independent review.
-- [ ] Commit `refactor(auth): separate auth and conversation services`.
+- [x] Write RED tests for normalized email/duplicates/races, bad/disabled login, token subject, title normalization, owned CRUD, message ordering and failed commit rollback.
+- [x] Extract workflows using unchanged security primitives and database models.
+- [x] Run focused/full/contract/lint gates and independent review.
+- [x] Commit `refactor(auth): separate auth and conversation services`.
 
 ## Phase 7: Domain Routers
 
@@ -118,10 +118,10 @@ All rows apply to `deploy/v1`. Tests listed are additions alongside the unchange
 
 **Interfaces:** Preserve existing handler signatures, decorators, names and docstrings. Include meaningful route groups in the original interleaved order (engine save versus status/configure; documents versus ingestion).
 
-- [ ] Write RED import/architecture tests asserting the new modules form HTTP/service boundaries without forbidden dependencies.
-- [ ] Move thin handlers, preserving all frozen route contracts; update real consumers without compatibility shims.
-- [ ] Run full/focused/frozen-contract/lint/import-cycle/duplicate-route gates, isolated one-worker startup and final independent review.
-- [ ] Commit `refactor(api): split monolithic routes into domain routers`.
+- [x] Write RED import/architecture tests asserting the new modules form HTTP/service boundaries without forbidden dependencies.
+- [x] Move thin handlers, preserving all frozen route contracts; update real consumers without compatibility shims.
+- [x] Run full/focused/frozen-contract/lint/import-cycle/duplicate-route gates, isolated one-worker startup and final independent review.
+- [x] Commit `refactor(api): split monolithic routes into domain routers`.
 
 ## Verification Commands
 

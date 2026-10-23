@@ -8,9 +8,12 @@ import pytest
 from fastapi import HTTPException, UploadFile
 from sklearn.decomposition import PCA
 
-import api.routes as routes
 import api.state as state
 from api import schemas
+from api.routers import documents as document_routes
+from api.routers import ingestion as ingestion_routes
+from api.routers import vectors as vector_routes
+from api.routers import visualization as visualization_routes
 from core.types import VectorItem
 from db.models import Document
 from services import documents
@@ -91,7 +94,7 @@ def pca_environment(monkeypatch):
 
 
 def _sample(session, user_id=1, n=2000):
-    return asyncio.run(routes.get_vectors_sample(
+    return asyncio.run(visualization_routes.get_vectors_sample(
         n=n, current_user=SimpleNamespace(id=user_id), session=session,
     ))
 
@@ -185,23 +188,23 @@ def test_mutations_invalidate_only_the_relevant_users_cache(
 
     async def mutate():
         if operation == "insert":
-            await routes.insert_vector(
+            await vector_routes.insert_vector(
                 schemas.InsertRequest(category="testing", payload="raw", embedding=[0.5] * 768),
                 current_user=user,
             )
         elif operation == "delete_vector":
-            await routes.delete_vector(1, current_user=user, session=session)
+            await vector_routes.delete_vector(1, current_user=user, session=session)
         elif operation == "delete_document":
-            await routes.delete_document(11, current_user=user, session=session)
+            await document_routes.delete_document(11, current_user=user, session=session)
         elif operation == "clear":
-            await routes.clear_user_data(current_user=user, session=session)
+            await vector_routes.clear_user_data(current_user=user, session=session)
         elif operation.startswith("ingest_text"):
-            await routes.ingest_document(
+            await ingestion_routes.ingest_document(
                 schemas.IngestRequest(text="document", category="testing"),
                 current_user=user, session=session,
             )
         else:
-            await routes.ingest_file(
+            await ingestion_routes.ingest_file(
                 category="testing", file=UploadFile(filename="test.txt", file=io.BytesIO(b"text")),
                 current_user=user, session=session,
             )
