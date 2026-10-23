@@ -22,3 +22,13 @@ Phase evidence will be appended as each extraction passes its gates.
 - Independent read-only review: no actionable findings; four HTTP handlers alone changed among existing route functions. File validation order, thread offload, transactions, compensation, ownership and PCA semantics preserved.
 - Dockerfile and golden OpenAPI fixture SHA256 unchanged. Frontend, CI, lockfiles, database models and core engines untouched.
 - Temporary sequencing note: original route validation helpers remain for unextracted vector/search/upload consumers; final extraction removes duplication. This avoids changing their HTTP failure behavior during Phase 1.
+- Commit: `74bbb7dc1fb2a23541b3d920a49134bce36f50fa`.
+
+### Phase 2 — RAG
+
+- RED: 18 new service cases failed because `services.rag` did not exist.
+- Initial focused RAG/retrieval/PCA/contracts: **74 passed**. Full Python 3.12 suite after six additional HTTP/lifetime cases: **210 passed, 2 warnings in 20.97s** (24 RAG tests added).
+- Eager preparation preserves existing HTTP 400/404/500/503 responses. User-message commit still precedes embedding. Reranking stays off-thread after ownership/readiness filtering; NDJSON event order and bytes remain unchanged.
+- Fresh-session persistence, scoped conversation lookup, positive-score selection, provider fallback, cancel/disconnect/error/empty output, deleted-conversation and history-write failure behavior exercised with local fakes.
+- RAG workflow AST verified against starting code after primitive input/domain-error/iterator adaptations. Changed-file Ruff and syntax checks pass; no bytecode written.
+- Final focused RAG/retrieval/PCA/contracts: **80 passed, 1 warning in 21.46s**. Independent read-only review found no actionable issues and confirmed only `/ask` changed among remaining handlers.

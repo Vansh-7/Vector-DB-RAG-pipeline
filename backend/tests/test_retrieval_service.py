@@ -157,12 +157,12 @@ def test_cleanup_enumeration_includes_all_owned_non_ready_items(index):
 def test_ask_filters_before_reranker_and_llm_and_preserves_ndjson(index, monkeypatch):
     # Require the service first: the initial RED run must fail before any inference work.
     _service()
-    import api.routes as routes
     from main import app
+    from services import rag as rag_service
 
     session = FakeSession()
-    monkeypatch.setattr(routes.embedder, "embed_text", AsyncMock(return_value=[0.5] * 768))
-    monkeypatch.setattr(routes, "AsyncSessionLocal", lambda: session)
+    monkeypatch.setattr(rag_service.embedder, "embed_text", AsyncMock(return_value=[0.5] * 768))
+    monkeypatch.setattr(rag_service, "AsyncSessionLocal", lambda: session)
 
     def rerank(question, results, top_n):
         assert [result.item.id for result in results] == [6, 1]
@@ -172,8 +172,8 @@ def test_ask_filters_before_reranker_and_llm_and_preserves_ndjson(index, monkeyp
         assert chunks == ["alice-raw", "alice-ready"]
         yield json.dumps({"type": "token", "data": "Safe answer"}) + "\n"
 
-    monkeypatch.setattr(routes.cross_encoder, "rerank", rerank)
-    monkeypatch.setattr(routes.llm_generator, "generate_stream", generate)
+    monkeypatch.setattr(rag_service.cross_encoder, "rerank", rerank)
+    monkeypatch.setattr(rag_service.llm_generator, "generate_stream", generate)
     app.dependency_overrides[get_current_user] = lambda: SimpleNamespace(id=1)
     app.dependency_overrides[get_db] = lambda: session
     try:
