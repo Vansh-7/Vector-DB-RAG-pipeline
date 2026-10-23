@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.errors import to_http_error
+from api.limits import login_limit, register_limit
 from auth.dependencies import get_current_user, is_operator
 from auth.schemas import (
     CurrentUserResponse,
@@ -25,6 +26,7 @@ router = APIRouter(
     "/register",
     response_model=UserResponse,
     status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(register_limit)],
 )
 async def register(
     request: RegisterRequest,
@@ -40,6 +42,7 @@ async def register(
 @router.post(
     "/login",
     response_model=TokenResponse,
+    dependencies=[Depends(login_limit)],
 )
 async def login(
     request: LoginRequest,

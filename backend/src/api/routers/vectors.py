@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from api import schemas
 from api.errors import to_http_error
+from api.limits import vector_insert_limit
 from auth.dependencies import get_current_user
 from db.models import User
 from db.session import get_db
@@ -18,7 +19,9 @@ from services.errors import DomainError
 router = APIRouter()
 
 
-@router.post("/insert", status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/insert", status_code=status.HTTP_201_CREATED, dependencies=[Depends(vector_insert_limit)]
+)
 async def insert_vector(
     request: schemas.InsertRequest, current_user: User = Depends(get_current_user)
 ) -> dict[str, Any]:

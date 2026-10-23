@@ -1603,7 +1603,7 @@
     },
     "/api/v1/status": {
       "get": {
-        "description": "Kept public because the Docker HEALTHCHECK calls this endpoint.\n\ntotal_docs currently means total active vector chunks across the shared\nindex, preserving the existing frontend/API contract.",
+        "description": "Public liveness for Docker healthchecks.\n\nAuthenticated callers also receive engine, metric and their own active vector count.",
         "operationId": "get_db_status_api_v1_status_get",
         "responses": {
           "200": {

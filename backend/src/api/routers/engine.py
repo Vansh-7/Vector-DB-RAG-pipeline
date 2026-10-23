@@ -7,7 +7,8 @@ from fastapi import (
 )
 
 from api.errors import to_http_error
-from auth.dependencies import get_operator_user
+from api.limits import operator_limit
+from auth.dependencies import get_operator_user, get_optional_user
 from db.models import User
 from services import engine as engine_service
 from services.errors import DomainError
@@ -18,7 +19,9 @@ router = APIRouter()
 snapshot_router = APIRouter()
 
 
-@snapshot_router.post("/save", status_code=status.HTTP_200_OK)
+@snapshot_router.post(
+    "/save", status_code=status.HTTP_200_OK, dependencies=[Depends(operator_limit)]
+)
 async def save_database(current_user: User = Depends(get_operator_user)) -> dict[str, str]:
     """
     Creates a global vector snapshot.
@@ -33,17 +36,16 @@ async def save_database(current_user: User = Depends(get_operator_user)) -> dict
 
 
 @router.get("/status")
-async def get_db_status() -> dict[str, Any]:
+async def get_db_status(current_user: User | None = Depends(get_optional_user)) -> dict[str, Any]:
     """
-    Kept public because the Docker HEALTHCHECK calls this endpoint.
+    Public liveness for Docker healthchecks.
 
-    total_docs currently means total active vector chunks across the shared
-    index, preserving the existing frontend/API contract.
+    Authenticated callers also receive engine, metric and their own active vector count.
     """
-    return await engine_service.get_db_status()
+    return await engine_service.get_db_status(current_user.id if current_user is not None else None)
 
 
-@router.post("/engine/configure")
+@router.post("/engine/configure", dependencies=[Depends(operator_limit)])
 async def configure_engine(
     algorithm: str, metric: str, current_user: User = Depends(get_operator_user)
 ) -> dict[str, Any]:

@@ -13,6 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from api import schemas
 from api.errors import to_http_error
+from api.limits import ingestion_limit
 from auth.dependencies import get_current_user
 from core.logger import logger
 from db.models import User
@@ -27,7 +28,12 @@ MAX_UPLOAD_BYTES = 10 * 1024 * 1024
 ALLOWED_FILE_EXTENSIONS = {".pdf", ".txt", ".md"}
 
 
-@router.post("/ingest", response_model=schemas.IngestResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/ingest",
+    response_model=schemas.IngestResponse,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(ingestion_limit)],
+)
 async def ingest_document(
     request: schemas.IngestRequest,
     current_user: User = Depends(get_current_user),
@@ -43,7 +49,10 @@ async def ingest_document(
 
 
 @router.post(
-    "/ingest/file", response_model=schemas.IngestResponse, status_code=status.HTTP_201_CREATED
+    "/ingest/file",
+    response_model=schemas.IngestResponse,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(ingestion_limit)],
 )
 async def ingest_file(
     category: str = Form(...),

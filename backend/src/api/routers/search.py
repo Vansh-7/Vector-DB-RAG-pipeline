@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from api import schemas
 from api.errors import to_http_error
+from api.limits import search_limit
 from auth.dependencies import get_current_user
 from core.types import SearchResult
 from db.models import User
@@ -26,7 +27,9 @@ def _to_search_result_item(result: SearchResult) -> schemas.SearchResultItem:
     )
 
 
-@router.post("/search", response_model=list[schemas.SearchResultItem])
+@router.post(
+    "/search", response_model=list[schemas.SearchResultItem], dependencies=[Depends(search_limit)]
+)
 async def search_vectors(
     request: schemas.SearchRequest,
     current_user: User = Depends(get_current_user),
@@ -41,7 +44,9 @@ async def search_vectors(
     return [_to_search_result_item(result) for result in results]
 
 
-@router.post("/search/text", response_model=schemas.TextSearchResponse)
+@router.post(
+    "/search/text", response_model=schemas.TextSearchResponse, dependencies=[Depends(search_limit)]
+)
 async def search_vectors_by_text(
     request: schemas.TextSearchRequest,
     current_user: User = Depends(get_current_user),

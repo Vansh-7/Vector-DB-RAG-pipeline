@@ -1,4 +1,4 @@
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import (
     HTTPAuthorizationCredentials,
     HTTPBearer,
@@ -52,6 +52,17 @@ async def get_current_user(
 
 def is_operator(user: User) -> bool:
     return user.id in settings.operator_user_ids
+
+
+async def get_optional_user(
+    request: Request, session: AsyncSession = Depends(get_db)
+) -> User | None:
+    if "authorization" not in request.headers:
+        return None
+    # Keep public liveness public in OpenAPI; validate any supplied credentials
+    # through the same JWT -> database user path as protected operations.
+    credentials = await bearer_scheme(request)
+    return await get_current_user(credentials, session)
 
 
 async def get_operator_user(

@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from api import schemas
 from api.errors import to_http_error
+from api.limits import visualization_limit
 from auth.dependencies import get_current_user
 from db.models import User
 from db.session import get_db
@@ -15,7 +16,11 @@ from services.errors import DomainError
 router = APIRouter()
 
 
-@router.get("/vectors/sample", response_model=schemas.VectorSampleResponse)
+@router.get(
+    "/vectors/sample",
+    response_model=schemas.VectorSampleResponse,
+    dependencies=[Depends(visualization_limit)],
+)
 async def get_vectors_sample(
     n: int = 2000,
     current_user: User = Depends(get_current_user),

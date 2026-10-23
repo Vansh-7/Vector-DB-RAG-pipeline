@@ -61,8 +61,7 @@ def test_status_endpoint() -> None:
     response = client.get("/api/v1/status")
     assert response.status_code == 200
     data = response.json()
-    assert "engine" in data
-    assert "total_docs" in data
+    assert data == {"status": "ok"}
 
 def test_insert_and_search_endpoints(authenticated_client) -> None:
     """Tests the full lifecycle of inserting a vector via HTTP and searching for it."""

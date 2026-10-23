@@ -3,6 +3,7 @@ from typing import Any
 import api.state as state
 from core.logger import logger
 from services.errors import DomainError
+from services.retrieval import get_all_user_items
 
 
 async def save_database(user_id: int) -> dict[str, str]:
@@ -23,17 +24,19 @@ async def save_database(user_id: int) -> dict[str, str]:
     return {"message": "Database saved to disk successfully."}
 
 
-async def get_db_status() -> dict[str, Any]:
+async def get_db_status(user_id: int | None = None) -> dict[str, Any]:
     """
     Kept public because the Docker HEALTHCHECK calls this endpoint.
 
-    total_docs currently means total active vector chunks across the shared
-    index, preserving the existing frontend/API contract.
+    Authenticated summaries count only the caller's active vector records.
     """
+    if user_id is None:
+        return {"status": "ok"}
+    items = await get_all_user_items(user_id)
     return {
         "engine": state.ACTIVE_ALGORITHM,
         "metric": state.ACTIVE_METRIC,
-        "total_docs": state.vector_db.size(),
+        "total_docs": len(items),
     }
 
 

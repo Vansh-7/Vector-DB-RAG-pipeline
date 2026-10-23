@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from api import schemas
 from api.errors import to_http_error
+from api.limits import rag_limit
 from auth.dependencies import get_current_user
 from db.models import User
 from db.session import get_db
@@ -16,7 +17,7 @@ from services.errors import DomainError
 router = APIRouter()
 
 
-@router.post("/ask")
+@router.post("/ask", dependencies=[Depends(rag_limit)])
 async def ask_question(
     request: schemas.AskRequest,
     current_user: User = Depends(get_current_user),

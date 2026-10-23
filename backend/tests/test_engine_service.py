@@ -62,12 +62,13 @@ def engine_service(monkeypatch):
     return service, engine, events
 
 
-def test_status_remains_public_shared_index_summary(engine_service):
+def test_status_is_public_liveness_with_owned_authenticated_summary(engine_service):
     service, _, _ = engine_service
-    assert asyncio.run(service.get_db_status()) == {
+    assert asyncio.run(service.get_db_status()) == {"status": "ok"}
+    assert asyncio.run(service.get_db_status(1)) == {
         "engine": "hnsw",
         "metric": "cosine",
-        "total_docs": 2,
+        "total_docs": 1,
     }
 
 

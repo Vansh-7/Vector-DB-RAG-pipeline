@@ -480,7 +480,7 @@ This captures the real workspace with authored fixtures, then invokes the encodi
 | In-memory Python indexes | Memory grows with vectors/graph/tombstones; numerical work/rebuilds can block requests. No million-vector scale claim is made. |
 | Two durable stores | Failures between PostgreSQL/vector writes require compensation/reconciliation, not atomic cross-store commit. |
 | Local ML stack | Downloads/model load, CPU/GPU memory and inference affect resource usage and startup time. |
-| Explicit/shutdown snapshots | Save time grows with corpus size; no periodic checkpoint, atomic snapshot protocol or automatic backup system. |
+| Explicit/shutdown snapshots | Atomic replacement and WAL replay protect recovery; save time grows with corpus size. No periodic checkpoint or automatic backup system. |
 | Context-only prompt | Traceability is not a RAG evaluation framework or an answer-accuracy guarantee. |
 
 Ingestion is synchronous, history is not prompt memory, and status checks only API/index health.
@@ -496,3 +496,55 @@ Ingestion is synchronous, history is not prompt memory, and status checks only A
 **Why one worker and persistent disk?** The engine is an in-memory object with process-local locking/file recovery. Index state and file mutations are not coordinated across multiple workers.
 
 **What consistency boundary matters most?** PostgreSQL and the index cannot commit atomically together. Ready filtering, ownership checks and compensating vector deletes are the current protections against partial ingestion.
+
+## V1 security and recovery controls
+
+Vector IDs are globally unique, including retired IDs. Collisions return a generic
+409 before WAL mutation. Versioned snapshots store engine, metric and dimensions
+together. Legacy snapshots need the original `LEGACY_VECTOR_ALGORITHM` and
+`LEGACY_VECTOR_METRIC` settings; back up both snapshot and WAL before migration.
+Invalid snapshots/WAL abort startup. A switch becomes durable at the next saved
+snapshot. WAL writes are flushed/fsynced before mutation; snapshots use a synced
+temporary file and atomic replacement. Directory sync is used where supported
+(Python has no portable Windows directory fsync). Keep one Uvicorn worker.
+
+Uploads retain the 10 MiB limit. Extracted/pasted text is capped at 2,000,000
+characters, PDFs at 200 pages and 8 MiB decoded non-image content/resources,
+and documents at 2,048 chunks. Embeddings run in batches of 16. PDF traversal
+is bounded to 10,000 objects/depth 32, interpretation to 100,000 operators and
+8,000,000 text-callback characters. These controls do not sandbox parser CPU or
+memory. Raw payloads allow 8,000 characters; text search allows 10,000. Vectors
+must have the configured dimensions and finite values. Oversize work returns
+413 without silent truncation; failed/cancelled ingestion compensates its own
+attempted vectors and remains ineligible for retrieval.
+
+The public `/api/v1/status` returns only `{"status":"ok"}`. With a valid JWT it
+returns engine/metric and the caller's own active vector count in `total_docs`.
+RAG tokens are generated text; a terminal NDJSON `error` now reports unconfirmed
+assistant persistence. Reload history before retrying an uncertain commit.
+
+Admission limits below are per rolling minute in this single process. Limits
+reset on restart; bounded counters may evict idle entries under pressure. Active
+slots are retained. Authentication-IP counters cannot evict user counters.
+Requests exceeding a quota/concurrency limit return 429 with `Retry-After`.
+
+| Operation | Requests/minute | Concurrent requests |
+| --- | ---: | ---: |
+| Registration, per connection IP | 5 | 1 |
+| Login, per connection IP | 10 | 4 |
+| Ingestion, per user | 10 | 1 |
+| RAG, per user | 30 | 2 |
+| Search, per user | 120 | 4 |
+| Benchmark, per user | 6 | 1 |
+| Raw insert / visualization, per user (separate quotas) | 60 | 2 |
+| Snapshot / engine configuration, per operator (shared quota) | 6 | 1 |
+
+RAG slots include the streamed body. Cancellation releases request slots but
+does not forcibly stop work already running in a thread or at an inference
+provider. The request-rate budget still bounds repeated attempts.
+In production, complement these in-process controls with equivalent edge login/
+registration limits, upload/body limits and timeouts at the existing reverse
+proxy. For direct exposure disable proxy-header processing; behind a proxy set
+an explicit trusted proxy allowlist and replace client-supplied forwarding
+headers at the edge. Never trust arbitrary `X-Forwarded-For` values. The API
+limiter uses ASGI's connection address and never parses that header itself.
