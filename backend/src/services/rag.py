@@ -8,7 +8,6 @@ import numpy as np
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-import api.state as state
 from ai.embedder import embedder
 from ai.generator import llm_generator
 from ai.reranker import cross_encoder
@@ -17,6 +16,7 @@ from db.models import Conversation, Message
 from db.session import AsyncSessionLocal
 from services.errors import DomainError
 from services.retrieval import get_ready_document_ids, search_user_vectors
+from services.validation import _validate_embedding
 from services.visualization import project_query_for_user
 
 
@@ -77,8 +77,12 @@ async def ask_question(
     except Exception as exc:
         logger.exception(f"Question embedding failed user_id={user_id}: {exc}")
         raise DomainError(kind="unavailable", message="Embedding service is unavailable.") from exc
-    if len(question_vector) != state.DEFAULT_DIMS:
-        raise DomainError(kind="internal", message="Embedding model returned an invalid vector.")
+    try:
+        _validate_embedding(question_vector)
+    except DomainError as exc:
+        raise DomainError(
+            kind="internal", message="Embedding model returned an invalid vector."
+        ) from exc
     question_arr = np.asarray(question_vector, dtype=float)
     ready_document_ids = await get_ready_document_ids(session, user_id)
     try:

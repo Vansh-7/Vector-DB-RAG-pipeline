@@ -1,3 +1,4 @@
+import math
 import uuid
 
 import api.state as state
@@ -16,6 +17,15 @@ def _validate_embedding(embedding: list[float]) -> None:
         raise DomainError(
             kind="invalid",
             message=f"Embedding must contain exactly {state.DEFAULT_DIMS} dimensions.",
+        )
+    if not all(math.isfinite(value) for value in embedding):
+        raise DomainError(kind="invalid", message="Embedding values must be finite numbers.")
+
+
+def _validate_text_length(text: str, maximum: int, label: str) -> None:
+    if len(text) > maximum:
+        raise DomainError(
+            kind="too_large", message=f"{label} must not exceed {maximum} characters."
         )
 
 

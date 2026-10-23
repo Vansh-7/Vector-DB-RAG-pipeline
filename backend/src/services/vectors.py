@@ -10,7 +10,12 @@ from core.types import VectorItem
 from db.models import Document
 from services.errors import DomainError
 from services.retrieval import get_all_user_items
-from services.validation import _normalize_category, _unique_vector_id, _validate_embedding
+from services.validation import (
+    _normalize_category,
+    _unique_vector_id,
+    _validate_embedding,
+    _validate_text_length,
+)
 
 
 async def insert_vector(
@@ -22,6 +27,7 @@ async def insert_vector(
     This endpoint remains useful for demonstrating the custom Vector DB API,
     although normal RAG documents should use /ingest or /ingest/file.
     """
+    _validate_text_length(payload, 8_000, "Raw vector payload")
     try:
         vector_id = int(item_id) if item_id is not None else None
     except ValueError as exc:
