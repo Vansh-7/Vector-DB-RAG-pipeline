@@ -13,7 +13,6 @@ from fastapi import (
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
-import api.state as state
 from api import schemas
 from api.errors import to_http_error
 from auth.dependencies import get_current_user, get_operator_user
@@ -23,6 +22,7 @@ from db.models import Document, User
 from db.session import get_db
 from services import benchmarks as benchmarks_service
 from services import documents as documents_service
+from services import engine as engine_service
 from services import rag as rag_service
 from services import search as search_service
 from services import vectors as vectors_service
@@ -210,32 +210,10 @@ async def save_database(
     Only configured operators may snapshot the shared index.
     """
     try:
-        async with state.db_lock:
-            state.vector_db.save(
-                state.DB_FILE
-            )
-
-            # Safe only after successful snapshot.
-            state.wal.clear()
-
-    except Exception as exc:
-        logger.exception(
-            f"Manual vector snapshot failed: {exc}"
-        )
-
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Database snapshot failed.",
-        ) from exc
-
-    logger.info(
-        f"Manual vector snapshot requested "
-        f"by user_id={current_user.id}"
-    )
-
-    return {
-        "message": "Database saved to disk successfully."
-    }
+        result = await engine_service.save_database(current_user.id)
+    except DomainError as exc:
+        raise to_http_error(exc) from exc
+    return result
 
 
 # ---------------------------------------------------------------------------
@@ -342,11 +320,7 @@ async def get_db_status() -> dict[str, Any]:
     total_docs currently means total active vector chunks across the shared
     index, preserving the existing frontend/API contract.
     """
-    return {
-        "engine": state.ACTIVE_ALGORITHM,
-        "metric": state.ACTIVE_METRIC,
-        "total_docs": state.vector_db.size(),
-    }
+    return await engine_service.get_db_status()
 
 
 # ---------------------------------------------------------------------------
@@ -365,50 +339,11 @@ async def configure_engine(
 
     Only configured operators may rebuild the shared index.
     """
-    if algorithm not in (
-        "hnsw",
-        "kdtree",
-        "exact",
-    ):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Unknown algorithm: {algorithm}",
-        )
-
-    if metric not in state.METRICS:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Unknown metric: {metric}",
-        )
-
-    async with state.db_lock:
-        old_items = (
-            state.vector_db.get_all_items()
-        )
-
-        new_engine = state.build_engine(
-            algorithm,
-            metric,
-        )
-
-        for item in old_items:
-            new_engine.insert(item)
-
-        state.vector_db = new_engine
-        state.ACTIVE_ALGORITHM = algorithm
-        state.ACTIVE_METRIC = metric
-
-    logger.info(
-        f"Engine reconfigured to "
-        f"{algorithm}/{metric} "
-        f"by user_id={current_user.id}"
-    )
-
-    return {
-        "algorithm": algorithm,
-        "metric": metric,
-        "total_docs": state.vector_db.size(),
-    }
+    try:
+        result = await engine_service.configure_engine(algorithm, metric, current_user.id)
+    except DomainError as exc:
+        raise to_http_error(exc) from exc
+    return result
 
 
 # ---------------------------------------------------------------------------

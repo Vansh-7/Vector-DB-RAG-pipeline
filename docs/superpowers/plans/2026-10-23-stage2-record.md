@@ -51,3 +51,12 @@ Phase evidence will be appended as each extraction passes its gates.
 - User-owned ready/raw items alone reach the benchmark engines. Three algorithms, 5,000-item cap, five sequential queries, inverse-latency estimate, rounding, topology and off-thread execution are unchanged. Tests explicitly characterize the expected PCA diagnostic warning for identical vectors.
 - Changed-file Ruff, visualization/benchmark AST parity and service syntax checks pass. Request/response formatting remains in the API; services have no FastAPI/schema imports.
 - Independent read-only review: no actionable findings; all five extracted workflows match after boundary adaptations.
+- Commit: `fa8ce1692f96cd12aed58758700d44b626e3a2f2`.
+
+### Phase 5 — engine management
+
+- RED: 11 new cases failed before `services.engine` existed.
+- Focused engine/operator/API/contracts: **44 passed, 1 warning in 19.05s**. Full Python 3.12 suite: **259 passed, 2 warnings in 21.59s**.
+- Real snapshot/WAL replay uses pytest temporary paths exclusively. Snapshot failure never clears WAL. Failed engine construction/insertion keeps the original singleton and configuration; successful switches preserve every tenant's items.
+- All three workflow ASTs match after domain-boundary adaptation. Changed-file Ruff and syntax checks pass.
+- Independent read-only review: no actionable findings; guards, errors, cache behavior, lock scope and replacement timing preserved.
