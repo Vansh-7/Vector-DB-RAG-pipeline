@@ -27,7 +27,10 @@ benchmarks
 benchmark_results
 
 # Virtual environments
-.venv
+.venv*/
+
+# Local engineering reports and plans (kept off GitHub by request)
+/docs/
 
 # Environment variables
 .env
