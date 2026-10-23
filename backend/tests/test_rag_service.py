@@ -45,7 +45,10 @@ class ChatSession:
         assert not self.closed
         params = statement.compile().params
         self.events.append((self.name, "lookup", params))
-        if self.conversation and params == {"id_1": 42, "user_id_1": 1}:
+        if self.conversation and params == {
+            "id_1": self.conversation.id,
+            "user_id_1": self.conversation.user_id,
+        }:
             return self.conversation
         return None
 
@@ -271,16 +274,58 @@ def test_incomplete_or_failed_streams_never_persist_assistant(rag, monkeypatch, 
     assert stream.messages == []
 
 
-def test_assistant_database_failure_does_not_change_delivered_answer(rag):
-    _, _, stream, _ = rag
-    stream.fail_commit = True
+@pytest.mark.parametrize("failure", ["commit", "connection", "deleted", "foreign", "session"])
+def test_assistant_persistence_failure_has_safe_terminal_error(rag, monkeypatch, failure):
+    service, _, stream, _ = rag
+    if failure == "commit":
+        stream.fail_commit = True
+    elif failure == "connection":
+        monkeypatch.setattr(stream, "scalar", AsyncMock(side_effect=ConnectionError("secret DSN")))
+    elif failure == "deleted":
+        stream.conversation = None
+    elif failure == "foreign":
+        stream.conversation = Conversation(id=42, user_id=2, title="Bob private")
+    else:
+        monkeypatch.setattr(
+            service,
+            "AsyncSessionLocal",
+            lambda: (_ for _ in ()).throw(ConnectionError("secret DSN")),
+        )
 
     async def run():
         return [json.loads(chunk) async for chunk in await prepare(rag)]
 
     events = asyncio.run(run())
-    assert [event["type"] for event in events] == ["conversation", "sources", "token", "token"]
+    assert [event["type"] for event in events] == [
+        "conversation",
+        "sources",
+        "token",
+        "token",
+        "error",
+    ]
+    assert events[-1] == {
+        "type": "error",
+        "data": "Answer generated, but saving could not be confirmed. "
+        "Reload the conversation before retrying.",
+    }
+    assert "secret DSN" not in json.dumps(events)
+    assert "Bob private" not in json.dumps(events)
     assert stream.messages == []
+
+
+def test_cancellation_during_assistant_commit_propagates_without_completed_message(
+    rag, monkeypatch
+):
+    _, _, stream, _ = rag
+    monkeypatch.setattr(stream, "commit", AsyncMock(side_effect=asyncio.CancelledError()))
+
+    async def run():
+        return [json.loads(chunk) async for chunk in await prepare(rag)]
+
+    with pytest.raises(asyncio.CancelledError):
+        asyncio.run(run())
+    assert stream.messages == []
+    assert stream.pending == []
 
 
 def test_groq_fallback_uses_only_filtered_context_and_persists_completed_answer(rag, monkeypatch):
@@ -405,5 +450,28 @@ def test_conversation_deleted_during_stream_is_not_recreated(rag):
         return [json.loads(chunk) async for chunk in await prepare(rag)]
 
     result = asyncio.run(run())
-    assert result[-1]["type"] == "token"
+    assert result[-1]["type"] == "error"
     assert session.messages == []
+
+
+def test_persistence_failure_wire_contract_remains_ndjson_with_terminal_error(rag):
+    from main import app
+
+    _, request, stream, _ = rag
+    stream.fail_commit = True
+    app.dependency_overrides[get_current_user] = lambda: SimpleNamespace(id=1)
+    app.dependency_overrides[get_db] = lambda: request
+    try:
+        response = TestClient(app).post(
+            "/api/v1/ask", json={"question": "Question?", "k": 2, "conversation_id": 42}
+        )
+    finally:
+        app.dependency_overrides.clear()
+    assert response.status_code == 200  # Stream headers precede assistant persistence.
+    assert response.headers["content-type"] == "application/x-ndjson"
+    assert response.text.endswith("\n")
+    events = [json.loads(line) for line in response.text.splitlines()]
+    assert [event["type"] for event in events] == [
+        "conversation", "sources", "token", "token", "error"
+    ]
+    assert stream.messages == []

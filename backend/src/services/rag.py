@@ -1,6 +1,7 @@
 import asyncio
 import json
 from collections.abc import AsyncIterator
+from contextlib import suppress
 from datetime import datetime, timezone
 
 import numpy as np
@@ -148,12 +149,17 @@ async def ask_question(
                 try:
                     # Streaming outlives request preparation: use a fresh DB session.
                     async with AsyncSessionLocal() as stream_session:
-                        owned_conversation = await stream_session.scalar(
-                            select(Conversation).where(
-                                Conversation.id == conversation.id, Conversation.user_id == user_id
+                        try:
+                            owned_conversation = await stream_session.scalar(
+                                select(Conversation).where(
+                                    Conversation.id == conversation.id,
+                                    Conversation.user_id == user_id,
+                                )
                             )
-                        )
-                        if owned_conversation is not None:
+                            if owned_conversation is None:
+                                raise ValueError(
+                                    "Conversation is no longer available for this user."
+                                )
                             stream_session.add(
                                 Message(
                                     conversation_id=conversation.id,
@@ -164,11 +170,24 @@ async def ask_question(
                             )
                             owned_conversation.updated_at = datetime.now(timezone.utc)
                             await stream_session.commit()
+                        except (Exception, asyncio.CancelledError):
+                            with suppress(Exception):
+                                await stream_session.rollback()
+                            raise
                 except Exception as exc:
-                    # The answer already reached the client; retain successful delivery.
                     logger.exception(
                         f"Failed persisting assistant message "
                         f"conversation_id={conversation.id}: {exc}"
+                    )
+                    yield (
+                        json.dumps(
+                            {
+                                "type": "error",
+                                "data": "Answer generated, but saving could not be confirmed. "
+                                "Reload the conversation before retrying.",
+                            }
+                        )
+                        + "\n"
                     )
 
     logger.info(
