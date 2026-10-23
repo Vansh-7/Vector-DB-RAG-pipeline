@@ -1,8 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import select
-from sqlalchemy.exc import IntegrityError
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from api.errors import to_http_error
 from auth.dependencies import get_current_user, is_operator
 from auth.schemas import (
     CurrentUserResponse,
@@ -11,13 +10,10 @@ from auth.schemas import (
     TokenResponse,
     UserResponse,
 )
-from auth.security import (
-    create_access_token,
-    hash_password,
-    verify_password,
-)
 from db.models import User
 from db.session import get_db
+from services import auth as auth_service
+from services.errors import DomainError
 
 router = APIRouter(
     prefix="/auth",
@@ -34,38 +30,11 @@ async def register(
     request: RegisterRequest,
     session: AsyncSession = Depends(get_db),
 ) -> User:
-    email = request.email.lower().strip()
-
-    existing_user = await session.scalar(
-        select(User).where(User.email == email)
-    )
-
-    if existing_user is not None:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Email is already registered.",
-        )
-
-    user = User(
-        email=email,
-        password_hash=hash_password(request.password),
-    )
-
-    session.add(user)
-
     try:
-        await session.commit()
-        await session.refresh(user)
-
-    except IntegrityError:
-        await session.rollback()
-
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Email is already registered.",
-        )
-
-    return user
+        result = await auth_service.register(request.email, request.password, session)
+    except DomainError as exc:
+        raise to_http_error(exc) from exc
+    return result
 
 
 @router.post(
@@ -76,33 +45,11 @@ async def login(
     request: LoginRequest,
     session: AsyncSession = Depends(get_db),
 ) -> TokenResponse:
-    email = request.email.lower().strip()
-
-    user = await session.scalar(
-        select(User).where(User.email == email)
-    )
-
-    if (
-        user is None
-        or not verify_password(
-            request.password,
-            user.password_hash,
-        )
-    ):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid email or password.",
-        )
-
-    if not user.is_active:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="User account is disabled.",
-        )
-
-    return TokenResponse(
-        access_token=create_access_token(user.id)
-    )
+    try:
+        token = await auth_service.login(request.email, request.password, session)
+    except DomainError as exc:
+        raise to_http_error(exc) from exc
+    return TokenResponse(access_token=token)
 
 
 @router.get(

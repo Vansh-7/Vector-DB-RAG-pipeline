@@ -48,7 +48,7 @@ def auth_client(monkeypatch):
 
     session.add = add
     monkeypatch.setattr(
-        "api.routers.auth.create_access_token", lambda user_id: "test-session-token"
+        "services.auth.create_access_token", lambda user_id: "test-session-token"
     )
     app = FastAPI()
     app.include_router(router, prefix="/api/v1")

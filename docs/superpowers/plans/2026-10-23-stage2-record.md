@@ -60,3 +60,13 @@ Phase evidence will be appended as each extraction passes its gates.
 - Real snapshot/WAL replay uses pytest temporary paths exclusively. Snapshot failure never clears WAL. Failed engine construction/insertion keeps the original singleton and configuration; successful switches preserve every tenant's items.
 - All three workflow ASTs match after domain-boundary adaptation. Changed-file Ruff and syntax checks pass.
 - Independent read-only review: no actionable findings; guards, errors, cache behavior, lock scope and replacement timing preserved.
+- Commit: `cd68daa60381e4a2335b7dbce0ae61338f4137f0`.
+
+### Phase 6 — auth and conversations
+
+- RED: 21 new cases failed before the auth/conversation services existed.
+- Focused auth/policy/conversations/operator/contracts: **74 passed, 1 warning in 19.73s**. Full Python 3.12 suite: **280 passed, 2 warnings in 21.59s**.
+- Existing HTTP password validation and security primitives unchanged. Tests verify normalized email, registration race rollback, legacy password login and an actual signed JWT resolving to user ID 7.
+- Conversation owner filters, stable ordering, default/normalized titles, 404 responses, write results and rollback behavior preserved.
+- Workflow AST and syntax checks pass. New services, routers and service tests pass Ruff. Four pre-existing E501 findings in `test_auth_policy.py` remain unchanged; that test only changes its token patch target.
+- Independent read-only review: no actionable findings; all extracted functions match after boundary adaptations.
