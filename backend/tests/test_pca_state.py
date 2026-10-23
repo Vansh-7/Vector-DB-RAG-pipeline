@@ -14,6 +14,7 @@ from api import schemas
 from core.types import VectorItem
 from db.models import Document
 from services import documents
+from services.visualization import project_query_for_user
 
 
 class FakeIndex:
@@ -113,7 +114,7 @@ def test_visualization_fits_shared_pca_using_only_eligible_vectors(pca_environme
 def test_query_projection_uses_model_and_normalization_from_shared_state(pca_environment):
     model = PCA(n_components=2).fit([[10, 10], [12, 10], [10, 12]])
     state.pca_models[1] = (model, float(np.sqrt(2)))
-    projected = routes._project_query_for_user(1, np.array([12.0, 10.0]))
+    projected = project_query_for_user(1, np.array([12.0, 10.0]))
     assert np.abs(projected) == pytest.approx([1, 1 / 3])
 
 
@@ -124,10 +125,10 @@ def test_users_keep_separate_fits_and_query_projections(pca_environment):
     assert set(state.pca_models) == {1, 2}
     assert state.pca_models[1][0].mean_ == pytest.approx([2 / 3, 2 / 3])
     assert state.pca_models[2][0].mean_ == pytest.approx([34 / 3, 34 / 3])
-    assert routes._project_query_for_user(1, np.array([2.0, 0.0])) == pytest.approx(
+    assert project_query_for_user(1, np.array([2.0, 0.0])) == pytest.approx(
         [alice.vectors[1].x, alice.vectors[1].y]
     )
-    assert routes._project_query_for_user(2, np.array([14.0, 10.0])) == pytest.approx(
+    assert project_query_for_user(2, np.array([14.0, 10.0])) == pytest.approx(
         [bob.vectors[1].x, bob.vectors[1].y]
     )
 
@@ -160,8 +161,8 @@ def test_sampling_one_vector_does_not_keep_a_stale_fit(pca_environment):
 def test_failed_and_missing_query_projections_return_none(pca_environment):
     model = PCA(n_components=2).fit([[0, 0], [2, 0], [0, 2]])
     state.pca_models[1] = (model, 1.0)
-    assert routes._project_query_for_user(1, np.ones(3)) is None
-    assert routes._project_query_for_user(999, np.ones(2)) is None
+    assert project_query_for_user(1, np.ones(3)) is None
+    assert project_query_for_user(999, np.ones(2)) is None
 
 
 @pytest.mark.parametrize(

@@ -1,11 +1,6 @@
-import asyncio
-import random
-import time
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-import numpy as np
 from fastapi import (
     APIRouter,
     Depends,
@@ -16,30 +11,24 @@ from fastapi import (
     status,
 )
 from fastapi.responses import StreamingResponse
-from sklearn.decomposition import PCA
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import api.state as state
-from ai.embedder import embedder
 from api import schemas
 from api.errors import to_http_error
 from auth.dependencies import get_current_user, get_operator_user
-from core.indexes.hnsw import HNSWIndex
 from core.logger import logger
-from core.types import SearchResult, VectorItem
+from core.types import SearchResult
 from db.models import Document, User
 from db.session import get_db
+from services import benchmarks as benchmarks_service
 from services import documents as documents_service
 from services import rag as rag_service
+from services import search as search_service
 from services import vectors as vectors_service
+from services import visualization as visualization_service
 from services.errors import DomainError
-from services.retrieval import (
-    get_ready_document_ids,
-    get_searchable_user_items,
-    search_user_vectors,
-)
 from services.validation import _normalize_category
-from services.visualization import project_query_for_user as _project_query_for_user
 
 router = APIRouter()
 
@@ -61,15 +50,6 @@ ALLOWED_FILE_EXTENSIONS = {
 
 
 
-def _validate_embedding(embedding: list[float]) -> None:
-    if len(embedding) != state.DEFAULT_DIMS:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=(
-                f"Embedding must contain exactly "
-                f"{state.DEFAULT_DIMS} dimensions."
-            ),
-        )
 
 
 
@@ -272,45 +252,13 @@ async def search_vectors(
     current_user: User = Depends(get_current_user),
     session: AsyncSession = Depends(get_db),
 ) -> list[schemas.SearchResultItem]:
-    _validate_embedding(
-        request.embedding
-    )
-
-    query_arr = np.asarray(
-        request.embedding,
-        dtype=float,
-    )
-
-    ready_document_ids = (
-        await get_ready_document_ids(
-            session,
-            current_user.id,
-        )
-    )
-
     try:
-        results = search_user_vectors(
-            query=query_arr,
-            user_id=current_user.id,
-            ready_document_ids=ready_document_ids,
-            k=request.k,
+        results = await search_service.search_vectors(
+            request.embedding, request.k, current_user.id, session
         )
-
-    except Exception as exc:
-        logger.exception(
-            f"Vector search failed "
-            f"user_id={current_user.id}: {exc}"
-        )
-
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Vector search failed.",
-        ) from exc
-
-    return [
-        _to_search_result_item(result)
-        for result in results
-    ]
+    except DomainError as exc:
+        raise to_http_error(exc) from exc
+    return [_to_search_result_item(result) for result in results]
 
 
 @router.post(
@@ -323,72 +271,15 @@ async def search_vectors_by_text(
     session: AsyncSession = Depends(get_db),
 ) -> schemas.TextSearchResponse:
     try:
-        query_vector = await embedder.embed_text(
-            request.text
+        result = await search_service.search_vectors_by_text(
+            request.text, request.k, current_user.id, session
         )
-
-    except Exception as exc:
-        logger.exception(
-            f"Query embedding failed "
-            f"user_id={current_user.id}: {exc}"
-        )
-
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Embedding service is unavailable.",
-        ) from exc
-
-    if len(query_vector) != state.DEFAULT_DIMS:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Embedding model returned an invalid vector.",
-        )
-
-    query_arr = np.asarray(
-        query_vector,
-        dtype=float,
-    )
-
-    ready_document_ids = (
-        await get_ready_document_ids(
-            session,
-            current_user.id,
-        )
-    )
-
-    try:
-        results = search_user_vectors(
-            query=query_arr,
-            user_id=current_user.id,
-            ready_document_ids=ready_document_ids,
-            k=request.k,
-        )
-
-    except Exception as exc:
-        logger.exception(
-            f"Text vector search failed "
-            f"user_id={current_user.id}: {exc}"
-        )
-
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Vector search failed.",
-        ) from exc
-
-    response_items = [
-        _to_search_result_item(result)
-        for result in results
-    ]
-
-    query_2d = _project_query_for_user(
-        current_user.id,
-        query_arr,
-    )
-
+    except DomainError as exc:
+        raise to_http_error(exc) from exc
     return schemas.TextSearchResponse(
-        results=response_items,
-        query_vector=query_vector,
-        query_2d=query_2d,
+        results=[_to_search_result_item(row) for row in result["results"]],
+        query_vector=result["query_vector"],
+        query_2d=result["query_2d"],
     )
 
 
@@ -406,107 +297,13 @@ async def get_vectors_sample(
     current_user: User = Depends(get_current_user),
     session: AsyncSession = Depends(get_db),
 ) -> schemas.VectorSampleResponse:
-    n = max(
-        1,
-        min(n, 5000),
-    )
-
-    ready_document_ids = (
-        await get_ready_document_ids(
-            session,
-            current_user.id,
+    try:
+        result = await visualization_service.get_vectors_sample(
+            n, current_user.id, session
         )
-    )
-
-    items = await get_searchable_user_items(
-        current_user.id,
-        ready_document_ids,
-    )
-
-    total_count = len(items)
-
-    if total_count > n:
-        items = random.sample(
-            items,
-            n,
-        )
-
-    if not items:
-        state.pca_models.pop(
-            current_user.id,
-            None,
-        )
-
-        return schemas.VectorSampleResponse(
-            vectors=[],
-            count=0,
-        )
-
-    embeddings = np.asarray(
-        [
-            item.embedding
-            for item in items
-        ],
-        dtype=float,
-    )
-
-    if len(items) < 2:
-        coords = np.zeros(
-            (len(items), 2),
-            dtype=float,
-        )
-
-        state.pca_models.pop(
-            current_user.id,
-            None,
-        )
-
-    else:
-        pca = PCA(
-            n_components=2
-        )
-
-        coords = pca.fit_transform(
-            embeddings
-        )
-
-        max_val = float(
-            np.max(
-                np.abs(coords)
-            )
-        )
-
-        if max_val <= 0:
-            max_val = 1.0
-
-        coords = coords / max_val
-
-        state.pca_models[
-            current_user.id
-        ] = (
-            pca,
-            max_val,
-        )
-
-    vectors_2d = [
-        schemas.VectorPoint2D(
-            id=str(item.id),
-            x=float(coords[index, 0]),
-            y=float(coords[index, 1]),
-            category=item.category,
-            payload=(
-                item.metadata[:100] + "..."
-                if len(item.metadata) > 100
-                else item.metadata
-            ),
-        )
-        for index, item in enumerate(items)
-    ]
-
-    return schemas.VectorSampleResponse(
-        vectors=vectors_2d,
-        count=total_count,
-    )
+    except DomainError as exc:
+        raise to_http_error(exc) from exc
+    return schemas.VectorSampleResponse(**result)
 
 
 # ---------------------------------------------------------------------------
@@ -514,161 +311,6 @@ async def get_vectors_sample(
 # ---------------------------------------------------------------------------
 
 
-def _run_benchmark_suite(
-    items: list[VectorItem],
-    test_vec: np.ndarray,
-    active_algorithm: str,
-    active_metric: str,
-) -> tuple[
-    list[schemas.AlgorithmBenchmark],
-    list[schemas.HnswLayerStats] | None,
-]:
-    subset = items[
-        : min(
-            5000,
-            len(items),
-        )
-    ]
-
-    configurations = [
-        (
-            "hnsw",
-            "HNSW Graph",
-        ),
-        (
-            "kdtree",
-            "KD-Tree",
-        ),
-        (
-            "exact",
-            "Brute Force (Exact Match)",
-        ),
-    ]
-
-    benchmarks: list[
-        schemas.AlgorithmBenchmark
-    ] = []
-
-    hnsw_engine: HNSWIndex | None = None
-
-    for algorithm, display_name in configurations:
-        engine = state.build_engine(
-            algorithm,
-            active_metric,
-        )
-
-        for item in subset:
-            engine.insert(item)
-
-        search_k = min(
-            5,
-            len(subset),
-        )
-
-        start = time.perf_counter()
-
-        for _ in range(5):
-            engine.search(
-                test_vec,
-                k=search_k,
-            )
-
-        elapsed = (
-            time.perf_counter()
-            - start
-        ) / 5
-
-        latency_ms = elapsed * 1000
-
-        throughput_qps = (
-            1 / elapsed
-            if elapsed > 0
-            else 0
-        )
-
-        benchmarks.append(
-            schemas.AlgorithmBenchmark(
-                name=algorithm,
-                displayName=display_name,
-                latencyMs=round(
-                    latency_ms,
-                    2,
-                ),
-                throughputQps=round(
-                    throughput_qps,
-                    0,
-                ),
-                isActive=(
-                    active_algorithm
-                    == algorithm
-                ),
-            )
-        )
-
-        if (
-            algorithm == "hnsw"
-            and isinstance(
-                engine,
-                HNSWIndex,
-            )
-        ):
-            hnsw_engine = engine
-
-    topology: list[
-        schemas.HnswLayerStats
-    ] | None = None
-
-    if (
-        active_algorithm == "hnsw"
-        and hnsw_engine is not None
-    ):
-        layer_stats: dict[
-            int,
-            dict[str, int],
-        ] = {}
-
-        for node_id, node in hnsw_engine.nodes.items():
-            if (
-                node_id
-                in hnsw_engine.tombstones
-            ):
-                continue
-
-            for level, edges in enumerate(
-                node.neighbors
-            ):
-                stats = layer_stats.setdefault(
-                    level,
-                    {
-                        "nodes": 0,
-                        "edges": 0,
-                    },
-                )
-
-                stats["nodes"] += 1
-                stats["edges"] += len(
-                    edges
-                )
-
-        topology = [
-            schemas.HnswLayerStats(
-                level=level,
-                nodes=layer_stats[level][
-                    "nodes"
-                ],
-                edges=layer_stats[level][
-                    "edges"
-                ],
-            )
-            for level in sorted(
-                layer_stats
-            )
-        ]
-
-    return (
-        benchmarks,
-        topology,
-    )
 
 
 @router.get(
@@ -680,103 +322,11 @@ async def get_benchmarks(
     current_user: User = Depends(get_current_user),
     session: AsyncSession = Depends(get_db),
 ) -> schemas.BenchmarkResponse:
-    ready_document_ids = (
-        await get_ready_document_ids(
-            session,
-            current_user.id,
-        )
-    )
-
-    items = await get_searchable_user_items(
-        current_user.id,
-        ready_document_ids,
-    )
-
-    if not items:
-        return schemas.BenchmarkResponse(
-            algorithms=[
-                schemas.AlgorithmBenchmark(
-                    name="hnsw",
-                    displayName="HNSW Graph",
-                    latencyMs=0.0,
-                    throughputQps=0.0,
-                    isActive=(
-                        state.ACTIVE_ALGORITHM
-                        == "hnsw"
-                    ),
-                ),
-                schemas.AlgorithmBenchmark(
-                    name="kdtree",
-                    displayName="KD-Tree",
-                    latencyMs=0.0,
-                    throughputQps=0.0,
-                    isActive=(
-                        state.ACTIVE_ALGORITHM
-                        == "kdtree"
-                    ),
-                ),
-                schemas.AlgorithmBenchmark(
-                    name="exact",
-                    displayName="Brute Force (Exact Match)",
-                    latencyMs=0.0,
-                    throughputQps=0.0,
-                    isActive=(
-                        state.ACTIVE_ALGORITHM
-                        == "exact"
-                    ),
-                ),
-            ],
-            timestamp=datetime.now(
-                timezone.utc
-            ).isoformat(),
-            topology=None,
-        )
-
-    if q:
-        try:
-            query_vector = (
-                await embedder.embed_text(q)
-            )
-
-            test_vec = np.asarray(
-                query_vector,
-                dtype=float,
-            )
-
-        except Exception as exc:
-            logger.exception(
-                f"Benchmark query embedding failed "
-                f"user_id={current_user.id}: {exc}"
-            )
-
-            raise HTTPException(
-                status_code=(
-                    status.HTTP_503_SERVICE_UNAVAILABLE
-                ),
-                detail="Embedding service is unavailable.",
-            ) from exc
-
-    else:
-        test_vec = np.asarray(
-            items[0].embedding,
-            dtype=float,
-        )
-
-    benchmarks, topology = await asyncio.to_thread(
-        _run_benchmark_suite,
-        items,
-        test_vec,
-        state.ACTIVE_ALGORITHM,
-        state.ACTIVE_METRIC,
-    )
-
-    return schemas.BenchmarkResponse(
-        algorithms=benchmarks,
-        timestamp=datetime.now(
-            timezone.utc
-        ).isoformat(),
-        topology=topology,
-    )
+    try:
+        result = await benchmarks_service.get_benchmarks(q, current_user.id, session)
+    except DomainError as exc:
+        raise to_http_error(exc) from exc
+    return schemas.BenchmarkResponse(**result)
 
 
 # ---------------------------------------------------------------------------

@@ -41,3 +41,13 @@ Phase evidence will be appended as each extraction passes its gates.
 - Full Python 3.12 suite: **229 passed, 2 warnings in 21.14s**. Changed-file Ruff and syntax checks pass.
 - Independent review and AST comparison confirm unchanged ownership filters, WAL-before-memory ordering, lock/SQL boundaries, scoped PCA invalidation, metadata best-effort updates and partial-failure semantics.
 - Category validation now uses the shared helper even at the upload boundary; existing DomainError translation retains upload HTTP behavior. The last duplicate embedding validator remains only until search extraction.
+- Commit: `e3c7b4768f085658bc667757537ab834ec4a8ba1`. A local AST-check script initially selected the wrong statement; correcting that check confirmed all three workflows match. No application correction was required.
+
+### Phase 4 — search, visualization and benchmarks
+
+- RED: 19 service cases failed before `services.search` existed.
+- Focused search/PCA/retrieval/contracts: **75 passed**. Full Python 3.12 suite: **248 passed, 2 warnings in 20.94s**.
+- Existing PCA tests retain all numerical/schema assertions and now import the moved projection helper. Sampling remains bounded to 5,000; payload truncation and zero-scale handling remain unchanged.
+- User-owned ready/raw items alone reach the benchmark engines. Three algorithms, 5,000-item cap, five sequential queries, inverse-latency estimate, rounding, topology and off-thread execution are unchanged. Tests explicitly characterize the expected PCA diagnostic warning for identical vectors.
+- Changed-file Ruff, visualization/benchmark AST parity and service syntax checks pass. Request/response formatting remains in the API; services have no FastAPI/schema imports.
+- Independent read-only review: no actionable findings; all five extracted workflows match after boundary adaptations.
