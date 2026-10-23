@@ -32,3 +32,12 @@ Phase evidence will be appended as each extraction passes its gates.
 - Fresh-session persistence, scoped conversation lookup, positive-score selection, provider fallback, cancel/disconnect/error/empty output, deleted-conversation and history-write failure behavior exercised with local fakes.
 - RAG workflow AST verified against starting code after primitive input/domain-error/iterator adaptations. Changed-file Ruff and syntax checks pass; no bytecode written.
 - Final focused RAG/retrieval/PCA/contracts: **80 passed, 1 warning in 21.46s**. Independent read-only review found no actionable issues and confirmed only `/ask` changed among remaining handlers.
+- Commit: `74f9f58560ce86f1e905d7305a0336901d160b10`.
+
+### Phase 3 — vectors
+
+- RED: all 19 new vector-service cases failed because the service did not exist.
+- Focused vector/PCA/API/operator/contracts: **67 passed, 1 warning in 18.97s**.
+- Full Python 3.12 suite: **229 passed, 2 warnings in 21.14s**. Changed-file Ruff and syntax checks pass.
+- Independent review and AST comparison confirm unchanged ownership filters, WAL-before-memory ordering, lock/SQL boundaries, scoped PCA invalidation, metadata best-effort updates and partial-failure semantics.
+- Category validation now uses the shared helper even at the upload boundary; existing DomainError translation retains upload HTTP behavior. The last duplicate embedding validator remains only until search extraction.

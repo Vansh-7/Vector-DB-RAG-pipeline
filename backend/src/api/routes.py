@@ -1,7 +1,6 @@
 import asyncio
 import random
 import time
-import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -18,7 +17,6 @@ from fastapi import (
 )
 from fastapi.responses import StreamingResponse
 from sklearn.decomposition import PCA
-from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import api.state as state
@@ -33,13 +31,14 @@ from db.models import Document, User
 from db.session import get_db
 from services import documents as documents_service
 from services import rag as rag_service
+from services import vectors as vectors_service
 from services.errors import DomainError
 from services.retrieval import (
-    get_all_user_items,
     get_ready_document_ids,
     get_searchable_user_items,
     search_user_vectors,
 )
+from services.validation import _normalize_category
 from services.visualization import project_query_for_user as _project_query_for_user
 
 router = APIRouter()
@@ -60,16 +59,6 @@ ALLOWED_FILE_EXTENSIONS = {
 # ---------------------------------------------------------------------------
 
 
-def _normalize_category(category: str) -> str:
-    normalized = category.strip() or "general"
-
-    if len(normalized) > 100:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Category must not exceed 100 characters.",
-        )
-
-    return normalized
 
 
 def _validate_embedding(embedding: list[float]) -> None:
@@ -83,8 +72,6 @@ def _validate_embedding(embedding: list[float]) -> None:
         )
 
 
-def _new_vector_id() -> int:
-    return int(uuid.uuid4().int >> 64)
 
 
 def _to_search_result_item(
@@ -178,73 +165,16 @@ async def insert_vector(
     although normal RAG documents should use /ingest or /ingest/file.
     """
     try:
-        item_id = (
-            int(request.id)
-            if request.id is not None
-            else _new_vector_id()
-        )
-
-    except ValueError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Vector ID must be an integer.",
-        ) from exc
-
-    try:
-        embedding = request.embedding
-
-        if embedding is None:
-            embedding = await embedder.embed_text(
-                request.payload
-            )
-
-        _validate_embedding(embedding)
-
-        item = VectorItem(
-            id=item_id,
-            metadata=request.payload,
-            category=_normalize_category(
-                request.category
-            ),
-            embedding=embedding,
-            user_id=current_user.id,
-            document_id=None,
-        )
-
-        async with state.db_lock:
-            state.wal.log_insert(item)
-            state.vector_db.insert(item)
-
-        state.pca_models.pop(
+        result = await vectors_service.insert_vector(
+            request.payload,
+            request.category,
+            request.embedding,
+            request.id,
             current_user.id,
-            None,
         )
-
-        logger.info(
-            f"Inserted vector_id={item_id} "
-            f"for user_id={current_user.id}"
-        )
-
-        return {
-            "status": "success",
-            "message": (
-                f"Successfully inserted item {item_id}"
-            ),
-        }
-
-    except HTTPException:
-        raise
-
-    except Exception as exc:
-        logger.exception(
-            f"Vector insert failed "
-            f"user_id={current_user.id}: {exc}"
-        )
-
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Vector insertion failed.",
-        ) from exc
+    except DomainError as exc:
+        raise to_http_error(exc) from exc
+    return result
 
 
 @router.delete(
@@ -261,58 +191,11 @@ async def clear_user_data(
     It MUST NOT rebuild the global index or clear the global WAL because those
     contain data for other tenants.
     """
-    user_items = await get_all_user_items(
-        current_user.id
-    )
-
     try:
-        async with state.db_lock:
-            for item in user_items:
-                state.wal.log_delete(item.id)
-                state.vector_db.remove(item.id)
-
-    except Exception as exc:
-        logger.exception(
-            f"Failed clearing vectors "
-            f"for user_id={current_user.id}: {exc}"
-        )
-
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to clear user vector data.",
-        ) from exc
-
-    try:
-        await session.execute(
-            delete(Document).where(
-                Document.user_id == current_user.id
-            )
-        )
-
-        await session.commit()
-
-    except Exception as exc:
-        await session.rollback()
-
-        logger.exception(
-            f"Failed clearing document metadata "
-            f"for user_id={current_user.id}: {exc}"
-        )
-
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Document metadata cleanup failed.",
-        ) from exc
-
-    state.pca_models.pop(
-        current_user.id,
-        None,
-    )
-
-    return {
-        "deleted": len(user_items),
-        "message": "Your vector data was cleared successfully.",
-    }
+        result = await vectors_service.clear_user_data(current_user.id, session)
+    except DomainError as exc:
+        raise to_http_error(exc) from exc
+    return result
 
 
 @router.delete(
@@ -327,93 +210,11 @@ async def delete_vector(
     """
     Deletes one vector only when it belongs to the authenticated user.
     """
-    async with state.db_lock:
-        item = next(
-            (
-                candidate
-                for candidate in state.vector_db.get_all_items()
-                if candidate.id == item_id
-            ),
-            None,
-        )
-
-        if (
-            item is None
-            or getattr(item, "user_id", None)
-            != current_user.id
-        ):
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Vector not found.",
-            )
-
-        try:
-            # Fixes the old delete durability bug:
-            # WAL must happen BEFORE index mutation.
-            state.wal.log_delete(item_id)
-
-            removed = state.vector_db.remove(
-                item_id
-            )
-
-            if not removed:
-                raise RuntimeError(
-                    "Vector could not be removed."
-                )
-
-        except Exception as exc:
-            logger.exception(
-                f"Vector deletion failed "
-                f"vector_id={item_id}: {exc}"
-            )
-
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Vector deletion failed.",
-            ) from exc
-
-    document_id = getattr(
-        item,
-        "document_id",
-        None,
-    )
-
-    # Keep document chunk_count approximately consistent.
-    # A failure here should not pretend the durable vector deletion failed.
-    if document_id is not None:
-        try:
-            document = await session.scalar(
-                select(Document).where(
-                    Document.id == document_id,
-                    Document.user_id
-                    == current_user.id,
-                )
-            )
-
-            if (
-                document is not None
-                and document.chunk_count > 0
-            ):
-                document.chunk_count -= 1
-                await session.commit()
-
-        except Exception as exc:
-            await session.rollback()
-
-            logger.error(
-                f"Failed updating chunk_count "
-                f"document_id={document_id}: {exc}"
-            )
-
-    state.pca_models.pop(
-        current_user.id,
-        None,
-    )
-
-    return {
-        "deleted": 1,
-        "message": f"Successfully deleted item {item_id}",
-    }
+    try:
+        result = await vectors_service.delete_vector(item_id, current_user.id, session)
+    except DomainError as exc:
+        raise to_http_error(exc) from exc
+    return result
 
 
 @router.post(
