@@ -8,7 +8,7 @@ from typing import Callable
 import numpy as np
 
 from core.types import SearchResult, VectorItem
-from core.indexes.base import BaseIndex
+from core.indexes.base import BaseIndex, DuplicateVectorID
 from core.logger import logger
 
 
@@ -48,6 +48,15 @@ class HNSWIndex(BaseIndex):
     def _random_level(self) -> int:
         """Assigns a random max layer for a new node. Higher layers are exponentially rarer."""
         return math.floor(-math.log(random.uniform(0.0001, 1.0)) * self.ml)
+
+    def contains_id(self, item_id: int) -> bool:
+        return item_id in self.nodes or item_id in self.tombstones
+
+    def get_item(self, item_id: int) -> VectorItem | None:
+        if item_id in self.tombstones:
+            return None
+        node = self.nodes.get(item_id)
+        return node.item if node is not None else None
 
     def _search_layer(self, query: np.ndarray, entry_point: int, ef: int, layer: int) -> list[tuple[float, int]]:
         """Greedy beam search across a single specific layer of the graph."""
@@ -103,9 +112,8 @@ class HNSWIndex(BaseIndex):
         """Inserts a document into the multilayer graph."""
         item_id = item.id
 
-        # Prevent graph corruption from WAL replays of already snapshotted items
-        if item_id in self.nodes:
-            return
+        if self.contains_id(item_id):
+            raise DuplicateVectorID("Vector ID is unavailable.")
 
         level = self._random_level()
         new_node = HNSWNode(item, level)
@@ -188,7 +196,7 @@ class HNSWIndex(BaseIndex):
 
         # Wide beam search. We increase `ef` by the number of tombstones
         # to ensure we don't fall short of `k` results if we hit deleted nodes.
-        adjusted_ef = max(ef_search, k + len(self.tombstones))
+        adjusted_ef = max(ef_search, k + len(self.tombstones.intersection(self.nodes)))
         W = self._search_layer(query, ep, ef=adjusted_ef, layer=0)
 
         results = []
@@ -212,7 +220,7 @@ class HNSWIndex(BaseIndex):
         return True
 
     def size(self) -> int:
-        return len(self.nodes) - len(self.tombstones)
+        return len(self.nodes) - len(self.tombstones.intersection(self.nodes))
 
     def get_all_items(self) -> list[VectorItem]:
         return [node.item for nid, node in self.nodes.items() if nid not in self.tombstones]

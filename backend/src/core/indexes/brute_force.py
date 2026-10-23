@@ -6,7 +6,7 @@ import numpy as np
 from core.types import SearchResult, VectorItem
 from core.logger import logger
 # Import our base contract and data types
-from core.indexes.base import BaseIndex
+from core.indexes.base import BaseIndex, DuplicateVectorID
 
 class BruteForceIndex(BaseIndex):
     """
@@ -24,9 +24,18 @@ class BruteForceIndex(BaseIndex):
         self.items: dict[int, VectorItem] = {}
         self.embeddings: dict[int, np.ndarray] = {}
         self.distance_metric = distance_metric
+        self.tombstones: set[int] = set()
+
+    def contains_id(self, item_id: int) -> bool:
+        return item_id in self.items or item_id in self.tombstones
+
+    def get_item(self, item_id: int) -> VectorItem | None:
+        return self.items.get(item_id)
 
     def insert(self, item: VectorItem) -> None:
-        """Adds or updates an item in the dictionary."""
+        """Insert a new identity; updates and retired-ID reuse are forbidden."""
+        if self.contains_id(item.id):
+            raise DuplicateVectorID("Vector ID is unavailable.")
         self.items[item.id] = item
         self.embeddings[item.id] = np.array(item.embedding, dtype=float)
 
@@ -54,6 +63,7 @@ class BruteForceIndex(BaseIndex):
     def remove(self, item_id: int) -> bool:
         """Deletes an item if it exists."""
         if item_id in self.items:
+            self.tombstones.add(item_id)
             del self.items[item_id]
             if item_id in self.embeddings:
                 del self.embeddings[item_id]
@@ -69,7 +79,7 @@ class BruteForceIndex(BaseIndex):
     def save(self, filepath: str) -> None:
         """Serializes and saves the items dictionary to disk."""
         with open(filepath, "wb") as f:
-            pickle.dump(self.items, f)
+            pickle.dump({"items": self.items, "tombstones": self.tombstones}, f)
         logger.info(f"BruteForce Index successfully saved to {filepath} ({len(self.items)} items).")
 
     def load(self, filepath: str) -> None:
@@ -79,7 +89,9 @@ class BruteForceIndex(BaseIndex):
             return
             
         with open(filepath, "rb") as f:
-            self.items = pickle.load(f)
+            saved = pickle.load(f)
+        self.items = saved["items"] if "items" in saved else saved
+        self.tombstones = saved.get("tombstones", set()) if "items" in saved else set()
         for item in self.items.values():
             self.embeddings[item.id] = np.array(item.embedding, dtype=float)
         logger.info(f"BruteForce Index successfully loaded from {filepath} ({len(self.items)} items).")

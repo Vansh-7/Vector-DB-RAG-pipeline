@@ -6,7 +6,7 @@ import pickle
 import numpy as np
 
 from core.types import SearchResult, VectorItem
-from core.indexes.base import BaseIndex
+from core.indexes.base import BaseIndex, DuplicateVectorID
 from core.logger import logger
 
 class KDNode:
@@ -38,8 +38,17 @@ class KDTreeIndex(BaseIndex):
         # is mathematically complex and can unbalance it, so industry standard
         # is to just rebuild the tree from active items upon deletion.
         self._active_items: dict[int, VectorItem] = {}
+        self.tombstones: set[int] = set()
+
+    def contains_id(self, item_id: int) -> bool:
+        return item_id in self._active_items or item_id in self.tombstones
+
+    def get_item(self, item_id: int) -> VectorItem | None:
+        return self._active_items.get(item_id)
 
     def insert(self, item: VectorItem) -> None:
+        if self.contains_id(item.id):
+            raise DuplicateVectorID("Vector ID is unavailable.")
         self._active_items[item.id] = item
         self.root = self._insert_node(self.root, item, depth=0)
 
@@ -109,6 +118,7 @@ class KDTreeIndex(BaseIndex):
             return False
 
         del self._active_items[item_id]
+        self.tombstones.add(item_id)
         self._rebuild()
         return True
 
@@ -127,7 +137,7 @@ class KDTreeIndex(BaseIndex):
     def save(self, filepath: str) -> None:
         """Serializes the active items to disk."""
         with open(filepath, "wb") as f:
-            pickle.dump(self._active_items, f)
+            pickle.dump({"items": self._active_items, "tombstones": self.tombstones}, f)
         logger.info(f"KD-Tree Index successfully saved to {filepath} ({len(self._active_items)} items).")
 
     def load(self, filepath: str) -> None:
@@ -137,7 +147,9 @@ class KDTreeIndex(BaseIndex):
             return
             
         with open(filepath, "rb") as f:
-            self._active_items = pickle.load(f)
+            saved = pickle.load(f)
+        self._active_items = saved["items"] if "items" in saved else saved
+        self.tombstones = saved.get("tombstones", set()) if "items" in saved else set()
             
         # Reconstruct the physical tree structure from the loaded items
         self._rebuild()

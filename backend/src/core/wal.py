@@ -1,7 +1,7 @@
 import json
 import os
 from core.types import VectorItem
-from core.indexes.base import BaseIndex
+from core.indexes.base import BaseIndex, DuplicateVectorID
 from core.logger import logger
 
 class WriteAheadLog:
@@ -42,10 +42,17 @@ class WriteAheadLog:
                     if record["op"] == "INSERT":
                         # Restore the VectorItem and insert it back into the index
                         item = VectorItem(**record["item"])
-                        index.insert(item)
+                        existing = index.get_item(item.id)
+                        if existing is not None:
+                            if existing.model_dump() != item.model_dump():
+                                raise DuplicateVectorID("Conflicting vector identity in WAL.")
+                        elif not index.contains_id(item.id):
+                            index.insert(item)
                     elif record["op"] == "DELETE":
                         index.remove(record["item_id"])
                     operations_applied += 1
+                except DuplicateVectorID:
+                    raise
                 except Exception as e:
                     logger.error(f"Failed to replay WAL record: {e}")
                 

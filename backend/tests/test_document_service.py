@@ -69,6 +69,10 @@ class DocumentIndex:
         assert state.db_lock.locked()
         return list(self.items)
 
+    def contains_id(self, item_id):
+        assert state.db_lock.locked()
+        return any(item.id == item_id for item in self.items)
+
     def insert(self, item):
         assert state.db_lock.locked()
         self.events.append(("insert", item.id))

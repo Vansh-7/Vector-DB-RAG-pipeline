@@ -18,6 +18,7 @@ class Engine:
         self.items = list(items)
         self.fail_save = False
         self.fail_insert = False
+        self.tombstones = set()
 
     def size(self):
         return len(self.items)

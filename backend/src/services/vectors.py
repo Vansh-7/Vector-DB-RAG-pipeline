@@ -10,7 +10,7 @@ from core.types import VectorItem
 from db.models import Document
 from services.errors import DomainError
 from services.retrieval import get_all_user_items
-from services.validation import _new_vector_id, _normalize_category, _validate_embedding
+from services.validation import _normalize_category, _unique_vector_id, _validate_embedding
 
 
 async def insert_vector(
@@ -23,22 +23,27 @@ async def insert_vector(
     although normal RAG documents should use /ingest or /ingest/file.
     """
     try:
-        vector_id = int(item_id) if item_id is not None else _new_vector_id()
+        vector_id = int(item_id) if item_id is not None else None
     except ValueError as exc:
         raise DomainError(kind="invalid", message="Vector ID must be an integer.") from exc
     try:
         if embedding is None:
             embedding = await embedder.embed_text(payload)
         _validate_embedding(embedding)
-        item = VectorItem(
-            id=vector_id,
-            metadata=payload,
-            category=_normalize_category(category),
-            embedding=embedding,
-            user_id=user_id,
-            document_id=None,
-        )
+        category = _normalize_category(category)
         async with state.db_lock:
+            if vector_id is None:
+                vector_id = _unique_vector_id()
+            elif state.vector_db.contains_id(vector_id):
+                raise DomainError(kind="conflict", message="Vector ID is unavailable.")
+            item = VectorItem(
+                id=vector_id,
+                metadata=payload,
+                category=category,
+                embedding=embedding,
+                user_id=user_id,
+                document_id=None,
+            )
             # Durable intent precedes the shared index mutation.
             state.wal.log_insert(item)
             state.vector_db.insert(item)

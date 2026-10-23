@@ -21,3 +21,12 @@ def _validate_embedding(embedding: list[float]) -> None:
 
 def _new_vector_id() -> int:
     return int(uuid.uuid4().int >> 64)
+
+
+def _unique_vector_id() -> int:
+    """Allocate while the caller holds the existing shared mutation lock."""
+    for _ in range(16):
+        candidate = _new_vector_id()
+        if not state.vector_db.contains_id(candidate):
+            return candidate
+    raise DomainError(kind="internal", message="Unable to allocate a unique vector ID.")

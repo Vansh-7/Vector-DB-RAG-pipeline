@@ -5,6 +5,10 @@ import numpy as np
 from core.types import SearchResult, VectorItem
 
 
+class DuplicateVectorID(ValueError):
+    """New insertions cannot reuse an active or retired vector identity."""
+
+
 class BaseIndex(ABC):
     """
     Abstract Base Class for all Vector Database indexing algorithms.
@@ -14,6 +18,12 @@ class BaseIndex(ABC):
     @abstractmethod
     def insert(self, item: VectorItem) -> None:
         pass
+
+    def contains_id(self, item_id: int) -> bool:
+        return self.get_item(item_id) is not None or item_id in getattr(self, "tombstones", set())
+
+    def get_item(self, item_id: int) -> VectorItem | None:
+        return next((item for item in self.get_all_items() if item.id == item_id), None)
 
     @abstractmethod
     def search(self, query: np.ndarray, k: int = 5) -> list[SearchResult]:

@@ -52,6 +52,7 @@ async def configure_engine(algorithm: str, metric: str, user_id: int) -> dict[st
         new_engine = state.build_engine(algorithm, metric)
         for item in old_items:
             new_engine.insert(item)
+        new_engine.tombstones.update(getattr(state.vector_db, "tombstones", set()))
         state.vector_db = new_engine
         state.ACTIVE_ALGORITHM = algorithm
         state.ACTIVE_METRIC = metric

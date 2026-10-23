@@ -13,7 +13,7 @@ from core.logger import logger
 from core.types import VectorItem
 from db.models import Document
 from services.errors import DomainError
-from services.validation import _new_vector_id, _normalize_category
+from services.validation import _normalize_category, _unique_vector_id
 
 MAX_TEXT_CHARACTERS = 2_000_000
 
@@ -89,7 +89,7 @@ async def _insert_document_chunks(
         for chunk, vector in zip(chunks, vectors):
             if len(vector) != state.DEFAULT_DIMS:
                 raise RuntimeError("Embedding model returned an unexpected dimension.")
-            item_id = _new_vector_id()
+            item_id = _unique_vector_id()
             # Track the attempt before either durable or in-memory mutation.
             attempted_item_ids.append(item_id)
             item = VectorItem(

@@ -37,6 +37,9 @@ class FakeIndex:
     def get_all_items(self):
         return list(self.items)
 
+    def contains_id(self, item_id):
+        return any(item.id == item_id for item in self.items)
+
     def insert(self, item):
         self.items.append(item)
 
