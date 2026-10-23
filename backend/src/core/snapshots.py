@@ -6,6 +6,7 @@ from pathlib import Path
 import numpy as np
 
 from core.metrics import cosine_distance, euclidean_distance, manhattan_distance
+from core.storage import atomic_write
 from core.types import VectorItem
 
 METRICS = {
@@ -46,8 +47,9 @@ def save_snapshot(index, filepath):
         "state": state,
     }
     validate_snapshot(envelope)
-    with open(filepath, "wb") as stream:
-        pickle.dump(envelope, stream, protocol=pickle.HIGHEST_PROTOCOL)
+    atomic_write(
+        filepath, lambda stream: pickle.dump(envelope, stream, protocol=pickle.HIGHEST_PROTOCOL)
+    )
 
 
 def validate_snapshot(envelope):

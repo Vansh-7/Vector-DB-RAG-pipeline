@@ -30,3 +30,26 @@ engine rebuild leaves the original singleton and configuration in place.
 
 KD-tree axis pruning applies only to Euclidean and Manhattan distance. Cosine
 search visits both branches because an axis difference is not a cosine bound.
+
+## Commit and failure ordering
+
+Snapshots serialize to a unique temporary file beside the destination, flush
+and fsync that file, then atomically replace the destination. Directory metadata
+is synced on platforms/filesystems supporting it; Python does not expose a
+portable directory fsync on Windows. Serialization/write/sync/replace failures
+before replacement leave the previous snapshot intact. A failure after
+replacement leaves the WAL available for idempotent replay. Temporary files
+left by abrupt process exit are ignored; never promote an incomplete file.
+
+Existing callers hold the shared lock through snapshot commit and WAL clearing.
+Each WAL append flushes and fsyncs before in-memory mutation or acknowledgment;
+creation also syncs parent metadata where supported. Failed appends attempt to
+roll back the partial record and block all subsequent writes and WAL clearing
+until restart/recovery. Inspect the preserved files first if recovery fails.
+Malformed, incomplete or unknown WAL records abort startup rather than silently
+omitting changes. Keep original data for operator-assisted repair.
+
+Tests inject serialization, disk-full, permission, sync and replacement failures,
+check ordering, and abruptly exit child processes after insert/delete WAL writes
+for all three engines. These are software failure/restart tests, not a hardware
+power-loss or storage-controller durability certification.
