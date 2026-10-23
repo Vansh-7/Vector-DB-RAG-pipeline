@@ -1,5 +1,4 @@
 import asyncio
-import io
 import json
 import random
 import time
@@ -9,7 +8,6 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
-import pypdf
 from fastapi import (
     APIRouter,
     Depends,
@@ -25,17 +23,19 @@ from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import api.state as state
-from ai.chunker import chunker
 from ai.embedder import embedder
 from ai.generator import llm_generator
 from ai.reranker import cross_encoder
 from api import schemas
+from api.errors import to_http_error
 from auth.dependencies import get_current_user, get_operator_user
 from core.indexes.hnsw import HNSWIndex
 from core.logger import logger
 from core.types import SearchResult, VectorItem
 from db.models import Conversation, Document, Message, User
 from db.session import AsyncSessionLocal, get_db
+from services import documents as documents_service
+from services.errors import DomainError
 from services.retrieval import (
     get_all_user_items,
     get_ready_document_ids,
@@ -141,173 +141,6 @@ def _project_query_for_user(
 
 
 # ---------------------------------------------------------------------------
-# Document lifecycle helpers
-# ---------------------------------------------------------------------------
-
-
-async def _create_document(
-    session: AsyncSession,
-    *,
-    user_id: int,
-    name: str,
-    category: str,
-    source_type: str,
-) -> Document:
-    document = Document(
-        user_id=user_id,
-        name=name,
-        category=category,
-        source_type=source_type,
-        status="processing",
-        chunk_count=0,
-    )
-
-    session.add(document)
-
-    try:
-        await session.commit()
-        await session.refresh(document)
-
-    except Exception as exc:
-        await session.rollback()
-
-        logger.exception(
-            f"Failed creating document metadata "
-            f"for user_id={user_id}: {exc}"
-        )
-
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to initialize document ingestion.",
-        ) from exc
-
-    return document
-
-
-async def _mark_document_failed(
-    session: AsyncSession,
-    document_id: int,
-) -> None:
-    try:
-        await session.rollback()
-
-        document = await session.get(
-            Document,
-            document_id,
-        )
-
-        if document is None:
-            return
-
-        document.status = "failed"
-        document.chunk_count = 0
-
-        await session.commit()
-
-    except Exception as exc:
-        await session.rollback()
-
-        logger.exception(
-            f"Failed marking document_id={document_id} "
-            f"as failed: {exc}"
-        )
-
-
-async def _compensate_vector_inserts(
-    item_ids: list[int],
-) -> None:
-    """
-    Best-effort compensation for vectors written before an ingestion failed.
-
-    PostgreSQL and our custom Vector DB cannot share one ACID transaction.
-    Compensating WAL DELETE operations keep recovery semantics consistent.
-    """
-    if not item_ids:
-        return
-
-    async with state.db_lock:
-        for item_id in item_ids:
-            try:
-                # WAL before in-memory mutation.
-                state.wal.log_delete(item_id)
-                state.vector_db.remove(item_id)
-
-            except Exception as exc:
-                logger.exception(
-                    f"Failed compensating vector_id={item_id}: {exc}"
-                )
-
-
-async def _insert_document_chunks(
-    *,
-    chunks: list[str],
-    user_id: int,
-    document_id: int,
-    category: str,
-    attempted_item_ids: list[int],
-) -> None:
-    vectors = await embedder.embed_batch(chunks)
-
-    if len(vectors) != len(chunks):
-        raise RuntimeError(
-            "Embedding count does not match chunk count."
-        )
-
-    async with state.db_lock:
-        for chunk, vector in zip(chunks, vectors):
-            if len(vector) != state.DEFAULT_DIMS:
-                raise RuntimeError(
-                    "Embedding model returned an unexpected dimension."
-                )
-
-            item_id = _new_vector_id()
-
-            # Track before WAL/index mutations so a partially successful
-            # operation can receive a compensating DELETE.
-            attempted_item_ids.append(item_id)
-
-            item = VectorItem(
-                id=item_id,
-                metadata=chunk,
-                category=category,
-                embedding=vector,
-                user_id=user_id,
-                document_id=document_id,
-            )
-
-            # WAL first: durable intent before mutating the index.
-            state.wal.log_insert(item)
-            state.vector_db.insert(item)
-
-
-# ---------------------------------------------------------------------------
-# File parsing
-# ---------------------------------------------------------------------------
-
-
-def _extract_file_text(
-    content: bytes,
-    extension: str,
-) -> str:
-    if extension == ".pdf":
-        pdf_reader = pypdf.PdfReader(
-            io.BytesIO(content)
-        )
-
-        pages: list[str] = []
-
-        for page in pdf_reader.pages:
-            page_text = page.extract_text()
-
-            if page_text:
-                pages.append(page_text)
-
-        return "\n".join(pages).strip()
-
-    return content.decode("utf-8").strip()
-
-
-# ---------------------------------------------------------------------------
 # Document routes
 # ---------------------------------------------------------------------------
 
@@ -323,17 +156,11 @@ async def list_documents(
     """
     Returns only documents owned by the authenticated user.
     """
-    result = await session.scalars(
-        select(Document)
-        .where(
-            Document.user_id == current_user.id
-        )
-        .order_by(
-            Document.created_at.desc()
-        )
-    )
-
-    return list(result.all())
+    try:
+        result = await documents_service.list_documents(session, current_user.id)
+    except DomainError as exc:
+        raise to_http_error(exc) from exc
+    return result
 
 
 @router.delete(
@@ -352,108 +179,13 @@ async def delete_document(
     documents, so even if deletion partially fails the document stops entering
     RAG context.
     """
-    document = await session.scalar(
-        select(Document).where(
-            Document.id == document_id,
-            Document.user_id == current_user.id,
-        )
-    )
-
-    if document is None:
-        # 404 instead of 403 avoids revealing whether another user's
-        # document exists.
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Document not found.",
-        )
-
-    document.status = "deleting"
-
     try:
-        await session.commit()
-    except Exception as exc:
-        await session.rollback()
-
-        logger.exception(
-            f"Failed preparing document deletion "
-            f"document_id={document_id}: {exc}"
+        result = await documents_service.delete_document(
+            document_id, current_user.id, session
         )
-
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to delete document.",
-        ) from exc
-
-    try:
-        async with state.db_lock:
-            user_items = [
-                item
-                for item in state.vector_db.get_all_items()
-                if getattr(item, "user_id", None)
-                == current_user.id
-                and getattr(item, "document_id", None)
-                == document_id
-            ]
-
-            for item in user_items:
-                # WAL first.
-                state.wal.log_delete(item.id)
-                state.vector_db.remove(item.id)
-
-    except Exception as exc:
-        logger.exception(
-            f"Vector cleanup failed for "
-            f"document_id={document_id}: {exc}"
-        )
-
-        await _mark_document_failed(
-            session,
-            document_id,
-        )
-
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to delete document.",
-        ) from exc
-
-    try:
-        document = await session.get(
-            Document,
-            document_id,
-        )
-
-        if document is not None:
-            await session.delete(document)
-
-        await session.commit()
-
-    except Exception as exc:
-        await session.rollback()
-
-        logger.exception(
-            f"PostgreSQL document deletion failed "
-            f"document_id={document_id}: {exc}"
-        )
-
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Document deletion was incomplete.",
-        ) from exc
-
-    state.pca_models.pop(
-        current_user.id,
-        None,
-    )
-
-    logger.info(
-        f"Deleted document_id={document_id} "
-        f"for user_id={current_user.id}"
-    )
-
-    return {
-        "deleted_document_id": document_id,
-        "deleted_chunks": len(user_items),
-    }
+    except DomainError as exc:
+        raise to_http_error(exc) from exc
+    return result
 
 
 # ---------------------------------------------------------------------------
@@ -1373,114 +1105,13 @@ async def ingest_document(
     current_user: User = Depends(get_current_user),
     session: AsyncSession = Depends(get_db),
 ) -> schemas.IngestResponse:
-    raw_text = request.text.strip()
-
-    if not raw_text:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Document text cannot be empty.",
-        )
-
-    if len(raw_text) > MAX_TEXT_CHARACTERS:
-        raise HTTPException(
-            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-            detail="Text document is too large.",
-        )
-
-    category = _normalize_category(
-        request.category
-    )
-
-    title = (
-        request.title or "Pasted text"
-    ).strip()
-
-    if not title:
-        title = "Pasted text"
-
-    title = title[:255]
-
-    document = await _create_document(
-        session,
-        user_id=current_user.id,
-        name=title,
-        category=category,
-        source_type="text",
-    )
-
-    attempted_item_ids: list[int] = []
-
     try:
-        chunks = chunker.split_text(
-            raw_text
+        result = await documents_service.ingest_document(
+            request.text, request.category, request.title, current_user.id, session
         )
-
-        if not chunks:
-            raise RuntimeError(
-                "Document chunker produced no chunks."
-            )
-
-        await _insert_document_chunks(
-            chunks=chunks,
-            user_id=current_user.id,
-            document_id=document.id,
-            category=category,
-            attempted_item_ids=attempted_item_ids,
-        )
-
-        document.status = "ready"
-        document.chunk_count = len(
-            chunks
-        )
-
-        await session.commit()
-        await session.refresh(
-            document
-        )
-
-        state.pca_models.pop(
-            current_user.id,
-            None,
-        )
-
-        logger.info(
-            f"Text document ingested "
-            f"document_id={document.id}, "
-            f"user_id={current_user.id}, "
-            f"chunks={len(chunks)}"
-        )
-
-        return schemas.IngestResponse(
-            document_id=document.id,
-            status=document.status,
-            chunk_count=document.chunk_count,
-            message="Document ingested successfully.",
-        )
-
-    except Exception as exc:
-        logger.exception(
-            f"Text ingestion failed "
-            f"document_id={document.id}: {exc}"
-        )
-
-        await _compensate_vector_inserts(
-            attempted_item_ids
-        )
-
-        await _mark_document_failed(
-            session,
-            document.id,
-        )
-
-        state.pca_models.pop(
-            current_user.id,
-            None,
-        )
-
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Document ingestion failed.",
-        ) from exc
+    except DomainError as exc:
+        raise to_http_error(exc) from exc
+    return schemas.IngestResponse(**result)
 
 
 # ---------------------------------------------------------------------------
@@ -1499,186 +1130,48 @@ async def ingest_file(
     current_user: User = Depends(get_current_user),
     session: AsyncSession = Depends(get_db),
 ) -> schemas.IngestResponse:
-    filename = Path(
-        file.filename or ""
-    ).name.strip()
-
-    if not filename:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Uploaded file must have a filename.",
-        )
-
-    if len(filename) > 255:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Filename is too long.",
-        )
-
-    extension = Path(
-        filename
-    ).suffix.lower()
-
-    if (
-        extension
-        not in ALLOWED_FILE_EXTENSIONS
-    ):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=(
-                "Only .pdf, .txt and .md "
-                "files are supported."
-            ),
-        )
-
-    normalized_category = (
-        _normalize_category(category)
-    )
-
     try:
-        content = await file.read(
-            MAX_UPLOAD_BYTES + 1
-        )
-
-    except Exception as exc:
-        logger.exception(
-            f"Upload read failed "
-            f"user_id={current_user.id}: {exc}"
-        )
-
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Failed to read uploaded file.",
-        ) from exc
-
-    if len(content) > MAX_UPLOAD_BYTES:
-        raise HTTPException(
-            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-            detail="File exceeds the 10 MB upload limit.",
-        )
-
-    if not content:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Uploaded file is empty.",
-        )
-
-    try:
-        text_content = await asyncio.to_thread(
-            _extract_file_text,
-            content,
-            extension,
-        )
-
-    except UnicodeDecodeError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Text files must use UTF-8 encoding.",
-        ) from exc
-
-    except Exception as exc:
-        logger.exception(
-            f"Document parsing failed "
-            f"user_id={current_user.id}: {exc}"
-        )
-
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Unable to parse the uploaded document.",
-        ) from exc
-
-    if not text_content:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=(
-                "No readable text could be "
-                "extracted from the document."
-            ),
-        )
-
-    document = await _create_document(
-        session,
-        user_id=current_user.id,
-        name=filename,
-        category=normalized_category,
-        source_type="file",
-    )
-
-    attempted_item_ids: list[int] = []
-
-    try:
-        chunks = chunker.split_text(
-            text_content
-        )
-
-        if not chunks:
-            raise RuntimeError(
-                "Document chunker produced no chunks."
+        filename = Path(file.filename or "").name.strip()
+        if not filename:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Uploaded file must have a filename.",
             )
-
-        await _insert_document_chunks(
-            chunks=chunks,
-            user_id=current_user.id,
-            document_id=document.id,
-            category=normalized_category,
-            attempted_item_ids=attempted_item_ids,
+        if len(filename) > 255:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Filename is too long."
+            )
+        extension = Path(filename).suffix.lower()
+        if extension not in ALLOWED_FILE_EXTENSIONS:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Only .pdf, .txt and .md files are supported.",
+            )
+        normalized_category = _normalize_category(category)
+        try:
+            content = await file.read(MAX_UPLOAD_BYTES + 1)
+        except Exception as exc:
+            logger.exception(f"Upload read failed user_id={current_user.id}: {exc}")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Failed to read uploaded file.",
+            ) from exc
+        if len(content) > MAX_UPLOAD_BYTES:
+            raise HTTPException(
+                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                detail="File exceeds the 10 MB upload limit.",
+            )
+        if not content:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Uploaded file is empty.",
+            )
+        result = await documents_service.ingest_file(
+            content, filename, extension, normalized_category, current_user.id, session
         )
-
-        document.status = "ready"
-        document.chunk_count = len(
-            chunks
-        )
-
-        await session.commit()
-        await session.refresh(
-            document
-        )
-
-        state.pca_models.pop(
-            current_user.id,
-            None,
-        )
-
-        logger.info(
-            f"File document ingested "
-            f"document_id={document.id}, "
-            f"user_id={current_user.id}, "
-            f"chunks={len(chunks)}"
-        )
-
-        return schemas.IngestResponse(
-            document_id=document.id,
-            status=document.status,
-            chunk_count=document.chunk_count,
-            message=(
-                f"{document.name} ingested successfully."
-            ),
-        )
-
-    except Exception as exc:
-        logger.exception(
-            f"File ingestion failed "
-            f"document_id={document.id}: {exc}"
-        )
-
-        await _compensate_vector_inserts(
-            attempted_item_ids
-        )
-
-        await _mark_document_failed(
-            session,
-            document.id,
-        )
-
-        state.pca_models.pop(
-            current_user.id,
-            None,
-        )
-
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Document ingestion failed.",
-        ) from exc
+    except DomainError as exc:
+        raise to_http_error(exc) from exc
+    return schemas.IngestResponse(**result)
 
 
 # ---------------------------------------------------------------------------

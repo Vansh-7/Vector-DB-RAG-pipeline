@@ -13,6 +13,7 @@ import api.state as state
 from api import schemas
 from core.types import VectorItem
 from db.models import Document
+from services import documents
 
 
 class FakeIndex:
@@ -175,11 +176,11 @@ def test_mutations_invalidate_only_the_relevant_users_cache(
     other_cache = (object(), 2.0)
     state.pca_models.update({1: (object(), 1.0), 2: other_cache})
     user = SimpleNamespace(id=1)
-    monkeypatch.setattr(routes.chunker, "split_text", lambda text: ["one chunk"])
+    monkeypatch.setattr(documents.chunker, "split_text", lambda text: ["one chunk"])
     embed = AsyncMock(return_value=[[0.5] * 768])
     if operation.endswith("failure"):
         embed.side_effect = RuntimeError("Embedding unavailable")
-    monkeypatch.setattr(routes.embedder, "embed_batch", embed)
+    monkeypatch.setattr(documents.embedder, "embed_batch", embed)
 
     async def mutate():
         if operation == "insert":
